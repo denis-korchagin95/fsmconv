@@ -21,7 +21,7 @@ static const char * dfa_graph_filename = "./dfa.dot";
 #define NFA_STATE_ATTR_FINISHED     BIT(1)
 #define NFA_STATE_ATTR_VISITED      BIT(2)
 
-#define ADD_STATE(nfa, state)           \
+#define add_state(nfa, state)           \
   do                                    \
   {                                     \
     *(nfa)->last_state = (state);       \
@@ -491,17 +491,17 @@ int main(void)
   q0->attrs |= NFA_STATE_ATTR_INITIAL;
   q10->attrs |= NFA_STATE_ATTR_FINISHED;
 
-  ADD_STATE(nfa, q0); q0->id = nfa->nstates++;
-  ADD_STATE(nfa, q1); q1->id = nfa->nstates++;
-  ADD_STATE(nfa, q2); q2->id = nfa->nstates++;
-  ADD_STATE(nfa, q3); q3->id = nfa->nstates++;
-  ADD_STATE(nfa, q4); q4->id = nfa->nstates++;
-  ADD_STATE(nfa, q5); q5->id = nfa->nstates++;
-  ADD_STATE(nfa, q6); q6->id = nfa->nstates++;
-  ADD_STATE(nfa, q7); q7->id = nfa->nstates++;
-  ADD_STATE(nfa, q8); q8->id = nfa->nstates++;
-  ADD_STATE(nfa, q9); q9->id = nfa->nstates++;
-  ADD_STATE(nfa, q10); q10->id = nfa->nstates++;
+  add_state(nfa, q0); q0->id = nfa->nstates++;
+  add_state(nfa, q1); q1->id = nfa->nstates++;
+  add_state(nfa, q2); q2->id = nfa->nstates++;
+  add_state(nfa, q3); q3->id = nfa->nstates++;
+  add_state(nfa, q4); q4->id = nfa->nstates++;
+  add_state(nfa, q5); q5->id = nfa->nstates++;
+  add_state(nfa, q6); q6->id = nfa->nstates++;
+  add_state(nfa, q7); q7->id = nfa->nstates++;
+  add_state(nfa, q8); q8->id = nfa->nstates++;
+  add_state(nfa, q9); q9->id = nfa->nstates++;
+  add_state(nfa, q10); q10->id = nfa->nstates++;
 
   nfa_state_add_transition(q0, EMPTY_CHAR, q1->id);
   nfa_state_add_transition(q0, EMPTY_CHAR, q7->id);
@@ -551,7 +551,7 @@ int main(void)
     {
       new_state = nfa_state_copy(state);
       new_state->subset = nfa_empty_closure(nfa->states, NULL, nfa_state_set_create(new_state->id));
-      ADD_STATE(dfa, new_state);
+      add_state(dfa, new_state);
 
       ss_tmp = nfa_state_set_create(state->id);
       ss_tmp->next = initial_states;
@@ -618,7 +618,7 @@ int main(void)
 
         new_state->subset = subset;
 
-        ADD_STATE(dfa, new_state);
+        add_state(dfa, new_state);
       }
 
       nfa_transition_subset_update(state, char_iter->ch, nfa_state_set_create(new_state->id));
