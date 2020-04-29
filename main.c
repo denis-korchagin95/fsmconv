@@ -7,17 +7,6 @@
 #include <limits.h>
 #include <stdint.h>
 
-/*
-q0 -- a -> q1 -- b --> q3 --- a --> q4
- |                     ^            |
- |                     |            |
- |                     +----- b ----+
- |
- +-- a --> q2 -- b --> q5
-           ^           |
-           |           |
-           +---- a ----+
-*/
 
 static const char * nfa_graph_filename = "./nfa.dot";
 static const char * dfa_graph_filename = "./dfa.dot";
