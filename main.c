@@ -48,8 +48,8 @@ static const char * dfa_graph_filename = "./dfa.dot";
 
 
 struct nfa_state_set {
-  uint32_t element;
   struct nfa_state_set * next;
+  uint32_t element;
 };
 
 struct nfa_char_set {
@@ -72,9 +72,9 @@ struct nfa_state {
 };
 
 struct nfa {
-  int nstates;
   struct nfa_state * states;
   struct nfa_state ** last_state;
+  int nstates;
 };
 
 static struct nfa_state nfa_state_pool[NFA_STATE_POOL_SIZE];
