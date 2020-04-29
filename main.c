@@ -36,6 +36,20 @@ static const char * dfa_graph_filename = "./dfa.dot";
   while(0)
 
 
+#define declare_allocator(name, type, count)                        \
+  static type name ## _pool[(count)];                               \
+  static uint32_t name ## _pool_cursor = 0;                         \
+                                                                    \
+  static type * ___alloc_ ## name (void)                            \
+  {                                                                 \
+    if(name ## _pool_cursor >= (count)) {                           \
+      fprintf(stderr, ("___alloc_" #name ": out of memory!\n"));    \
+      exit(1);                                                      \
+    }                                                               \
+    return &name ## _pool[name ## _pool_cursor++];                  \
+  }                                                                 \
+
+
 struct nfa_state_set {
   struct nfa_state_set * next;
   uint32_t element;
@@ -66,17 +80,13 @@ struct nfa {
   int nstates;
 };
 
-static struct nfa_state nfa_state_pool[NFA_STATE_POOL_SIZE];
-static struct nfa_state_set nfa_state_set_pool[NFA_STATE_SET_POOL_SIZE];
-static struct nfa nfa_pool[NFA_POOL_SIZE];
-static struct nfa_transition nfa_transition_pool[NFA_TRANSITION_POOL_SIZE];
-static struct nfa_char_set nfa_char_set_pool[NFA_CHAR_SET_POOL_SIZE];
 
-static uint32_t nfa_state_set_pool_cursor = 0;
-static uint32_t nfa_state_pool_cursor = 0;
-static uint32_t nfa_pool_cursor = 0;
-static uint32_t nfa_transition_pool_cursor = 0;
-static uint32_t nfa_char_set_pool_cursor = 0;
+declare_allocator(nfa_state, struct nfa_state, NFA_STATE_POOL_SIZE)
+declare_allocator(nfa_transition, struct nfa_transition, NFA_TRANSITION_POOL_SIZE)
+declare_allocator(nfa, struct nfa, NFA_POOL_SIZE)
+declare_allocator(nfa_state_set, struct nfa_state_set, NFA_STATE_SET_POOL_SIZE)
+declare_allocator(nfa_char_set, struct nfa_char_set, NFA_CHAR_SET_POOL_SIZE)
+
 
 static const char * char_to_string(int ch)
 {
@@ -111,55 +121,6 @@ static struct nfa_state * nfa_find_not_visited_state(struct nfa * nfa)
   return NULL;
 }
 
-
-
-static struct nfa_transition * ___alloc_nfa_transition(void)
-{
-  if(nfa_transition_pool_cursor >= NFA_TRANSITION_POOL_SIZE) {
-    fprintf(stderr, "___alloc_nfa_transition: out of memory!\n");
-    exit(1);
-  }
-  return &nfa_transition_pool[nfa_transition_pool_cursor++];
-}
-
-
-
-static struct nfa_state_set * ___alloc_nfa_state_set(void)
-{
-  if(nfa_state_set_pool_cursor >= NFA_STATE_SET_POOL_SIZE) {
-    fprintf(stderr, "___alloc_nfa_state_set: out of memory!\n");
-    exit(1);
-  }
-  return &nfa_state_set_pool[nfa_state_set_pool_cursor++];
-}
-
-
-static struct nfa_state * ___alloc_nfa_state(void)
-{
-  if(nfa_state_pool_cursor >= NFA_STATE_POOL_SIZE) {
-    fprintf(stderr, "___alloc_nfa_state: out of memory!\n");
-    exit(1);
-  }
-  return &nfa_state_pool[nfa_state_pool_cursor++];
-}
-
-static struct nfa_char_set * ___alloc_nfa_char_set(void)
-{
-  if(nfa_char_set_pool_cursor >= NFA_CHAR_SET_POOL_SIZE) {
-    fprintf(stderr, "___alloc_nfa_char_set: out of memory!\n");
-    exit(1);
-  }
-  return &nfa_char_set_pool[nfa_char_set_pool_cursor++];
-}
-
-static struct nfa * ___alloc_nfa(void)
-{
-  if(nfa_pool_cursor >= NFA_POOL_SIZE) {
-    fprintf(stderr, "___alloc_nfa: out of memory\n");
-    exit(1);
-  }
-  return &nfa_pool[nfa_pool_cursor++];
-}
 
 static struct nfa * nfa_create(void)
 {
