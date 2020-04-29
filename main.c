@@ -11,12 +11,6 @@
 static const char * nfa_graph_filename = "./nfa.dot";
 static const char * dfa_graph_filename = "./dfa.dot";
 
-#define NFA_TRANSITION_POOL_SIZE 2048
-#define NFA_STATE_SET_POOL_SIZE 4096
-#define NFA_STATE_POOL_SIZE 1024
-#define NFA_POOL_SIZE 16
-#define NFA_CHAR_SET_POOL_SIZE 128
-
 #define CHARACTERS_COUNT 128
 
 #define EMPTY_CHAR (-1)
@@ -81,11 +75,11 @@ struct nfa {
 };
 
 
-declare_allocator(nfa_state, struct nfa_state, NFA_STATE_POOL_SIZE)
-declare_allocator(nfa_transition, struct nfa_transition, NFA_TRANSITION_POOL_SIZE)
-declare_allocator(nfa, struct nfa, NFA_POOL_SIZE)
-declare_allocator(nfa_state_set, struct nfa_state_set, NFA_STATE_SET_POOL_SIZE)
-declare_allocator(nfa_char_set, struct nfa_char_set, NFA_CHAR_SET_POOL_SIZE)
+declare_allocator(nfa_state, struct nfa_state, 1024)
+declare_allocator(nfa_transition, struct nfa_transition, 2048)
+declare_allocator(nfa, struct nfa, 16)
+declare_allocator(nfa_state_set, struct nfa_state_set, 4096)
+declare_allocator(nfa_char_set, struct nfa_char_set, 128)
 
 
 static const char * char_to_string(int ch)
