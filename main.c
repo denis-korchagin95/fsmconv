@@ -30,7 +30,7 @@ static const char * dfa_graph_filename = "./dfa.dot";
 
 #define CHARACTERS_COUNT 128
 
-#define EMPTY_CHAR '\0'
+#define EMPTY_CHAR (-1)
 
 #define BIT(n) (1u << (n))
 
@@ -53,14 +53,14 @@ struct nfa_state_set {
 };
 
 struct nfa_char_set {
-  uint32_t ch;
   struct nfa_char_set * next;
+  int ch;
 };
 
 struct nfa_transition {
   struct nfa_state_set * states;
-  uint32_t ch;
   struct nfa_transition * next;
+  int ch;
 };
 
 struct nfa_state {
