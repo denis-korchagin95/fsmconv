@@ -126,7 +126,7 @@ static struct nfa * nfa_create(void)
 }
 
 
-static struct nfa_char_set * nfa_char_set_create(uint32_t ch)
+static struct nfa_char_set * nfa_char_set_create(int ch)
 {
   struct nfa_char_set * el = ___alloc_nfa_char_set();
   el->ch = ch;
@@ -200,7 +200,7 @@ static struct nfa_state * nfa_state_copy(struct nfa_state * state)
 }
 
 
-static struct nfa_transition * nfa_get_transition(struct nfa_state * state, uint32_t ch)
+static struct nfa_transition * nfa_get_transition(struct nfa_state * state, int ch)
 {
   if(!state)
     goto ret;
@@ -229,7 +229,7 @@ static int nfa_state_set_find_state(struct nfa_state_set * states, uint32_t stat
 
 
 
-static struct nfa_transition * nfa_transition_create(uint32_t ch, struct nfa_state_set * states)
+static struct nfa_transition * nfa_transition_create(int ch, struct nfa_state_set * states)
 {
   struct nfa_transition * el = ___alloc_nfa_transition();
   el->states = states;
@@ -238,7 +238,7 @@ static struct nfa_transition * nfa_transition_create(uint32_t ch, struct nfa_sta
   return el;
 }
 
-static struct nfa_transition * nfa_state_add_transition(struct nfa_state * state, uint32_t ch, uint32_t target)
+static struct nfa_transition * nfa_state_add_transition(struct nfa_state * state, int ch, uint32_t target)
 {
   struct nfa_transition * transition = nfa_get_transition(state, ch);
 
@@ -367,7 +367,7 @@ ret:
   return NULL;
 }
 
-static struct nfa_transition * nfa_transition_subset_update(struct nfa_state * state, uint32_t ch, struct nfa_state_set * subset)
+static struct nfa_transition * nfa_transition_subset_update(struct nfa_state * state, int ch, struct nfa_state_set * subset)
 {
   struct nfa_transition * transition = nfa_get_transition(state, ch);
   if(!transition) {
@@ -413,7 +413,7 @@ static void nfa_state_set_concat(struct nfa_state_set ** dest, struct nfa_state_
   }
 }
 
-static bool nfa_char_set_has_char(struct nfa_char_set * chars, uint32_t ch)
+static bool nfa_char_set_has_char(struct nfa_char_set * chars, int ch)
 {
   struct nfa_char_set * iterator = chars;
   while(iterator) {
