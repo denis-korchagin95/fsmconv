@@ -1,0 +1,50 @@
+unit: statement_list;
+
+statement_list: statement
+	| statement, statement_list
+	;
+
+statement: directive
+	| identifier to identifier by character_list
+	| identifier -> identifier by character_list
+	;
+
+directive: keyword identifier_list;
+
+keyword: start
+	| end
+	;
+
+identifier_list: identifier
+	| identifier, identifier_list
+	;
+
+character_list: character
+	| special-character
+	| character, character_list
+	| special-character, character_list
+	;
+
+special-character: @ special-character-keyword;
+
+special-character-keyword: empty;
+
+identifier: identifier-start-letter;
+
+identifier-start-letter: [a-zA-Z_]
+	| [a-zA-Z_] identifier-letter
+	;
+
+identifier-letter: [a-zA-Z0-9_]
+	| [a-zA-Z0-9_] identifier-letter
+	;
+
+character: ' character-letter ';
+
+
+character-letter:
+		any member of the source character set except the single-quote, backslash, or new-line charater
+	|	escape-sequence
+	;
+
+escape-sequence: \', \\;
