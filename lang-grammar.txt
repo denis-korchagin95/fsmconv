@@ -1,3 +1,5 @@
+special-characters: @empty;
+
 unit: statement_list;
 
 statement_list: statement
@@ -13,6 +15,9 @@ directive: keyword identifier_list;
 
 keyword: start
 	| end
+	| to
+	| by
+	| empty
 	;
 
 identifier_list: identifier
@@ -25,9 +30,7 @@ character_list: character
 	| special-character, character_list
 	;
 
-special-character: @ special-character-keyword;
-
-special-character-keyword: empty;
+special-character: @ keyword;
 
 identifier: identifier-start-letter;
 
