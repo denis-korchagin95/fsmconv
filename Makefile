@@ -14,7 +14,10 @@ $(OBJ)main.o:
 $(OBJ)parser.o:
 	$(CC) $(CFLAGS) -c $(SRC)parser.c -o $(OBJ)parser.o
 
-build: $(OBJ)parser.o $(OBJ)main.o
+$(OBJ)allocator.o:
+	$(CC) $(CFLAGS) -c $(SRC)allocator.c -o $(OBJ)allocator.o
+
+build: $(OBJ)allocator.o $(OBJ)parser.o $(OBJ)main.o
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
 
 clean:

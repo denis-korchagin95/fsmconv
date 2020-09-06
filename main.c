@@ -7,7 +7,7 @@
 #include <limits.h>
 #include <stdint.h>
 #include "parser.h"
-
+#include "allocator.h"
 
 static const char * filename = "./examples/ip4_nfa.txt";
 static const char * nfa_graph_filename = "./nfa.dot";
@@ -30,58 +30,6 @@ static const char * dfa_graph_filename = "./dfa.dot";
     (nfa)->last_state = &(state)->next; \
   }                                     \
   while(0)
-
-
-#define declare_allocator(name, type, count)                        \
-  static type name ## _pool[(count)];                               \
-  static uint32_t name ## _pool_cursor = 0;                         \
-                                                                    \
-  static type * ___alloc_ ## name (void)                            \
-  {                                                                 \
-    if(name ## _pool_cursor >= (count)) {                           \
-      fprintf(stderr, ("___alloc_" #name ": out of memory!\n"));    \
-      exit(1);                                                      \
-    }                                                               \
-    return &name ## _pool[name ## _pool_cursor++];                  \
-  }                                                                 \
-
-
-struct nfa_state_set {
-  struct nfa_state_set * next;
-  uint32_t element;
-};
-
-struct nfa_char_set {
-  struct nfa_char_set * next;
-  int ch;
-};
-
-struct nfa_transition {
-  struct nfa_state_set * states;
-  struct nfa_transition * next;
-  int ch;
-};
-
-struct nfa_state {
-  uint32_t id;
-  uint32_t attrs;
-  struct nfa_state_set * subset; /* used for only dfa construction */
-  struct nfa_transition * transitions;
-  struct nfa_state * next;
-};
-
-struct nfa {
-  struct nfa_state * states;
-  struct nfa_state ** last_state;
-  int nstates;
-};
-
-
-declare_allocator(nfa_state, struct nfa_state, 1024)
-declare_allocator(nfa_transition, struct nfa_transition, 2048)
-declare_allocator(nfa, struct nfa, 16)
-declare_allocator(nfa_state_set, struct nfa_state_set, 4096)
-declare_allocator(nfa_char_set, struct nfa_char_set, 128)
 
 
 static const char * char_to_string(int ch)
