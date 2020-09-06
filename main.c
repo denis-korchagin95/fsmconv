@@ -6,8 +6,10 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <stdint.h>
+#include "parser.h"
 
 
+static const char * filename = "./examples/ip4_nfa.txt";
 static const char * nfa_graph_filename = "./nfa.dot";
 static const char * dfa_graph_filename = "./dfa.dot";
 
@@ -472,54 +474,17 @@ static struct nfa_state_set * nfa_empty_closure(struct nfa_state * nfa_states, s
 
 int main(void)
 {
-  struct nfa * nfa = nfa_create();
-  struct nfa_state * q0, * q1, * q2, * q3, * q4, * q5,
-  * q6, * q7, * q8, * q9, * q10;
+  struct nfa * nfa;
+  FILE * file = fopen(filename, "r");
 
-  q0 = nfa_state_create();
-  q1 = nfa_state_create();
-  q2 = nfa_state_create();
-  q3 = nfa_state_create();
-  q4 = nfa_state_create();
-  q5 = nfa_state_create();
-  q6 = nfa_state_create();
-  q7 = nfa_state_create();
-  q8 = nfa_state_create();
-  q9 = nfa_state_create();
-  q10 = nfa_state_create();
+  nfa = parse_file(file);
 
-  q0->attrs |= NFA_STATE_ATTR_INITIAL;
-  q10->attrs |= NFA_STATE_ATTR_FINISHED;
+  fclose(file);
 
-  add_state(nfa, q0); q0->id = nfa->nstates++;
-  add_state(nfa, q1); q1->id = nfa->nstates++;
-  add_state(nfa, q2); q2->id = nfa->nstates++;
-  add_state(nfa, q3); q3->id = nfa->nstates++;
-  add_state(nfa, q4); q4->id = nfa->nstates++;
-  add_state(nfa, q5); q5->id = nfa->nstates++;
-  add_state(nfa, q6); q6->id = nfa->nstates++;
-  add_state(nfa, q7); q7->id = nfa->nstates++;
-  add_state(nfa, q8); q8->id = nfa->nstates++;
-  add_state(nfa, q9); q9->id = nfa->nstates++;
-  add_state(nfa, q10); q10->id = nfa->nstates++;
-
-  nfa_state_add_transition(q0, EMPTY_CHAR, q1->id);
-  nfa_state_add_transition(q0, EMPTY_CHAR, q7->id);
-
-  nfa_state_add_transition(q1, EMPTY_CHAR, q2->id);
-  nfa_state_add_transition(q1, EMPTY_CHAR, q4->id);
-
-  nfa_state_add_transition(q2, 'a', q3->id);
-  nfa_state_add_transition(q4, 'b', q5->id);
-
-  nfa_state_add_transition(q3, EMPTY_CHAR, q6->id);
-  nfa_state_add_transition(q5, EMPTY_CHAR, q6->id);
-  nfa_state_add_transition(q6, EMPTY_CHAR, q1->id);
-  nfa_state_add_transition(q6, EMPTY_CHAR, q7->id);
-
-  nfa_state_add_transition(q7, 'a', q8->id);
-  nfa_state_add_transition(q8, 'b', q9->id);
-  nfa_state_add_transition(q9, 'b', q10->id);
+  if (nfa == NULL) {
+	  printf("parse file error!\n");
+	  exit(1);
+  }
 
   FILE * output = fopen(nfa_graph_filename, "w");
   if(!output) {
