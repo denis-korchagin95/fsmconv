@@ -1,4 +1,9 @@
-special-characters: @empty;
+special characters:
+	@empty - it represents an 'epsilon' transition to state
+
+directives:
+	start - it allows mark states which represent an initial states
+	end - it allows mark states which represent a final states
 
 unit: statement_list;
 
@@ -17,7 +22,6 @@ keyword: start
 	| end
 	| to
 	| by
-	| empty
 	;
 
 identifier_list: identifier
@@ -30,7 +34,7 @@ character_list: character
 	| special-character, character_list
 	;
 
-special-character: @ keyword;
+special-character: @ identifier;
 
 identifier: identifier-start-letter;
 
