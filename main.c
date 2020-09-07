@@ -425,7 +425,7 @@ int main(void)
   struct nfa * nfa;
   FILE * file = fopen(filename, "r");
 
-  nfa = parse_file(file);
+  nfa = parse(file);
 
   fclose(file);
 

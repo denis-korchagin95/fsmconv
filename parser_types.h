@@ -7,7 +7,7 @@ struct token
     /* TODO: location in the source */
     union {
         int code;
-        struct identifier * identifier;
+	char identifier[256];
     } content;
 };
 

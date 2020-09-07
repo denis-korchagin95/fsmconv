@@ -8,16 +8,19 @@ PROGRAM=nfa2dfaconv
 
 all: build run
 
-$(OBJ)main.o:
+$(OBJ)debug.o: $(SRC)debug.c $(SRC)debug.h $(SRC)parser.h
+	$(CC) $(CFLAGS) -c $(SRC)debug.c -o $(OBJ)debug.o
+
+$(OBJ)main.o: $(SRC)main.c $(SRC)parser.h $(SRC)allocator.h
 	$(CC) $(CFLAGS) -c $(SRC)main.c -o $(OBJ)main.o
 
-$(OBJ)parser.o:
+$(OBJ)parser.o: $(SRC)parser.c $(SRC)parser.h $(SRC)parser_types.h $(SRC)allocator.h $(SRC)debug.h
 	$(CC) $(CFLAGS) -c $(SRC)parser.c -o $(OBJ)parser.o
 
-$(OBJ)allocator.o:
+$(OBJ)allocator.o: $(SRC)allocator.c $(SRC)allocator.h
 	$(CC) $(CFLAGS) -c $(SRC)allocator.c -o $(OBJ)allocator.o
 
-build: $(OBJ)allocator.o $(OBJ)parser.o $(OBJ)main.o
+build: $(OBJ)debug.o $(OBJ)allocator.o $(OBJ)parser.o $(OBJ)main.o
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
 
 clean:
