@@ -101,11 +101,21 @@ static struct token * read_token(void)
 	int ch;
 	struct token * token;
 
-	while(isspace(ch = getch()))
-		;
+repeat:
+	ch = getch();
+
+	while(isspace(ch))
+		ch = getch();
 
 	if (ch == EOF)
 		return &eof_token;
+
+	if (ch == '#') { /* single-line comment */
+		do
+			ch = getch();
+		while(ch != '\n' && ch != EOF);
+		goto repeat;
+	}
 
 	token = ___alloc_token();
 
