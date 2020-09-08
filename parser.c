@@ -49,6 +49,20 @@ static struct token * read_character(int ch, struct token * token)
 		fprintf(stderr, "error: new line character in cannot allow in character constant!\n");
 		exit(1);
 	}
+	else if(ch == '\\') { /* handle escape sequence */
+		int next_ch = getch();
+		if (next_ch == '\'') {
+			ch = '\'';
+		}
+		else if(next_ch == '\\') {
+			ch = '\\';
+		}
+		else {
+			fprintf(stderr, "error: unknown escape sequence in character constant: \\%c\n", next_ch);
+			exit(1);
+		}
+	}
+
 	token->type = TOKEN_CHARACTER;
 	token->content.code = ch;
 	ch = getch();
