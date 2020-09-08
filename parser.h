@@ -20,6 +20,7 @@ enum {
 	PUNCTUATOR_COMMA,	/* ',' */
 };
 
+void init_parser(void);
 struct nfa * parse(FILE * source); 
 
 #endif /* NFA2DFACONV_PARSER_H */

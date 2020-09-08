@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "parser.h"
 #include "parser_types.h"
@@ -9,12 +10,36 @@
 #define PUTBACK_BUFFER_SIZE 3
 #define IDENTIFIER_TABLE_SIZE 101
 
+struct keyword
+{
+	char * name;
+	int code;
+};
+
+static struct keyword keywords[] = {
+	{ "start", KEYWORD_START },
+	{ "end",   KEYWORD_END   },
+	{ "to",    KEYWORD_TO    },
+	{ "by",    KEYWORD_BY    },
+};
+
 static FILE * source;
 static int putback_buffer[PUTBACK_BUFFER_SIZE];
 static int putback_buffer_pos;
 static struct identifier * identifiers[IDENTIFIER_TABLE_SIZE];
 
 struct token eof_token = { 0 };
+
+static bool is_keyword(struct identifier * identifier)
+{
+	struct symbol * it = identifier->symbols;
+	while(it != NULL) {
+		if (it->type == SYMBOL_KEYWORD)
+			return true;
+		it = it->next;
+	}
+	return false;
+}
 
 static uint32_t hash(const char * name)
 {
@@ -202,6 +227,30 @@ repeat:
 
 ret:
 	return token;
+}
+
+void init_parser(void)
+{
+	struct symbol * symbol;
+	struct identifier * identifier;
+	struct keyword * keyword;
+	int keyword_count, i;
+
+	keyword_count = sizeof(keywords) / sizeof(keywords[0]);
+
+	for(i = 0; i < keyword_count; ++i) {
+		keyword = keywords + i;
+
+		identifier = identifier_insert(hash(keyword->name), keyword->name);
+
+		symbol = ___alloc_symbol();
+		symbol->type = SYMBOL_KEYWORD;
+		symbol->identifier = identifier;
+		symbol->content.code = keyword->code;
+
+		(*identifier->last_symbol) = symbol;
+		identifier->last_symbol = &symbol->next;
+	}
 }
 
 struct nfa * parse(FILE * file)

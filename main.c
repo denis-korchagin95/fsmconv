@@ -422,6 +422,8 @@ static struct nfa_state_set * nfa_empty_closure(struct nfa_state * nfa_states, s
 
 int main(void)
 {
+  init_parser();
+
   struct nfa * nfa;
   FILE * file = fopen(filename, "r");
 

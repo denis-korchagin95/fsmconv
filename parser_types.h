@@ -11,14 +11,24 @@ enum {
 	SYMBOL_NFA_STATE,
 };
 
+enum {
+	KEYWORD_START,
+	KEYWORD_END,
+	KEYWORD_TO,
+	KEYWORD_BY,
+};
+
 struct symbol
 {
-	int type;
+	struct identifier * identifier;
+	struct symbol * next;
 	union
 	{
 		struct nfa_char_set * char_set;
 		struct nfa_state * nfa_state;
+		int code;
 	} content;
+	int type;
 };
 
 struct identifier
