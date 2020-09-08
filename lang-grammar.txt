@@ -11,10 +11,15 @@ statement_list: statement
 	| statement, statement_list
 	;
 
-statement: directive
-	| identifier to identifier by character_list
-	| identifier -> identifier by character_list
+statement: directive | nfa-rule ;
+
+nfa-rule: nfa-transition by character_list ;
+
+nfa-transition: nfa-state to nfa-state
+	| nfa-state -> nfa-state
 	;
+
+nfa-state: identifier ;
 
 directive: keyword identifier_list;
 
