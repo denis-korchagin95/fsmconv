@@ -7,3 +7,5 @@ declare_allocator(nfa_state_set, struct nfa_state_set, 4096)
 declare_allocator(nfa_char_set, struct nfa_char_set, 128)
 
 declare_allocator(token, struct token, 1024)
+declare_allocator(symbol, struct symbol, 1024)
+declare_allocator(identifier, struct identifier, 1024)

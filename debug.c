@@ -12,7 +12,7 @@ void debug_token(FILE * output, struct token * token)
 			fprintf(output, "[INVALID %c]", token->content.code);
 			break;
 		case TOKEN_IDENTIFIER:
-			fprintf(output, "[IDENTIFIER %s]", token->content.identifier);
+			fprintf(output, "[IDENTIFIER %s]", token->content.identifier->name);
 			break;
 		case TOKEN_CHARACTER:
 			fprintf(output, "[CHARACTER %c]", token->content.code);

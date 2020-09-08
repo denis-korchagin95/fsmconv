@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <string.h>
 
 #include "parser.h"
 #include "parser_types.h"
@@ -6,13 +7,24 @@
 #include "debug.h"
 
 #define PUTBACK_BUFFER_SIZE 3
-#define IDENTIFIER_MAX_SIZE 256
+#define IDENTIFIER_TABLE_SIZE 101
 
 static FILE * source;
 static int putback_buffer[PUTBACK_BUFFER_SIZE];
 static int putback_buffer_pos;
+static struct identifier * identifiers[IDENTIFIER_TABLE_SIZE];
 
 struct token eof_token = { 0 };
+
+static uint32_t hash(const char * name)
+{
+	uint32_t value = 0;
+	while(*name != '\0') {
+		value = *name + 31 * value;
+		++name;
+	}
+	return value;
+}
 
 static void set_source(FILE * file)
 {
@@ -33,6 +45,32 @@ static void ungetch(int ch)
 	if (putback_buffer_pos >= PUTBACK_BUFFER_SIZE)
 		putback_buffer_pos = 0;
 	putback_buffer[putback_buffer_pos++] = ch;
+}
+
+static struct identifier * identifier_search(uint32_t hash, const char * name)
+{
+	uint32_t index = hash % IDENTIFIER_TABLE_SIZE;
+	struct identifier * it;
+	for(it = identifiers[index]; it != NULL; it = it->next) {
+		if (strcmp(name, it->name) == 0) {
+			return it;
+		}
+	}
+	return NULL;
+}
+
+static struct identifier * identifier_insert(uint32_t hash, const char * name)
+{
+	uint32_t index = hash % IDENTIFIER_TABLE_SIZE;
+
+	struct identifier * identifier = ___alloc_identifier();
+	strncpy(identifier->name, name, IDENTIFIER_MAX_SIZE);
+	identifier->symbols = NULL;
+	identifier->last_symbol = &identifier->symbols;
+
+	identifier->next = identifiers[index];
+	identifiers[index] = identifier;
+	return identifier;
 }
 
 static struct token * read_character(int ch, struct token * token)
@@ -77,22 +115,31 @@ static struct token * read_character(int ch, struct token * token)
 
 static struct token * read_identifier(int ch, struct token * token)
 {
+	static char buffer[IDENTIFIER_MAX_SIZE];
 	int i = 0;
+	uint32_t hash = 0;
 
-	while(ch != EOF && (isalpha(ch) || isdigit(ch) || ch == '_') && i < IDENTIFIER_MAX_SIZE) {
-		token->content.identifier[i++] = ch;
+	while(ch != EOF && (isalpha(ch) || isdigit(ch) || ch == '_') && i < IDENTIFIER_MAX_SIZE - 1) {
+		buffer[i++] = ch;
+		hash = ch + 31 * hash;
 		ch = getch();
 	}
+	buffer[i] = '\0';
 	if (ch != EOF)
 		ungetch(ch);
-	if(i >= IDENTIFIER_MAX_SIZE) {
+	if(i >= IDENTIFIER_MAX_SIZE - 1) {
 		fprintf(stderr, "warning: identifier too long!\n");
 		while(isalpha(ch) || isdigit(ch) || ch == '_')
 			ch = getch();
 		ungetch(ch);
 	}
 
+	struct identifier * identifier = identifier_search(hash, buffer);
+	if (identifier == NULL)
+		identifier = identifier_insert(hash, buffer);
+
 	token->type = TOKEN_IDENTIFIER;
+	token->content.identifier = identifier;
 	return token;
 }
 

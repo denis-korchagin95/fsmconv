@@ -32,7 +32,10 @@ define_allocator(nfa_transition, struct nfa_transition);
 define_allocator(nfa, struct nfa);
 define_allocator(nfa_state_set, struct nfa_state_set);
 define_allocator(nfa_char_set, struct nfa_char_set);
+
 define_allocator(token, struct token);
+define_allocator(symbol, struct symbol);
+define_allocator(identifier, struct identifier);
 
 
 #endif /* NFA2DFACONV_ALLOCATOR_H */
