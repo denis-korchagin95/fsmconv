@@ -6,20 +6,6 @@
 
 extern struct token eof_token;
 
-enum {
-	TOKEN_INVALID,
-	TOKEN_IDENTIFIER,
-	TOKEN_CHARACTER,
-	TOKEN_PUNCTUATOR,
-};
-
-enum {
-	PUNCTUATOR_HYPHEN_LESS, /* '->' */
-	PUNCTUATOR_SEMICOLON,   /* ';' */
-	PUNCTUATOR_AT,          /* '@' */
-	PUNCTUATOR_COMMA,	/* ',' */
-};
-
 void init_parser(void);
 struct nfa * parse(FILE * source); 
 

@@ -8,6 +8,7 @@
 #include "debug.h"
 
 #define PUTBACK_BUFFER_SIZE 3
+#define PUTBACK_TOKEN_BUFFER_SIZE 3
 #define IDENTIFIER_TABLE_SIZE 101
 
 struct keyword
@@ -24,21 +25,49 @@ static struct keyword keywords[] = {
 };
 
 static FILE * source;
+
 static int putback_buffer[PUTBACK_BUFFER_SIZE];
-static int putback_buffer_pos;
+static int putback_buffer_pos = 0;
+static struct token * putback_token_buffer[PUTBACK_TOKEN_BUFFER_SIZE];
+static int putback_token_buffer_pos = 0;
 static struct identifier * identifiers[IDENTIFIER_TABLE_SIZE];
 
 struct token eof_token = { 0 };
 
-static bool is_keyword(struct identifier * identifier)
+static void identifier_attach_symbol(struct identifier * identifier, struct symbol * symbol)
+{
+	symbol->identifier = identifier;
+	(*identifier->last_symbol) = symbol;
+	identifier->last_symbol = &symbol->next;
+}
+
+static struct symbol * search_symbol(struct identifier * identifier, int type)
 {
 	struct symbol * it = identifier->symbols;
 	while(it != NULL) {
-		if (it->type == SYMBOL_KEYWORD)
-			return true;
+		if (it->type == type) {
+			return it;
+		}
 		it = it->next;
 	}
-	return false;
+	return NULL;
+}
+
+static const char * token_type(struct token * token)
+{
+	switch(token->type)
+	{
+		case TOKEN_INVALID:    return "invalid";
+		case TOKEN_IDENTIFIER: return "identifier";
+		case TOKEN_PUNCTUATOR: return "punctuator";
+		case TOKEN_CHARACTER:  return "character";
+	}
+	return "<unknown token>";
+}
+
+static bool is_keyword(struct identifier * identifier)
+{
+	return search_symbol(identifier, SYMBOL_KEYWORD) != NULL;
 }
 
 static uint32_t hash(const char * name)
@@ -168,8 +197,19 @@ static struct token * read_identifier(int ch, struct token * token)
 	return token;
 }
 
+static void unread_token(struct token * token)
+{
+	if (token == &eof_token) return;
+	if (putback_token_buffer_pos >= PUTBACK_TOKEN_BUFFER_SIZE)
+		putback_token_buffer_pos = 0;
+	putback_token_buffer[putback_token_buffer_pos++] = token;
+}
+
 static struct token * read_token(void)
 {
+	if(putback_token_buffer_pos > 0)
+		return putback_token_buffer[--putback_token_buffer_pos];
+
 	int ch;
 	struct token * token;
 
@@ -245,27 +285,52 @@ void init_parser(void)
 
 		symbol = ___alloc_symbol();
 		symbol->type = SYMBOL_KEYWORD;
-		symbol->identifier = identifier;
 		symbol->content.code = keyword->code;
+		symbol->next = NULL;
 
-		(*identifier->last_symbol) = symbol;
-		identifier->last_symbol = &symbol->next;
+		identifier_attach_symbol(identifier, symbol);
 	}
+}
+
+struct symbol * parse_nfa_state(void)
+{
+	struct token * token = read_token();
+	if (token->type != TOKEN_IDENTIFIER) {
+		fprintf(stderr, "error: expected identifier but given %s\n", token_type(token));
+		exit(1);
+	}
+	if (is_keyword(token->content.identifier)) {
+		fprintf(stderr, "error: keyword '%s' can't be used for naming nfa state\n", token->content.identifier->name);
+		exit(1);
+	}
+	struct symbol * state_symbol = search_symbol(token->content.identifier, SYMBOL_NFA_STATE);
+	if (state_symbol != NULL)
+		return state_symbol;
+
+	struct nfa_state * state = ___alloc_nfa_state();
+	state->id = 0;
+	state->attrs = 0;
+	state->subset = NULL;
+	state->transitions = NULL;
+	state->next = NULL;
+
+	state_symbol = ___alloc_symbol();
+	state_symbol->type = SYMBOL_NFA_STATE;
+	state_symbol->content.nfa_state = state;
+
+	identifier_attach_symbol(token->content.identifier, state_symbol);
+
+	return state_symbol;
 }
 
 struct nfa * parse(FILE * file)
 {
 	set_source(file);
 
-	struct token * token;
+	struct symbol * state = parse_nfa_state();
+	debug_symbol(stdout, state);
+	puts("");
 
-	while(1) {
-		token = read_token();
-		if (token == &eof_token)
-			break;
-		debug_token(stdout, token);
-		printf("\n");
-	}
 	
 	return NULL;
 }

@@ -40,3 +40,24 @@ void debug_token(FILE * output, struct token * token)
 			fprintf(output, "<unknown token>");
 	}
 }
+
+void debug_symbol(FILE * output, struct symbol * symbol)
+{
+	if (symbol == NULL)
+		return;
+	switch(symbol->type)
+	{
+		case SYMBOL_KEYWORD:
+			fprintf(output, "{KEYWORD %s}", symbol->identifier->name);
+			break;
+		case SYMBOL_NFA_STATE:
+			fprintf(output, "{NFA_STATE %s}", symbol->identifier->name);
+			break;
+		case SYMBOL_CHARACTER_SET:
+			fprintf(output, "{CHARACTER_SET #todo printing...}");
+			break;
+		default:
+			fprintf(output, "<unknown symbol>");
+	}
+}
+
