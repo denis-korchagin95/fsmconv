@@ -1,3 +1,9 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+
+#include "nfa_types.h"
+#include "parser_types.h"
 #include "allocator.h"
 
 declare_allocator(nfa_state, struct nfa_state, 1024)

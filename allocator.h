@@ -1,13 +1,6 @@
 #ifndef NFA2DFACONV_ALLOCATOR_H
 #define NFA2DFACONV_ALLOCATOR_H 1
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
-#include "nfa_types.h"
-#include "parser_types.h"
-
 #define define_allocator(name, type)      \
   extern type * ___alloc_ ## name(void);  \
   extern uint32_t name ## _pool_cursor;   \

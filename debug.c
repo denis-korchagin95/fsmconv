@@ -1,5 +1,8 @@
-#include "debug.h"
+#include <stdio.h>
+
 #include "parser.h"
+#include "parser_types.h"
+#include "debug.h"
 
 
 void debug_token(FILE * output, struct token * token)
@@ -40,21 +43,36 @@ void debug_token(FILE * output, struct token * token)
 			fprintf(output, "<unknown token>");
 	}
 }
+	
 
-void debug_symbol(FILE * output, struct symbol * symbol)
+void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 {
 	if (symbol == NULL)
 		return;
+	int i;
 	switch(symbol->type)
 	{
 		case SYMBOL_KEYWORD:
 			fprintf(output, "{KEYWORD %s}", symbol->identifier->name);
 			break;
-		case SYMBOL_NFA_STATE:
-			fprintf(output, "{NFA_STATE %s}", symbol->identifier->name);
+		case SYMBOL_STATE:
+			for(i = 0; i < depth; ++i)
+				fprintf(output, "\t|");
+			fprintf(output, "\n");
+			fprintf(output, "\t+-> ");
+			fprintf(output, "{STATE %s}", symbol->identifier->name);
 			break;
-		case SYMBOL_CHARACTER_SET:
-			fprintf(output, "{CHARACTER_SET #todo printing...}");
+		case SYMBOL_CHARACTER_LIST:
+			fprintf(output, "{CHARACTER_LIST #todo printing...}");
+			break;
+		case SYMBOL_TRANSITION:
+			fprintf(output, "{TRANSITION}\n");
+			debug_symbol(output, symbol->content.transition.from_state, depth + 1);
+			fprintf(output, "\n");
+			debug_symbol(output, symbol->content.transition.to_state, depth + 1);
+			break;
+		case SYMBOL_RULE:
+			fprintf(output, "{RULE #todo printing...}");
 			break;
 		default:
 			fprintf(output, "<unknown symbol>");

@@ -1,7 +1,11 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
 
+#include "nfa_types.h"
 #include "parser.h"
 #include "parser_types.h"
 #include "allocator.h"
@@ -318,7 +322,7 @@ struct symbol * parse_nfa_state(void)
 		fprintf(stderr, "error: keyword '%s' can't be used for naming nfa state\n", token->content.identifier->name);
 		exit(1);
 	}
-	struct symbol * state_symbol = search_symbol(token->content.identifier, SYMBOL_NFA_STATE);
+	struct symbol * state_symbol = search_symbol(token->content.identifier, SYMBOL_STATE);
 	if (state_symbol != NULL)
 		return state_symbol;
 
@@ -330,7 +334,7 @@ struct symbol * parse_nfa_state(void)
 	state->next = NULL;
 
 	state_symbol = ___alloc_symbol();
-	state_symbol->type = SYMBOL_NFA_STATE;
+	state_symbol->type = SYMBOL_STATE;
 	state_symbol->content.nfa_state = state;
 
 	identifier_attach_symbol(token->content.identifier, state_symbol);
@@ -338,7 +342,7 @@ struct symbol * parse_nfa_state(void)
 	return state_symbol;
 }
 
-void parse_transition(struct symbol ** from, struct symbol ** to)
+struct symbol * parse_nfa_transition(void)
 {
 	struct symbol * from_state = parse_nfa_state();
 	struct token * token = read_token();
@@ -348,23 +352,19 @@ void parse_transition(struct symbol ** from, struct symbol ** to)
 	}
 	struct symbol * to_state = parse_nfa_state();
 
-	(*from) = from_state;
-	(*to) = to_state;
+	struct symbol * transition = ___alloc_symbol();
+	transition->type = SYMBOL_TRANSITION;
+	transition->identifier = NULL;
+	transition->next = NULL;
+	transition->content.transition.from_state = from_state;
+	transition->content.transition.to_state = to_state;
+
+	return transition;
 }
 
-struct nfa * parse(FILE * file)
+struct symbol * parse(FILE * file)
 {
 	set_source(file);
 	
-	struct symbol * from_state, * to_state;
-
-	parse_transition(&from_state, &to_state);
-
-	debug_symbol(stdout, from_state);
-	puts("");
-	debug_symbol(stdout, to_state);
-	puts("");
-
-	
-	return NULL;
+	return parse_nfa_transition();
 }

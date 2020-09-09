@@ -1,8 +1,6 @@
 #ifndef NFA2DFACONV_PARSER_TYPES_H
 #define NFA2DFACONV_PARSER_TYPES_H 1
 
-#include "nfa_types.h"
-
 #define IDENTIFIER_MAX_SIZE 256
 
 enum {
@@ -21,8 +19,10 @@ enum {
 
 enum {
 	SYMBOL_KEYWORD,
-	SYMBOL_CHARACTER_SET,
-	SYMBOL_NFA_STATE,
+	SYMBOL_CHARACTER_LIST,
+	SYMBOL_STATE,
+	SYMBOL_TRANSITION,
+	SYMBOL_RULE,
 };
 
 enum {
@@ -38,6 +38,18 @@ struct symbol
 	struct symbol * next;
 	union
 	{
+		struct symbol_nfa_transition
+		{
+			struct symbol * from_state;
+			struct symbol * to_state;
+		} transition;
+
+		struct symbol_nfa_rule
+		{
+			struct symbol_nfa_transition transition;
+			struct symbol * character_list;
+		} rule;
+
 		struct nfa_char_set * char_set;
 		struct nfa_state * nfa_state;
 		int code;

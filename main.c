@@ -6,7 +6,12 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <stdint.h>
+
+#include "util.h"
 #include "parser.h"
+#include "nfa_types.h"
+#include "parser_types.h"
+#include "debug.h"
 #include "allocator.h"
 
 static const char * filename = "./examples/ip4_nfa.txt";
@@ -417,17 +422,23 @@ int main(void)
 {
   init_parser();
 
-  struct nfa * nfa;
   FILE * file = fopen(filename, "r");
 
-  nfa = parse(file);
+  struct symbol * parse_tree = parse(file);
 
   fclose(file);
 
-  if (nfa == NULL) {
+  if (parse_tree == NULL) {
 	  printf("parse file error!\n");
 	  exit(1);
   }
+
+  debug_symbol(stdout, parse_tree, 0);
+  puts("");
+
+  exit(0);
+
+  struct nfa * nfa;
 
   FILE * output = fopen(nfa_graph_filename, "w");
   if(!output) {
