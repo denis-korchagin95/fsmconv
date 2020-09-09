@@ -65,9 +65,24 @@ static const char * token_type(struct token * token)
 	return "<unknown token>";
 }
 
-static bool is_keyword(struct identifier * identifier)
+static bool is_punctuator_as(struct token * token, int type)
 {
-	return search_symbol(identifier, SYMBOL_KEYWORD) != NULL;
+	return token->type == TOKEN_PUNCTUATOR && token->content.code == type;
+}
+
+static bool is_keyword(struct token * token)
+{
+	return token->type == TOKEN_IDENTIFIER && search_symbol(token->content.identifier, SYMBOL_KEYWORD) != NULL;
+}
+
+static bool is_keyword_as(struct token * token, int type)
+{
+	if (token->type != TOKEN_IDENTIFIER)
+		return false;
+	struct symbol * symbol = search_symbol(token->content.identifier, SYMBOL_KEYWORD);
+	if (symbol == NULL)
+		return false;
+	return symbol->content.code == type;
 }
 
 static uint32_t hash(const char * name)
@@ -299,7 +314,7 @@ struct symbol * parse_nfa_state(void)
 		fprintf(stderr, "error: expected identifier but given %s\n", token_type(token));
 		exit(1);
 	}
-	if (is_keyword(token->content.identifier)) {
+	if (is_keyword(token)) {
 		fprintf(stderr, "error: keyword '%s' can't be used for naming nfa state\n", token->content.identifier->name);
 		exit(1);
 	}
@@ -323,12 +338,31 @@ struct symbol * parse_nfa_state(void)
 	return state_symbol;
 }
 
+void parse_transition(struct symbol ** from, struct symbol ** to)
+{
+	struct symbol * from_state = parse_nfa_state();
+	struct token * token = read_token();
+	if (!is_keyword_as(token, KEYWORD_TO) && !is_punctuator_as(token, PUNCTUATOR_HYPHEN_LESS)) {
+		fprintf(stdout, "error: expected keyword 'to' or '->' punctuator that must refer to other state but given %s!\n", token_type(token));
+		exit(1);
+	}
+	struct symbol * to_state = parse_nfa_state();
+
+	(*from) = from_state;
+	(*to) = to_state;
+}
+
 struct nfa * parse(FILE * file)
 {
 	set_source(file);
+	
+	struct symbol * from_state, * to_state;
 
-	struct symbol * state = parse_nfa_state();
-	debug_symbol(stdout, state);
+	parse_transition(&from_state, &to_state);
+
+	debug_symbol(stdout, from_state);
+	puts("");
+	debug_symbol(stdout, to_state);
 	puts("");
 
 	
