@@ -2,6 +2,11 @@
 #define NFA2DFACONV_NFA_TYPES_H 1
 
 #include <stdint.h>
+#include "util.h"
+
+#define NFA_STATE_ATTR_INITIAL      BIT(0)
+#define NFA_STATE_ATTR_FINISHED     BIT(1)
+#define NFA_STATE_ATTR_VISITED      BIT(2)
 
 struct nfa_state_set {
   struct nfa_state_set * next;

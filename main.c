@@ -14,14 +14,7 @@ static const char * nfa_graph_filename = "./nfa.dot";
 static const char * dfa_graph_filename = "./dfa.dot";
 
 #define CHARACTERS_COUNT 128
-
 #define EMPTY_CHAR (-1)
-
-#define BIT(n) (1u << (n))
-
-#define NFA_STATE_ATTR_INITIAL      BIT(0)
-#define NFA_STATE_ATTR_FINISHED     BIT(1)
-#define NFA_STATE_ATTR_VISITED      BIT(2)
 
 #define add_state(nfa, state)           \
   do                                    \
