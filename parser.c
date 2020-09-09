@@ -326,16 +326,8 @@ struct symbol * parse_nfa_state(void)
 	if (state_symbol != NULL)
 		return state_symbol;
 
-	struct nfa_state * state = ___alloc_nfa_state();
-	state->id = 0;
-	state->attrs = 0;
-	state->subset = NULL;
-	state->transitions = NULL;
-	state->next = NULL;
-
 	state_symbol = ___alloc_symbol();
 	state_symbol->type = SYMBOL_STATE;
-	state_symbol->content.nfa_state = state;
 
 	identifier_attach_symbol(token->content.identifier, state_symbol);
 

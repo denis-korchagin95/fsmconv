@@ -19,6 +19,7 @@ enum {
 
 enum {
 	SYMBOL_KEYWORD,
+	SYMBOL_CHARACTER,
 	SYMBOL_CHARACTER_LIST,
 	SYMBOL_STATE,
 	SYMBOL_TRANSITION,
@@ -50,8 +51,6 @@ struct symbol
 			struct symbol * character_list;
 		} rule;
 
-		struct nfa_char_set * char_set;
-		struct nfa_state * nfa_state;
 		int code;
 	} content;
 	int type;
