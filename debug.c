@@ -4,6 +4,16 @@
 #include "parser_types.h"
 #include "debug.h"
 
+static void print_tree_borders(FILE * output, int depth)
+{
+	if (depth <= 0) return;
+	int i;
+	for(i = 0; i < depth; ++i)
+		fprintf(output, "\t|");
+	fprintf(output, "\n");
+	fprintf(output, "\t+-> ");
+}
+
 
 void debug_token(FILE * output, struct token * token)
 {
@@ -56,10 +66,7 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 			fprintf(output, "{KEYWORD %s}", symbol->identifier->name);
 			break;
 		case SYMBOL_STATE:
-			for(i = 0; i < depth; ++i)
-				fprintf(output, "\t|");
-			fprintf(output, "\n");
-			fprintf(output, "\t+-> ");
+			print_tree_borders(output, depth);
 			fprintf(output, "{STATE %s}", symbol->identifier->name);
 			break;
 		case SYMBOL_CHARACTER_LIST:
