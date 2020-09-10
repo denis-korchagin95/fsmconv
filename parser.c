@@ -387,22 +387,27 @@ struct symbol * parse_character_list(void)
 	struct symbol * character_list, * character, ** last_character;
 	struct token * token;
 
-	character_list = ___alloc_symbol();
-	character_list->next = NULL;
-	character_list->type = SYMBOL_CHARACTER_LIST;
-	last_character = &character_list->next;
-
 	character = parse_character();
-	(*last_character) = character;
+	token = read_token();
+	if (!is_punctuator_as(token, PUNCTUATOR_COMMA)) {
+		unread_token(token);
+		return character;
+	}
+
+	character_list = ___alloc_symbol();
+	character_list->next = character;
+	character_list->type = SYMBOL_CHARACTER_LIST;
+
 	last_character = &character->next;
 
-	token = read_token();
-	while(is_punctuator_as(token, PUNCTUATOR_COMMA)) {
+	do
+	{
 		character = parse_character();
 		(*last_character) = character;
 		last_character = &character->next;
 		token = read_token();
 	}
+	while(is_punctuator_as(token, PUNCTUATOR_COMMA));
 	unread_token(token);
 
 	return character_list;
