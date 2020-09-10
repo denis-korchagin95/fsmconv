@@ -445,24 +445,28 @@ struct symbol * parse_state_list(void)
 	struct symbol * state, * state_list, ** last_state;
 	struct token * token;
 
+	state = parse_state();
+	token = read_token();
+	if(!is_punctuator_as(token, PUNCTUATOR_COMMA)) {
+		unread_token(token);
+		return state;
+	}
+
 	state_list = ___alloc_symbol();
 	state_list->type = SYMBOL_STATE_LIST;
-	state_list->next = NULL;
+	state_list->next = state;
 
-	last_state = &state_list->next;
-
-	state = parse_state();
-
-	(*last_state) = state;
 	last_state = &state->next;
 
-	token = read_token();
-	while(is_punctuator_as(token, PUNCTUATOR_COMMA)) {
+	do
+	{
 		state = parse_state();
 		(*last_state) = state;
 		last_state = &state->next;
 		token = read_token();
 	}
+	while(is_punctuator_as(token, PUNCTUATOR_COMMA));
+
 	unread_token(token);
 
 	return state_list;
