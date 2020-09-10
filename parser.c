@@ -38,14 +38,6 @@ static struct identifier * identifiers[IDENTIFIER_TABLE_SIZE];
 
 struct token eof_token = { 0 };
 
-static void identifier_attach_symbol(struct identifier * identifier, struct symbol * symbol)
-{
-	if (symbol->type == SYMBOL_STATE)
-		symbol->content.identifier = identifier;
-	(*identifier->last_symbol) = symbol;
-	identifier->last_symbol = &symbol->next;
-}
-
 static struct symbol * search_symbol(struct identifier * identifier, int type)
 {
 	struct symbol * it = identifier->symbols;
@@ -224,8 +216,8 @@ static struct token * read_identifier(int ch, struct token * token)
 	if (identifier == NULL)
 		identifier = identifier_insert(hash, buffer);
 
-	token->type = TOKEN_IDENTIFIER;
 	token->content.identifier = identifier;
+
 	return token;
 }
 
@@ -263,8 +255,10 @@ repeat:
 
 	token = ___alloc_token();
 
-	if (isalpha(ch) || ch == '_')
+	if (isalpha(ch) || ch == '_') {
+		token->type = TOKEN_IDENTIFIER;
 		return read_identifier(ch, token);
+	}
 
 	switch(ch) {
 		case ',':
@@ -276,9 +270,15 @@ repeat:
 			token->content.code = PUNCTUATOR_SEMICOLON;
 			goto ret;
 		case '@':
-			token->type = TOKEN_PUNCTUATOR;
-			token->content.code = PUNCTUATOR_AT;
-			goto ret;
+			{
+				int next_ch = getch();
+				if(isalpha(next_ch) || next_ch == '_') {
+					token->type = TOKEN_SPECIAL_CHARACTER;
+					return read_identifier(next_ch, token);
+				}
+				ungetch(next_ch);
+			}
+			goto invalid;
 		case '-':
 			{
 				int next_ch = getch();
@@ -294,6 +294,7 @@ repeat:
 			return read_character(getch(), token);
 	}
 
+invalid:
 	token->type = TOKEN_INVALID;
 	token->content.code = ch;
 
@@ -305,45 +306,77 @@ void init_parser(void)
 {
 	struct symbol * symbol;
 	struct identifier * identifier;
-	struct keyword * keyword;
-	int keyword_count, i;
+	int item_count, i;
 
-	keyword_count = sizeof(keywords) / sizeof(keywords[0]);
+	/* define built-in keywords */
+	{
+		struct keyword * keyword;
 
-	for(i = 0; i < keyword_count; ++i) {
-		keyword = keywords + i;
+		item_count = sizeof(keywords) / sizeof(keywords[0]);
 
-		identifier = identifier_insert(hash(keyword->name), keyword->name);
+		for(i = 0; i < item_count; ++i) {
+			keyword = keywords + i;
+
+			identifier = identifier_insert(hash(keyword->name), keyword->name);
+
+			symbol = ___alloc_symbol();
+			symbol->type = SYMBOL_KEYWORD;
+			symbol->content.code = keyword->code;
+			symbol->next = NULL;
+
+			(*identifier->last_symbol) = symbol;
+			identifier->last_symbol = &symbol->next;
+		}
+	}
+
+	/* define built-in special-character @empty */
+	{
+		const char * empty = "empty";
+
+		struct symbol * character = ___alloc_symbol();
+		character->type = SYMBOL_CHARACTER;
+		character->next = NULL;
+		character->content.code = -1;
+
+		identifier = identifier_insert(hash(empty), empty);
 
 		symbol = ___alloc_symbol();
-		symbol->type = SYMBOL_KEYWORD;
-		symbol->content.code = keyword->code;
+		symbol->type = SYMBOL_SPECIAL_CHARACTER_BUILTIN;
 		symbol->next = NULL;
+		symbol->content.special_character.identifier = identifier;
+		symbol->content.special_character.value = character;
 
-		identifier_attach_symbol(identifier, symbol);
+		(*identifier->last_symbol) = symbol;
+		identifier->last_symbol = &symbol->next;
 	}
 }
 
 struct symbol * parse_state(void)
 {
-	struct token * token = read_token();
+	struct token * token;
+	struct identifier * identifier;
+
+	token = read_token();
 	if (token->type != TOKEN_IDENTIFIER) {
 		fprintf(stderr, "error: expected identifier but given %s\n", token_to_string(token));
 		exit(1);
 	}
+	identifier = token->content.identifier;
 	if (is_keyword(token)) {
-		fprintf(stderr, "error: keyword '%s' can't be used for naming nfa state\n", token->content.identifier->name);
+		fprintf(stderr, "error: keyword '%s' can't be used for naming nfa state\n", identifier->name);
 		exit(1);
 	}
-	struct symbol * state = search_symbol(token->content.identifier, SYMBOL_STATE);
+	struct symbol * state = search_symbol(identifier, SYMBOL_STATE);
 	if (state != NULL)
 		return state;
 
 	state = ___alloc_symbol();
 	state->type = SYMBOL_STATE;
 	state->next = NULL;
+	state->content.identifier = identifier;
 
-	identifier_attach_symbol(token->content.identifier, state);
+	(*identifier->last_symbol) = state;
+	identifier->last_symbol = &state->next;
 
 	return state;
 }
@@ -369,15 +402,33 @@ struct symbol * parse_transition(void)
 
 struct symbol * parse_character(void)
 {
-	struct token * token = read_token();
-	if (token->type != TOKEN_CHARACTER) {
-		fprintf(stdout, "error: expected character constant but given %s!\n", token_to_string(token));
+	struct symbol * character;
+	struct token * token;
+
+	token = read_token();
+	if (token->type != TOKEN_CHARACTER && token->type != TOKEN_SPECIAL_CHARACTER) {
+		fprintf(stdout, "error: expected character constant or special-character but given %s!\n", token_to_string(token));
 		exit(1);
 	}
-	struct symbol * character = ___alloc_symbol();
-	character->next = NULL;
-	character->type = SYMBOL_CHARACTER;
-	character->content.code = token->content.code;
+
+	if (token->type == TOKEN_CHARACTER)
+	{
+		character = ___alloc_symbol();
+		character->next = NULL;
+		character->type = SYMBOL_CHARACTER;
+		character->content.code = token->content.code;
+		return character;
+	}
+
+	character = search_symbol(token->content.identifier, SYMBOL_SPECIAL_CHARACTER_BUILTIN);
+	if(character == NULL) {
+		character = search_symbol(token->content.identifier, SYMBOL_SPECIAL_CHARACTER_USER_DEFINED);
+		if (character == NULL)
+		{
+			fprintf(stderr, "error: undefined special-character @%s\n", token->content.identifier->name);
+			exit(1);
+		}
+	}
 
 	return character;
 }

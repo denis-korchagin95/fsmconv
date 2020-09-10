@@ -29,6 +29,9 @@ void debug_token(FILE * output, struct token * token)
 		case TOKEN_INVALID:
 			fprintf(output, "[INVALID %c]", token->content.code);
 			break;
+		case TOKEN_SPECIAL_CHARACTER:
+			fprintf(output, "[SPECIAL_CHARACTER %s]", token->content.identifier->name);
+			break;
 		case TOKEN_IDENTIFIER:
 			fprintf(output, "[IDENTIFIER %s]", token->content.identifier->name);
 			break;
@@ -40,9 +43,6 @@ void debug_token(FILE * output, struct token * token)
 			{
 				case PUNCTUATOR_SEMICOLON:
 					fprintf(output, "[PUNCTUATOR ;]");
-					break;
-				case PUNCTUATOR_AT:
-					fprintf(output, "[PUNCTUATOR @]");
 					break;
 				case PUNCTUATOR_COMMA:
 					fprintf(output, "[PUNCTUATOR ,]");
@@ -66,6 +66,16 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 		return;
 	switch(symbol->type)
 	{
+		case SYMBOL_SPECIAL_CHARACTER_BUILTIN:
+			print_tree_borders(output, depth);
+			fprintf(output, "{SPECIAL_CHARACTER_BUILTIN %s}\n", symbol->content.special_character.identifier->name);
+			debug_symbol(output, symbol->content.special_character.value, depth + 1);
+			break;
+		case SYMBOL_SPECIAL_CHARACTER_USER_DEFINED:
+			print_tree_borders(output, depth);
+			fprintf(output, "{SPECIAL_CHARACTER_USER_DEFINED %s}\n", symbol->content.special_character.identifier->name);
+			debug_symbol(output, symbol->content.special_character.value, depth + 1);
+			break;
 		case SYMBOL_STATEMENT_LIST:
 			print_tree_borders(output, depth);
 			fprintf(output, "{STATEMENT_LIST}\n");

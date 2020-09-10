@@ -7,13 +7,13 @@ enum {
 	TOKEN_INVALID,
 	TOKEN_IDENTIFIER,
 	TOKEN_CHARACTER,
+	TOKEN_SPECIAL_CHARACTER,
 	TOKEN_PUNCTUATOR,
 };
 
 enum {
 	PUNCTUATOR_HYPHEN_LESS, /* '->' */
 	PUNCTUATOR_SEMICOLON,   /* ';' */
-	PUNCTUATOR_AT,          /* '@' */
 	PUNCTUATOR_COMMA,	/* ',' */
 };
 
@@ -28,6 +28,8 @@ enum {
 enum {
 	SYMBOL_KEYWORD,
 	SYMBOL_CHARACTER,
+	SYMBOL_SPECIAL_CHARACTER_BUILTIN,
+	SYMBOL_SPECIAL_CHARACTER_USER_DEFINED,
 	SYMBOL_CHARACTER_LIST,
 	SYMBOL_STATE,
 	SYMBOL_STATE_LIST,
@@ -54,6 +56,12 @@ struct symbol
 			struct symbol * transition;
 			struct symbol * character_list;
 		} rule;
+
+		struct
+		{
+			struct identifier * identifier;
+			struct symbol * value;
+		} special_character;
 
 		struct symbol * symbol;
 
