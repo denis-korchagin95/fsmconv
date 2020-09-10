@@ -22,8 +22,10 @@ enum {
 	SYMBOL_CHARACTER,
 	SYMBOL_CHARACTER_LIST,
 	SYMBOL_STATE,
+	SYMBOL_STATE_LIST,
 	SYMBOL_TRANSITION,
 	SYMBOL_RULE,
+	SYMBOL_DIRECTIVE_START,
 };
 
 enum {
@@ -48,6 +50,8 @@ struct symbol
 			struct symbol * transition;
 			struct symbol * character_list;
 		} rule;
+
+		struct symbol * symbol;
 
 		int code;
 	} content;

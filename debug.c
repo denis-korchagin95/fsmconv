@@ -85,6 +85,24 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth, bool is_last
 			print_tree_borders(output, depth, is_last);
 			fprintf(output, "{STATE %s}", symbol->identifier->name);
 			break;
+		case SYMBOL_DIRECTIVE_START:
+			print_tree_borders(output, depth, is_last);
+			fprintf(output, "{DIRECTIVE_START}\n");
+			debug_symbol(output, symbol->content.symbol, depth + 1, is_last);
+			break;
+		case SYMBOL_STATE_LIST:
+			print_tree_borders(output, depth, is_last);
+			fprintf(output, "{STATE_LIST}\n");
+			{
+				struct symbol * it = symbol->next;
+				while(it != NULL) {
+					debug_symbol(output, it, depth + 1, is_last);
+					if(it->next != NULL)
+						puts("");
+					it = it->next;
+				}
+			}
+			break;
 		case SYMBOL_CHARACTER_LIST:
 			print_tree_borders(output, depth, is_last);
 			fprintf(output, "{CHARACTER_LIST}\n");

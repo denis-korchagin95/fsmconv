@@ -426,6 +426,55 @@ struct symbol * parse_rule(void)
 	return rule;
 }
 
+struct symbol * parse_state_list(void)
+{
+	struct symbol * state, * state_list, ** last_state;
+	struct token * token;
+
+	state_list = ___alloc_symbol();
+	state_list->type = SYMBOL_STATE_LIST;
+	state_list->next = NULL;
+	state_list->identifier = NULL;
+
+	last_state = &state_list->next;
+
+	state = parse_state();
+
+	(*last_state) = state;
+	last_state = &state->next;
+
+	token = read_token();
+	while(is_punctuator_as(token, PUNCTUATOR_COMMA)) {
+		state = parse_state();
+		(*last_state) = state;
+		last_state = &state->next;
+		token = read_token();
+	}
+	unread_token(token);
+
+	return state_list;
+}
+
+struct symbol * parse_start_directive(void)
+{
+	struct symbol * directive;
+	struct token * token;
+
+	directive = ___alloc_symbol();
+	directive->type = SYMBOL_DIRECTIVE_START;
+	directive->identifier = NULL;
+	directive->next = NULL;
+	directive->content.symbol = parse_state_list();
+
+	token = read_token();
+	if(!is_punctuator_as(token, PUNCTUATOR_SEMICOLON)) {
+		fprintf(stdout, "error: expected ';' but given %s\n", token_type(token));
+		exit(1);
+	}
+
+	return directive;
+}
+
 struct symbol * parse(FILE * file)
 {
 	set_source(file);
