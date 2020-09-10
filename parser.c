@@ -70,7 +70,7 @@ static const char * keyword_to_string(int type)
 	return "<unknown token>";
 }
 
-static const char * token_type(struct token * token)
+static const char * token_to_string(struct token * token)
 {
 	switch(token->type)
 	{
@@ -328,7 +328,7 @@ struct symbol * parse_state(void)
 {
 	struct token * token = read_token();
 	if (token->type != TOKEN_IDENTIFIER) {
-		fprintf(stderr, "error: expected identifier but given %s\n", token_type(token));
+		fprintf(stderr, "error: expected identifier but given %s\n", token_to_string(token));
 		exit(1);
 	}
 	if (is_keyword(token)) {
@@ -353,7 +353,7 @@ struct symbol * parse_transition(void)
 	struct symbol * from_state = parse_state();
 	struct token * token = read_token();
 	if (!is_keyword_as(token, KEYWORD_TO) && !is_punctuator_as(token, PUNCTUATOR_HYPHEN_LESS)) {
-		fprintf(stdout, "error: expected keyword 'to' or '->' punctuator that must refer to other state but given %s!\n", token_type(token));
+		fprintf(stdout, "error: expected keyword 'to' or '->' punctuator that must refer to other state but given %s!\n", token_to_string(token));
 		exit(1);
 	}
 	struct symbol * to_state = parse_state();
@@ -371,7 +371,7 @@ struct symbol * parse_character(void)
 {
 	struct token * token = read_token();
 	if (token->type != TOKEN_CHARACTER) {
-		fprintf(stdout, "error: expected character constant but given %s!\n", token_type(token));
+		fprintf(stdout, "error: expected character constant but given %s!\n", token_to_string(token));
 		exit(1);
 	}
 	struct symbol * character = ___alloc_symbol();
@@ -416,13 +416,13 @@ struct symbol * parse_rule(void)
 	transition = parse_transition();
 	token = read_token();
 	if (!is_keyword_as(token, KEYWORD_BY)) {
-		fprintf(stderr, "error: expected keyword 'by' but given %s\n", token_type(token));
+		fprintf(stderr, "error: expected keyword 'by' but given %s\n", token_to_string(token));
 		exit(1);
 	}
 	character_list = parse_character_list();
 	token = read_token();
 	if(!is_punctuator_as(token, PUNCTUATOR_SEMICOLON)) {
-		fprintf(stderr, "error: expected ';' but given %s\n", token_type(token));
+		fprintf(stderr, "error: expected ';' but given %s\n", token_to_string(token));
 		exit(1);
 	}
 
@@ -475,7 +475,7 @@ struct symbol * parse_start_directive(void)
 
 	token = read_token();
 	if(!is_punctuator_as(token, PUNCTUATOR_SEMICOLON)) {
-		fprintf(stdout, "error: expected ';' but given %s\n", token_type(token));
+		fprintf(stdout, "error: expected ';' but given %s\n", token_to_string(token));
 		exit(1);
 	}
 
@@ -494,7 +494,7 @@ struct symbol * parse_end_directive(void)
 
 	token = read_token();
 	if(!is_punctuator_as(token, PUNCTUATOR_SEMICOLON)) {
-		fprintf(stdout, "error: expected ';' but given %s\n", token_type(token));
+		fprintf(stdout, "error: expected ';' but given %s\n", token_to_string(token));
 		exit(1);
 	}
 
@@ -508,7 +508,7 @@ struct symbol * parse_statement(void)
 
 	token = read_token();
 	if (token->type != TOKEN_IDENTIFIER) {
-		fprintf(stdout, "error: expected directive keyword or identifier but given %s\n", token_type(token));
+		fprintf(stdout, "error: expected directive keyword or identifier but given %s\n", token_to_string(token));
 		exit(1);
 	}
 
