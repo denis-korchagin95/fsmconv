@@ -5,7 +5,7 @@ directives:
 	start - it allows mark states which represent an initial states
 	end - it allows mark states which represent a final states
 
-unit: statement_list;
+file: statement_list;
 
 statement_list: statement
 	| statement, statement_list
