@@ -11,22 +11,32 @@ statement_list: statement
 	| statement, statement_list
 	;
 
-statement: directive | nfa-rule ;
+statement: directive | rule ;
 
-nfa-rule: nfa-transition by character_list ;
+rule: transition "by" character_list ;
 
-nfa-transition: nfa-state to nfa-state
-	| nfa-state -> nfa-state
+transition: state "to" state
+	| state "->" state
 	;
 
-nfa-state: identifier ;
+state: identifier ;
 
-directive: keyword identifier_list;
+directive: start_directive
+	| end_directive
+	;
 
-keyword: start
-	| end
-	| to
-	| by
+start_directive: "start" state_list;
+
+end_directive: "end" state_list;
+
+state_list: state
+	| state, state_list
+	;
+
+keyword: "start"
+	| "end"
+	| "to"
+	| "by"
 	;
 
 identifier_list: identifier
