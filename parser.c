@@ -531,7 +531,35 @@ struct symbol * parse_statement(void)
 
 struct symbol * parse(FILE * file)
 {
+	struct symbol * statement, * statement_list, ** last_statement;
+	struct token * token;
+
 	set_source(file);
 
-	return parse_statement();
+	statement = parse_statement();
+	token = read_token();
+	if (token == &eof_token)
+		return statement;
+
+	statement_list = ___alloc_symbol();
+	statement_list->type = SYMBOL_STATEMENT_LIST;
+	statement_list->next = statement;
+	statement_list->identifier = NULL;
+
+	last_statement = &statement->next;
+
+	unread_token(token);
+	while(1) {
+		statement = parse_statement();
+
+		(*last_statement) = statement;
+		last_statement = &statement->next;
+
+		token = read_token();
+		if (token == &eof_token)
+			break;
+		unread_token(token);
+	}
+
+	return statement_list;
 }

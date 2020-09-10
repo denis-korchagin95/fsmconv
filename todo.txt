@@ -1,0 +1,5 @@
+parser:
+	(?) reuse characters to low memory usage
+	(?) reuse character list to low memory usage
+	(?) reuse transition to low memory usage
+	(?) fix parse tree printing

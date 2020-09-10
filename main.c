@@ -433,7 +433,7 @@ int main(void)
 	  exit(1);
   }
 
-  debug_symbol(stdout, parse_tree, 0, true);
+  debug_symbol(stdout, parse_tree, 0);
   puts("");
 
   exit(0);
