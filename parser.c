@@ -311,7 +311,7 @@ void init_parser(void)
 	}
 }
 
-struct symbol * parse_nfa_state(void)
+struct symbol * parse_state(void)
 {
 	struct token * token = read_token();
 	if (token->type != TOKEN_IDENTIFIER) {
@@ -322,27 +322,28 @@ struct symbol * parse_nfa_state(void)
 		fprintf(stderr, "error: keyword '%s' can't be used for naming nfa state\n", token->content.identifier->name);
 		exit(1);
 	}
-	struct symbol * state_symbol = search_symbol(token->content.identifier, SYMBOL_STATE);
-	if (state_symbol != NULL)
-		return state_symbol;
+	struct symbol * state = search_symbol(token->content.identifier, SYMBOL_STATE);
+	if (state != NULL)
+		return state;
 
-	state_symbol = ___alloc_symbol();
-	state_symbol->type = SYMBOL_STATE;
+	state = ___alloc_symbol();
+	state->type = SYMBOL_STATE;
+	state->next = NULL;
 
-	identifier_attach_symbol(token->content.identifier, state_symbol);
+	identifier_attach_symbol(token->content.identifier, state);
 
-	return state_symbol;
+	return state;
 }
 
-struct symbol * parse_nfa_transition(void)
+struct symbol * parse_transition(void)
 {
-	struct symbol * from_state = parse_nfa_state();
+	struct symbol * from_state = parse_state();
 	struct token * token = read_token();
 	if (!is_keyword_as(token, KEYWORD_TO) && !is_punctuator_as(token, PUNCTUATOR_HYPHEN_LESS)) {
 		fprintf(stdout, "error: expected keyword 'to' or '->' punctuator that must refer to other state but given %s!\n", token_type(token));
 		exit(1);
 	}
-	struct symbol * to_state = parse_nfa_state();
+	struct symbol * to_state = parse_state();
 
 	struct symbol * transition = ___alloc_symbol();
 	transition->type = SYMBOL_TRANSITION;
@@ -354,9 +355,80 @@ struct symbol * parse_nfa_transition(void)
 	return transition;
 }
 
+struct symbol * parse_character(void)
+{
+	struct token * token = read_token();
+	if (token->type != TOKEN_CHARACTER) {
+		fprintf(stdout, "error: expected character constant but given %s!\n", token_type(token));
+		exit(1);
+	}
+	struct symbol * character = ___alloc_symbol();
+	character->next = NULL;
+	character->identifier = NULL;
+	character->type = SYMBOL_CHARACTER;
+	character->content.code = token->content.code;
+
+	return character;
+}
+
+struct symbol * parse_character_list(void)
+{
+	struct symbol * character_list, * character, ** last_character;
+	struct token * token;
+
+	character_list = ___alloc_symbol();
+	character_list->identifier = NULL;
+	character_list->next = NULL;
+	character_list->type = SYMBOL_CHARACTER_LIST;
+	last_character = &character_list->next;
+
+	character = parse_character();
+	(*last_character) = character;
+	last_character = &character->next;
+
+	token = read_token();
+	while(is_punctuator_as(token, PUNCTUATOR_COMMA)) {
+		character = parse_character();
+		(*last_character) = character;
+		last_character = &character->next;
+		token = read_token();
+	}
+	unread_token(token);
+
+	return character_list;
+}
+
+struct symbol * parse_rule(void)
+{
+	struct symbol * transition, * character_list, * rule;
+	struct token * token;
+
+	transition = parse_transition();
+	token = read_token();
+	if (!is_keyword_as(token, KEYWORD_BY)) {
+		fprintf(stderr, "error: expected keyword 'by' but given %s\n", token_type(token));
+		exit(1);
+	}
+	character_list = parse_character_list();
+	token = read_token();
+	if(!is_punctuator_as(token, PUNCTUATOR_SEMICOLON)) {
+		fprintf(stderr, "error: expected ';' but given %s\n", token_type(token));
+		exit(1);
+	}
+
+	rule = ___alloc_symbol();
+	rule->identifier = NULL;
+	rule->next = NULL;
+	rule->type = SYMBOL_RULE;
+	rule->content.rule.transition = transition;
+	rule->content.rule.character_list = character_list;
+
+	return rule;
+}
+
 struct symbol * parse(FILE * file)
 {
 	set_source(file);
-	
-	return parse_nfa_transition();
+
+	return parse_rule();
 }

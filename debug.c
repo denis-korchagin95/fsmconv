@@ -1,17 +1,28 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "parser.h"
 #include "parser_types.h"
 #include "debug.h"
 
-static void print_tree_borders(FILE * output, int depth)
+static void print_tree_borders(FILE * output, int depth, bool is_last)
 {
 	if (depth <= 0) return;
 	int i;
-	for(i = 0; i < depth; ++i)
-		fprintf(output, "\t|");
+	for(i = 0; i < depth; i++) {
+		if (is_last && i != depth - 1)
+			fprintf(output, "\t");
+		else
+			fprintf(output, "\t|");
+	}
 	fprintf(output, "\n");
-	fprintf(output, "\t+-> ");
+	for(i = 0; i < depth; i++) {
+		if(is_last)
+			fprintf(output, "\t");
+		else
+			fprintf(output, "\t%s", i + 1 == depth ? "" : "|");
+	}
+	fprintf(output, "+->  ");
 }
 
 
@@ -55,7 +66,7 @@ void debug_token(FILE * output, struct token * token)
 }
 	
 
-void debug_symbol(FILE * output, struct symbol * symbol, int depth)
+void debug_symbol(FILE * output, struct symbol * symbol, int depth, bool is_last)
 {
 	if (symbol == NULL)
 		return;
@@ -63,23 +74,43 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 	switch(symbol->type)
 	{
 		case SYMBOL_KEYWORD:
+			print_tree_borders(output, depth, is_last);
 			fprintf(output, "{KEYWORD %s}", symbol->identifier->name);
 			break;
+		case SYMBOL_CHARACTER:
+			print_tree_borders(output, depth, is_last);
+			fprintf(output, "{CHARACTER %c}", symbol->content.code);
+			break;
 		case SYMBOL_STATE:
-			print_tree_borders(output, depth);
+			print_tree_borders(output, depth, is_last);
 			fprintf(output, "{STATE %s}", symbol->identifier->name);
 			break;
 		case SYMBOL_CHARACTER_LIST:
-			fprintf(output, "{CHARACTER_LIST #todo printing...}");
+			print_tree_borders(output, depth, is_last);
+			fprintf(output, "{CHARACTER_LIST}\n");
+			{
+				struct symbol * it = symbol->next;
+				while(it != NULL) {
+					debug_symbol(output, it, depth + 1, is_last);
+					if (it->next != NULL)
+						puts("");
+					it = it->next;
+				}
+			}
 			break;
 		case SYMBOL_TRANSITION:
+			print_tree_borders(output, depth, is_last);
 			fprintf(output, "{TRANSITION}\n");
-			debug_symbol(output, symbol->content.transition.from_state, depth + 1);
+			debug_symbol(output, symbol->content.transition.from_state, depth + 1, false);
 			fprintf(output, "\n");
-			debug_symbol(output, symbol->content.transition.to_state, depth + 1);
+			debug_symbol(output, symbol->content.transition.to_state, depth + 1, false);
 			break;
 		case SYMBOL_RULE:
-			fprintf(output, "{RULE #todo printing...}");
+			print_tree_borders(output, depth, is_last);
+			fprintf(output, "{RULE}\n");
+			debug_symbol(output, symbol->content.rule.transition, depth + 1, false);
+			fprintf(output, "\n");
+			debug_symbol(output, symbol->content.rule.character_list, depth + 1, true);
 			break;
 		default:
 			fprintf(output, "<unknown symbol>");

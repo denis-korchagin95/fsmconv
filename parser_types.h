@@ -35,24 +35,24 @@ enum {
 
 struct symbol
 {
-	struct identifier * identifier;
-	struct symbol * next;
 	union
 	{
-		struct symbol_nfa_transition
+		struct symbol_transition
 		{
 			struct symbol * from_state;
 			struct symbol * to_state;
 		} transition;
 
-		struct symbol_nfa_rule
+		struct symbol_rule
 		{
-			struct symbol_nfa_transition transition;
+			struct symbol * transition;
 			struct symbol * character_list;
 		} rule;
 
 		int code;
 	} content;
+	struct symbol * next;
+	struct identifier * identifier;
 	int type;
 };
 
