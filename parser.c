@@ -495,9 +495,43 @@ struct symbol * parse_end_directive(void)
 	return directive;
 }
 
+struct symbol * parse_statement(void)
+{
+	struct symbol * symbol, * statement;
+	struct token * token;
+
+	token = read_token();
+	if (token->type != TOKEN_IDENTIFIER) {
+		fprintf(stdout, "error: expected directive keyword or identifier but given %s\n", token_type(token));
+		exit(1);
+	}
+
+	statement = ___alloc_symbol();
+	statement->type = SYMBOL_STATEMENT;
+	statement->identifier = NULL;
+	statement->next = NULL;
+
+	symbol = search_symbol(token->content.identifier, SYMBOL_KEYWORD);
+	if (symbol == NULL) {
+		unread_token(token);
+		statement->content.symbol = parse_rule();
+		return statement;
+	}
+	if (symbol->content.code == KEYWORD_START) {
+		statement->content.symbol = parse_start_directive();
+		return statement;
+	}
+	else if(symbol->content.code == KEYWORD_END) {
+		statement->content.symbol = parse_end_directive();
+		return statement;
+	}
+	fprintf(stdout, "error: keyword '%s' cannot start any directive!\n", symbol->identifier->name);
+	exit(1);
+}
+
 struct symbol * parse(FILE * file)
 {
 	set_source(file);
 
-	return parse_rule();
+	return parse_statement();
 }
