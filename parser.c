@@ -475,6 +475,26 @@ struct symbol * parse_start_directive(void)
 	return directive;
 }
 
+struct symbol * parse_end_directive(void)
+{
+	struct symbol * directive;
+	struct token * token;
+
+	directive = ___alloc_symbol();
+	directive->type = SYMBOL_DIRECTIVE_END;
+	directive->identifier = NULL;
+	directive->next = NULL;
+	directive->content.symbol = parse_state_list();
+
+	token = read_token();
+	if(!is_punctuator_as(token, PUNCTUATOR_SEMICOLON)) {
+		fprintf(stdout, "error: expected ';' but given %s\n", token_type(token));
+		exit(1);
+	}
+
+	return directive;
+}
+
 struct symbol * parse(FILE * file)
 {
 	set_source(file);

@@ -70,7 +70,6 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth, bool is_last
 {
 	if (symbol == NULL)
 		return;
-	int i;
 	switch(symbol->type)
 	{
 		case SYMBOL_KEYWORD:
@@ -84,6 +83,11 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth, bool is_last
 		case SYMBOL_STATE:
 			print_tree_borders(output, depth, is_last);
 			fprintf(output, "{STATE %s}", symbol->identifier->name);
+			break;
+		case SYMBOL_DIRECTIVE_END:
+			print_tree_borders(output, depth, is_last);
+			fprintf(output, "{DIRECTIVE_END}\n");
+			debug_symbol(output, symbol->content.symbol, depth + 1, is_last);
 			break;
 		case SYMBOL_DIRECTIVE_START:
 			print_tree_borders(output, depth, is_last);
