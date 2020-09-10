@@ -18,6 +18,14 @@ enum {
 };
 
 enum {
+	KEYWORD_START,
+	KEYWORD_END,
+	KEYWORD_TO,
+	KEYWORD_BY,
+};
+
+
+enum {
 	SYMBOL_KEYWORD,
 	SYMBOL_CHARACTER,
 	SYMBOL_CHARACTER_LIST,
@@ -29,13 +37,6 @@ enum {
 	SYMBOL_DIRECTIVE_END,
 	SYMBOL_STATEMENT,
 	SYMBOL_STATEMENT_LIST,
-};
-
-enum {
-	KEYWORD_START,
-	KEYWORD_END,
-	KEYWORD_TO,
-	KEYWORD_BY,
 };
 
 struct symbol
@@ -56,10 +57,11 @@ struct symbol
 
 		struct symbol * symbol;
 
+		struct identifier * identifier;
+
 		int code;
 	} content;
 	struct symbol * next;
-	struct identifier * identifier;
 	int type;
 };
 

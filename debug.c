@@ -86,7 +86,23 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 			break;
 		case SYMBOL_KEYWORD:
 			print_tree_borders(output, depth);
-			fprintf(output, "{KEYWORD %s}", symbol->identifier->name);
+			switch(symbol->content.code)
+			{
+				case KEYWORD_START:
+					fprintf(output, "{KEYWORD start}");
+					break;
+				case KEYWORD_END:
+					fprintf(output, "{KEYWORD end}");
+					break;
+				case KEYWORD_TO:
+					fprintf(output, "{KEYWORD to}");
+					break;
+				case KEYWORD_BY:
+					fprintf(output, "{KEYWORD by}");
+					break;
+				default:
+					fprintf(output, "{KEYWORD <unknown>}");
+			}
 			break;
 		case SYMBOL_CHARACTER:
 			print_tree_borders(output, depth);
@@ -94,7 +110,7 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 			break;
 		case SYMBOL_STATE:
 			print_tree_borders(output, depth);
-			fprintf(output, "{STATE %s}", symbol->identifier->name);
+			fprintf(output, "{STATE %s}", symbol->content.identifier->name);
 			break;
 		case SYMBOL_DIRECTIVE_END:
 			print_tree_borders(output, depth);

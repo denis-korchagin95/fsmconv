@@ -40,7 +40,8 @@ struct token eof_token = { 0 };
 
 static void identifier_attach_symbol(struct identifier * identifier, struct symbol * symbol)
 {
-	symbol->identifier = identifier;
+	if (symbol->type == SYMBOL_STATE)
+		symbol->content.identifier = identifier;
 	(*identifier->last_symbol) = symbol;
 	identifier->last_symbol = &symbol->next;
 }
@@ -55,6 +56,18 @@ static struct symbol * search_symbol(struct identifier * identifier, int type)
 		it = it->next;
 	}
 	return NULL;
+}
+
+static const char * keyword_to_string(int type)
+{
+	switch(type)
+	{
+		case KEYWORD_START:	return "start";
+		case KEYWORD_END: 	return "end";
+		case KEYWORD_TO: 	return "to";
+		case KEYWORD_BY: 	return "by";
+	}
+	return "<unknown token>";
 }
 
 static const char * token_type(struct token * token)
@@ -347,7 +360,6 @@ struct symbol * parse_transition(void)
 
 	struct symbol * transition = ___alloc_symbol();
 	transition->type = SYMBOL_TRANSITION;
-	transition->identifier = NULL;
 	transition->next = NULL;
 	transition->content.transition.from_state = from_state;
 	transition->content.transition.to_state = to_state;
@@ -364,7 +376,6 @@ struct symbol * parse_character(void)
 	}
 	struct symbol * character = ___alloc_symbol();
 	character->next = NULL;
-	character->identifier = NULL;
 	character->type = SYMBOL_CHARACTER;
 	character->content.code = token->content.code;
 
@@ -377,7 +388,6 @@ struct symbol * parse_character_list(void)
 	struct token * token;
 
 	character_list = ___alloc_symbol();
-	character_list->identifier = NULL;
 	character_list->next = NULL;
 	character_list->type = SYMBOL_CHARACTER_LIST;
 	last_character = &character_list->next;
@@ -417,7 +427,6 @@ struct symbol * parse_rule(void)
 	}
 
 	rule = ___alloc_symbol();
-	rule->identifier = NULL;
 	rule->next = NULL;
 	rule->type = SYMBOL_RULE;
 	rule->content.rule.transition = transition;
@@ -434,7 +443,6 @@ struct symbol * parse_state_list(void)
 	state_list = ___alloc_symbol();
 	state_list->type = SYMBOL_STATE_LIST;
 	state_list->next = NULL;
-	state_list->identifier = NULL;
 
 	last_state = &state_list->next;
 
@@ -462,7 +470,6 @@ struct symbol * parse_start_directive(void)
 
 	directive = ___alloc_symbol();
 	directive->type = SYMBOL_DIRECTIVE_START;
-	directive->identifier = NULL;
 	directive->next = NULL;
 	directive->content.symbol = parse_state_list();
 
@@ -482,7 +489,6 @@ struct symbol * parse_end_directive(void)
 
 	directive = ___alloc_symbol();
 	directive->type = SYMBOL_DIRECTIVE_END;
-	directive->identifier = NULL;
 	directive->next = NULL;
 	directive->content.symbol = parse_state_list();
 
@@ -508,7 +514,6 @@ struct symbol * parse_statement(void)
 
 	statement = ___alloc_symbol();
 	statement->type = SYMBOL_STATEMENT;
-	statement->identifier = NULL;
 	statement->next = NULL;
 
 	symbol = search_symbol(token->content.identifier, SYMBOL_KEYWORD);
@@ -525,7 +530,7 @@ struct symbol * parse_statement(void)
 		statement->content.symbol = parse_end_directive();
 		return statement;
 	}
-	fprintf(stdout, "error: keyword '%s' cannot start any directive!\n", symbol->identifier->name);
+	fprintf(stdout, "error: keyword '%s' cannot start any directive!\n", keyword_to_string(symbol->content.code));
 	exit(1);
 }
 
@@ -544,7 +549,6 @@ struct symbol * parse(FILE * file)
 	statement_list = ___alloc_symbol();
 	statement_list->type = SYMBOL_STATEMENT_LIST;
 	statement_list->next = statement;
-	statement_list->identifier = NULL;
 
 	last_statement = &statement->next;
 
