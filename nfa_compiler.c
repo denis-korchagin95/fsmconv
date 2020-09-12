@@ -138,6 +138,28 @@ static void nfa_directive_start_compile(struct nfa * nfa, struct symbol * direct
 	}
 }
 
+static void nfa_directive_end_compile(struct nfa * nfa, struct symbol * directive)
+{
+	struct symbol * state;
+	struct nfa_state * nfa_state;
+
+	if (directive->content.symbol->type == SYMBOL_STATE) {
+		nfa_state = nfa_search_state_by_id(nfa, directive->content.symbol->content.state.id);
+		if (nfa_state != NULL)
+			nfa_state->attrs |= NFA_STATE_ATTR_FINISHED;
+		return;
+	}
+
+	state = directive->content.symbol->next;
+
+	while(state != NULL) {
+		nfa_state = nfa_search_state_by_id(nfa, state->content.state.id);
+		if (nfa_state != NULL)
+			nfa_state->attrs |= NFA_STATE_ATTR_FINISHED;
+		state = state->next;
+	}
+}
+
 struct nfa * nfa_compile(struct symbol * symbol)
 {
 	struct nfa * nfa;
@@ -169,6 +191,10 @@ struct nfa * nfa_compile(struct symbol * symbol)
 		{
 			case SYMBOL_DIRECTIVE_START:
 				nfa_directive_start_compile(nfa, statement->content.symbol);
+				break;
+			case SYMBOL_DIRECTIVE_END:
+				nfa_directive_end_compile(nfa, statement->content.symbol);
+				break;
 		}
 		statement = statement->next;
 	}
