@@ -11,7 +11,7 @@ all: build run
 $(OBJ)debug.o: $(SRC)debug.c $(SRC)debug.h $(SRC)parser.h $(SRC)parser_types.h
 	$(CC) $(CFLAGS) -c $(SRC)debug.c -o $(OBJ)debug.o
 
-$(OBJ)main.o: $(SRC)main.c $(SRC)parser.h $(SRC)allocator.h $(SRC)debug.h $(SRC)nfa_types.h $(SRC)util.h $(SRC)parser_types.h
+$(OBJ)main.o: $(SRC)main.c $(SRC)parser.h $(SRC)allocator.h $(SRC)debug.h $(SRC)nfa_types.h $(SRC)util.h $(SRC)parser_types.h $(SRC)nfa_compiler.h
 	$(CC) $(CFLAGS) -c $(SRC)main.c -o $(OBJ)main.o
 
 $(OBJ)parser.o: $(SRC)parser.c $(SRC)parser.h $(SRC)parser_types.h $(SRC)allocator.h $(SRC)debug.h $(SRC)nfa_types.h
@@ -20,7 +20,10 @@ $(OBJ)parser.o: $(SRC)parser.c $(SRC)parser.h $(SRC)parser_types.h $(SRC)allocat
 $(OBJ)allocator.o: $(SRC)allocator.c $(SRC)allocator.h $(SRC)nfa_types.h $(SRC)parser_types.h
 	$(CC) $(CFLAGS) -c $(SRC)allocator.c -o $(OBJ)allocator.o
 
-build: $(OBJ)allocator.o $(OBJ)debug.o $(OBJ)parser.o $(OBJ)main.o
+$(OBJ)nfa_compiler.o: $(SRC)nfa_compiler.c $(SRC)nfa_types.h $(SRC)parser_types.h $(SRC)allocator.h
+	$(CC) $(CFLAGS) -c $(SRC)nfa_compiler.c -o $(OBJ)nfa_compiler.o
+
+build: $(OBJ)allocator.o $(OBJ)debug.o $(OBJ)parser.o $(OBJ)nfa_compiler.o $(OBJ)main.o
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
 
 clean:

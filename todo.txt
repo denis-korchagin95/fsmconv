@@ -5,3 +5,6 @@ parser:
 	(?) reuse character list to low memory usage
 	(?) reuse transition to low memory usage
 	(?) fix parse tree printing
+	(?) continue parsing to find out more errors after getting the first error
+	(?) after parsing check out parse tree on correctness
+

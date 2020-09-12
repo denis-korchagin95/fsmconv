@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "parser.h"
 #include "parser_types.h"
@@ -120,7 +121,7 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 			break;
 		case SYMBOL_STATE:
 			print_tree_borders(output, depth);
-			fprintf(output, "{STATE %s}", symbol->content.identifier->name);
+			fprintf(output, "{STATE %s}", symbol->content.state.identifier->name);
 			break;
 		case SYMBOL_DIRECTIVE_END:
 			print_tree_borders(output, depth);

@@ -45,13 +45,13 @@ struct symbol
 {
 	union
 	{
-		struct symbol_transition
+		struct
 		{
 			struct symbol * from_state;
 			struct symbol * to_state;
 		} transition;
 
-		struct symbol_rule
+		struct
 		{
 			struct symbol * transition;
 			struct symbol * character_list;
@@ -62,6 +62,12 @@ struct symbol
 			struct identifier * identifier;
 			struct symbol * value;
 		} special_character;
+
+		struct
+		{
+			struct identifier * identifier;
+			uint32_t id;
+		} state;
 
 		struct symbol * symbol;
 

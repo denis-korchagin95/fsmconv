@@ -30,6 +30,7 @@ static struct keyword keywords[] = {
 
 static FILE * source;
 
+static uint32_t state_id = 0;
 static int putback_buffer[PUTBACK_BUFFER_SIZE];
 static int putback_buffer_pos = 0;
 static struct token * putback_token_buffer[PUTBACK_TOKEN_BUFFER_SIZE];
@@ -373,7 +374,8 @@ struct symbol * parse_state(void)
 	state = ___alloc_symbol();
 	state->type = SYMBOL_STATE;
 	state->next = NULL;
-	state->content.identifier = identifier;
+	state->content.state.identifier = identifier;
+	state->content.state.id = state_id++;
 
 	(*identifier->last_symbol) = state;
 	identifier->last_symbol = &state->next;

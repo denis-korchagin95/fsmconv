@@ -13,6 +13,7 @@
 #include "parser_types.h"
 #include "debug.h"
 #include "allocator.h"
+#include "nfa_compiler.h"
 
 static const char * filename = "./examples/ip4_nfa.txt";
 static const char * nfa_graph_filename = "./nfa.dot";
@@ -40,6 +41,7 @@ static const char * char_to_string(int ch)
   return buffer;
 }
 
+/*
 static bool nfa_state_set_has_element(struct nfa_state_set * set, uint32_t element)
 {
   struct nfa_state_set * iterator = set;
@@ -67,7 +69,6 @@ static struct nfa_state * nfa_find_not_visited_state(struct nfa * nfa)
 static struct nfa * nfa_create(void)
 {
   struct nfa * nfa = ___alloc_nfa();
-  nfa->nstates = 0;
   nfa->states = NULL;
   nfa->last_state = &nfa->states;
   return nfa;
@@ -204,6 +205,7 @@ static struct nfa_transition * nfa_state_add_transition(struct nfa_state * state
 
   return transition;
 }
+*/
 
 static void visualize_nfa(struct nfa * nfa, FILE * output)
 {
@@ -211,10 +213,11 @@ static void visualize_nfa(struct nfa * nfa, FILE * output)
 
    struct nfa_state * s_iter = nfa->states;
    struct nfa_transition * t_iter;
-   struct nfa_state_set * ss_iter;
+   struct nfa_state_list * ss_iter;
    bool is_initial, is_finished;
 
    while(s_iter) {
+	   /*
     is_initial = s_iter->attrs & NFA_STATE_ATTR_INITIAL;
     is_finished = s_iter->attrs & NFA_STATE_ATTR_FINISHED;
     if(is_initial && is_finished)
@@ -225,13 +228,15 @@ static void visualize_nfa(struct nfa * nfa, FILE * output)
       fprintf(output, "  s%d [label=\"State %d\", shape=doubleoctagon];\n", s_iter->id, s_iter->id);
     else
       fprintf(output, "  s%d [label=\"State %d\"];\n", s_iter->id, s_iter->id);
+      */
+	   fprintf(output, " s%d [label=\"State '%s'\"]; \n", s_iter->id, s_iter->name);
 
     t_iter = s_iter->transitions;
 
     while(t_iter) {
       ss_iter = t_iter->states;
       while(ss_iter) {
-        fprintf(output, "  s%d -> s%d [label=\"%s\"];\n", s_iter->id, ss_iter->element, char_to_string(t_iter->ch));
+        fprintf(output, "  s%d -> s%d [label=\"%s\"];\n", s_iter->id, ss_iter->state->id, char_to_string(t_iter->ch));
         ss_iter = ss_iter->next;
       }
       t_iter = t_iter->next;
@@ -245,6 +250,7 @@ static void visualize_nfa(struct nfa * nfa, FILE * output)
    fflush(output);
 }
 
+/*
 static struct nfa_state * nfa_get_state_by_id(struct nfa_state * states, uint32_t id)
 {
   struct nfa_state * iterator = states;
@@ -296,7 +302,9 @@ static struct nfa_state * nfa_find_state_subset(struct nfa * nfa, struct nfa_sta
 ret:
   return NULL;
 }
+*/
 
+/*
 static struct nfa_transition * nfa_transition_subset_update(struct nfa_state * state, int ch, struct nfa_state_set * subset)
 {
   struct nfa_transition * transition = nfa_get_transition(state, ch);
@@ -306,7 +314,9 @@ static struct nfa_transition * nfa_transition_subset_update(struct nfa_state * s
     state->transitions = transition;
   }
   else {
+  */
     /* TODO: destroy old subset */
+/*
     transition->states = subset;
   }
   return transition;
@@ -399,6 +409,7 @@ static struct nfa_state_set * nfa_empty_closure(struct nfa_state * nfa_states, s
 
   return empty_closure;
 }
+*/
 
 int main(void)
 {
@@ -415,14 +426,9 @@ int main(void)
 	  exit(1);
   }
 
-  debug_symbol(stdout, parse_tree, 0);
-  puts("");
-
-  show_allocation_stats(stdout);
-
-  exit(0);
-
   struct nfa * nfa;
+
+  nfa = nfa_compile(parse_tree);
 
   FILE * output = fopen(nfa_graph_filename, "w");
   if(!output) {
@@ -434,7 +440,29 @@ int main(void)
 
   fclose(output);
 
+  /*
+  debug_symbol(stdout, parse_tree, 0);
+  puts("");
+  */
+
+  show_allocation_stats(stdout);
+
+  exit(0);
+
+  /*
+  FILE * output = fopen(nfa_graph_filename, "w");
+  if(!output) {
+    fprintf(stderr, "file '%s': %s\n", nfa_graph_filename, strerror(errno));
+    exit(1);
+  }
+
+  visualize_nfa(nfa, output);
+
+  fclose(output);
+  */
+
   /* nfa to dfa conversion ( without e-transitions ) */
+  /*
   struct nfa_state_set * initial_states = NULL;
   struct nfa_state_set * finished_states = NULL;
   struct nfa_state * state, * new_state;
@@ -445,9 +473,10 @@ int main(void)
   struct nfa_char_set * chars = NULL, * new_char, * char_iter;
 
   dfa = nfa_create();
-  dfa->nstates = nfa->nstates;
+  */
 
   /* collect extra information for algorithm */
+  /*
   state = nfa->states;
   while(state) {
     if(state->attrs & NFA_STATE_ATTR_INITIAL)
@@ -507,7 +536,6 @@ int main(void)
       if(!new_state)
       {
         new_state = nfa_state_create();
-        new_state->id = dfa->nstates++;
 
         if(nfa_state_set_contains(initial_states, subset))
           new_state->attrs |= NFA_STATE_ATTR_INITIAL;
@@ -560,6 +588,7 @@ next_char:
   visualize_nfa(dfa, output);
 
   fclose(output);
+  */
 
   return 0;
 }

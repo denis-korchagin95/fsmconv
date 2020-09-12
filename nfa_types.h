@@ -10,19 +10,32 @@ struct nfa_state_set {
   uint32_t element;
 };
 
+struct nfa_state_list
+{
+	struct nfa_state * state;
+	struct nfa_state_list * next;
+};
+
+struct nfa_character_list
+{
+	int ch;
+	struct nfa_character_list * next;
+};
+
 struct nfa_char_set {
   struct nfa_char_set * next;
   int ch;
 };
 
 struct nfa_transition {
-  struct nfa_state_set * states;
+  struct nfa_state_list * states;
   struct nfa_transition * next;
   int ch;
 };
 
 struct nfa_state {
   uint32_t id;
+  const char * name;
   uint32_t attrs;
   struct nfa_state_set * subset;
   struct nfa_transition * transitions;
@@ -32,7 +45,6 @@ struct nfa_state {
 struct nfa {
   struct nfa_state * states;
   struct nfa_state ** last_state;
-  int nstates;
 };
 
 #endif /* NFA2DFACONV_NFA_TYPES_H */
