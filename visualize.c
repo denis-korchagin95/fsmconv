@@ -16,8 +16,12 @@ void visualize_nfa(struct nfa * nfa, FILE * output)
    bool is_initial, is_finished;
 
    while(s_iter) {
+	   is_initial = s_iter->attrs & NFA_STATE_ATTR_INITIAL;
+	   if (is_initial)
+      		fprintf(output, "  s%d [label=\"State '%s'\", shape=invhouse];\n", s_iter->id, s_iter->name);
+	   else 
+	   	fprintf(output, " s%d [label=\"State '%s'\"]; \n", s_iter->id, s_iter->name);
 	   /*
-    is_initial = s_iter->attrs & NFA_STATE_ATTR_INITIAL;
     is_finished = s_iter->attrs & NFA_STATE_ATTR_FINISHED;
     if(is_initial && is_finished)
       fprintf(output, "  s%d [label=\"State %d\", shape=tripleoctagon];\n", s_iter->id, s_iter->id);
@@ -28,7 +32,6 @@ void visualize_nfa(struct nfa * nfa, FILE * output)
     else
       fprintf(output, "  s%d [label=\"State %d\"];\n", s_iter->id, s_iter->id);
       */
-	   fprintf(output, " s%d [label=\"State '%s'\"]; \n", s_iter->id, s_iter->name);
 
     t_iter = s_iter->transitions;
 

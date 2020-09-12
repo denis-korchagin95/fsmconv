@@ -6,12 +6,13 @@
 #include "nfa_types.h"
 #include "parser_types.h"
 #include "allocator.h"
+#include "util.h"
 
-static struct nfa_state * nfa_search_state_by_name(struct nfa * nfa, const char * name)
+static struct nfa_state * nfa_search_state_by_id(struct nfa * nfa, uint32_t id)
 {
 	struct nfa_state * it = nfa->states;
 	while(it != NULL) {
-		if(strcmp(name, it->name) == 0)
+		if (it->id == id)
 			return it;
 		it = it->next;
 	}
@@ -46,7 +47,7 @@ static struct nfa_state * nfa_state_compile(struct nfa * nfa, struct symbol * sy
 {
 	struct nfa_state * state;
 
-	state = nfa_search_state_by_name(nfa, symbol->content.identifier->name);
+	state = nfa_search_state_by_id(nfa, symbol->content.state.id);
 
 	if (state != NULL)
 		return state;
@@ -115,6 +116,27 @@ static void nfa_rule_compile(struct nfa * nfa, struct symbol * symbol)
 	}
 }
 
+static void nfa_directive_start_compile(struct nfa * nfa, struct symbol * directive)
+{
+	struct symbol * state;
+	struct nfa_state * nfa_state;
+
+	if (directive->content.symbol->type == SYMBOL_STATE) {
+		nfa_state = nfa_search_state_by_id(nfa, directive->content.symbol->content.state.id);
+		if (nfa_state != NULL)
+			nfa_state->attrs |= NFA_STATE_ATTR_INITIAL;
+		return;
+	}
+
+	state = directive->content.symbol->next;
+
+	while(state != NULL) {
+		nfa_state = nfa_search_state_by_id(nfa, state->content.state.id);
+		if (nfa_state != NULL)
+			nfa_state->attrs |= NFA_STATE_ATTR_INITIAL;
+		state = state->next;
+	}
+}
 
 struct nfa * nfa_compile(struct symbol * symbol)
 {
@@ -132,9 +154,22 @@ struct nfa * nfa_compile(struct symbol * symbol)
 
 	statement = symbol->next;
 
+	/* compile rules */
 	while(statement != NULL) {
 		if (statement->content.symbol->type == SYMBOL_RULE)
 			nfa_rule_compile(nfa, statement->content.symbol);
+		statement = statement->next;
+	}
+
+	statement = symbol->next;
+
+	/* compile directives */
+	while(statement != NULL) {
+		switch(statement->content.symbol->type)
+		{
+			case SYMBOL_DIRECTIVE_START:
+				nfa_directive_start_compile(nfa, statement->content.symbol);
+		}
 		statement = statement->next;
 	}
 
