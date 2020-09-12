@@ -23,7 +23,22 @@ $(OBJ)allocator.o: $(SRC)allocator.c $(SRC)allocator.h $(SRC)nfa_types.h $(SRC)p
 $(OBJ)nfa_compiler.o: $(SRC)nfa_compiler.c $(SRC)nfa_types.h $(SRC)parser_types.h $(SRC)allocator.h
 	$(CC) $(CFLAGS) -c $(SRC)nfa_compiler.c -o $(OBJ)nfa_compiler.o
 
-build: $(OBJ)allocator.o $(OBJ)debug.o $(OBJ)parser.o $(OBJ)nfa_compiler.o $(OBJ)main.o
+$(OBJ)visualize.o: $(SRC)visualize.c $(SRC)visualize.h $(SRC)nfa_types.h
+	$(CC) $(CFLAGS) -c $(SRC)visualize.c -o $(OBJ)visualize.o
+
+$(OBJ)util.o: $(SRC)util.c $(SRC)util.h
+	$(CC) $(CFLAGS) -c $(SRC)util.c -o $(OBJ)util.o
+
+OBJECTS  = $(OBJ)allocator.o
+OBJECTS += $(OBJ)debug.o
+OBJECTS += $(OBJ)parser.o
+OBJECTS += $(OBJ)nfa_compiler.o
+OBJECTS += $(OBJ)visualize.o
+OBJECTS += $(OBJ)util.o
+OBJECTS += $(OBJ)main.o
+
+
+build: $(OBJECTS)
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
 
 clean:

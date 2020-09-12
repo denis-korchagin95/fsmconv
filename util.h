@@ -3,4 +3,6 @@
 
 #define BIT(n) (1u << (n))
 
+const char * char_to_string(int ch);
+
 #endif /* NFA2DFACONV_UTIL_H */
