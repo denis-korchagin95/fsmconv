@@ -8,40 +8,43 @@
 
 void visualize_nfa(struct nfa * nfa, FILE * output)
 {
-   fprintf(output, "digraph nfa {\n");
+	struct nfa_state * state;
+	struct nfa_transition * transition;
+	struct nfa_state_list * state_list;
+	bool is_initial, is_finished;
 
-   struct nfa_state * s_iter = nfa->states;
-   struct nfa_transition * t_iter;
-   struct nfa_state_list * ss_iter;
-   bool is_initial, is_finished;
+	fprintf(output, "digraph nfa {\n");
 
-   while(s_iter) {
-	   is_initial = s_iter->attrs & NFA_STATE_ATTR_INITIAL;
-	   is_finished = s_iter->attrs & NFA_STATE_ATTR_FINISHED;
-	   if (is_initial && is_finished)
-      		fprintf(output, "\ts%d [label=\"State '%s'\", shape=tripleoctagon];\n", s_iter->id, s_iter->name);
-	   else if (is_initial && !is_finished)
-      		fprintf(output, "\ts%d [label=\"State '%s'\", shape=invhouse];\n", s_iter->id, s_iter->name);
-	   else if (!is_initial && is_finished)
-      		fprintf(output, "\ts%d [label=\"State '%s'\", shape=doubleoctagon];\n", s_iter->id, s_iter->name);
-	   else 
-	   	fprintf(output, "\ts%d [label=\"State '%s'\"]; \n", s_iter->id, s_iter->name);
+	state = nfa->states;
 
-    t_iter = s_iter->transitions;
+	while(state != NULL) {
+		is_initial = state->attrs & NFA_STATE_ATTR_INITIAL;
+		is_finished = state->attrs & NFA_STATE_ATTR_FINISHED;
 
-    while(t_iter) {
-      ss_iter = t_iter->states;
-      while(ss_iter) {
-        fprintf(output, "\ts%d -> s%d [label=\"%s\"];\n", s_iter->id, ss_iter->state->id, char_to_string(t_iter->ch));
-        ss_iter = ss_iter->next;
-      }
-      t_iter = t_iter->next;
-    }
+		if (is_initial && is_finished)
+			fprintf(output, "\ts%d [label=\"State '%s'\", shape=tripleoctagon];\n", state->id, state->name);
+		else if (is_initial && !is_finished)
+			fprintf(output, "\ts%d [label=\"State '%s'\", shape=invhouse];\n", state->id, state->name);
+		else if (!is_initial && is_finished)
+			fprintf(output, "\ts%d [label=\"State '%s'\", shape=doubleoctagon];\n", state->id, state->name);
+		else
+			fprintf(output, "\ts%d [label=\"State '%s'\"]; \n", state->id, state->name);
 
-    s_iter = s_iter->next;
-   }
+		transition = state->transitions;
 
-   fprintf(output, "}\n");
+		while(transition != NULL) {
+			state_list = transition->states;
+			while(state_list != NULL) {
+				fprintf(output, "\ts%d -> s%d [label=\"%s\"];\n", state->id, state_list->state->id, char_to_string(transition->ch));
+				state_list = state_list->next;
+			}
+			transition = transition->next;
+		}
 
-   fflush(output);
+		state = state->next;
+	}
+
+	fprintf(output, "}\n");
+
+	fflush(output);
 }
