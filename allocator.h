@@ -30,5 +30,7 @@ define_allocator(token, struct token);
 define_allocator(symbol, struct symbol);
 define_allocator(identifier, struct identifier);
 
+void show_allocation_stats(FILE * output);
+
 
 #endif /* NFA2DFACONV_ALLOCATOR_H */

@@ -256,24 +256,6 @@ static struct nfa_state * nfa_get_state_by_id(struct nfa_state * states, uint32_
   return NULL;
 }
 
-
-void show_allocation_stats()
-{
-  size_t total_bytes = 0;
-  size_t current_bytes = sizeof(struct nfa_state_set) * nfa_state_set_pool_cursor;
-  printf("\n\n\nAllocated nfa_state_set elements: %d ( mem: %lu bytes )\n", nfa_state_set_pool_cursor, current_bytes);
-  total_bytes += current_bytes;
-  current_bytes = sizeof(struct nfa_state) * nfa_state_pool_cursor;
-  printf("Allocated nfa_state elements: %d ( mem: %lu bytes )\n", nfa_state_pool_cursor, current_bytes);
-  total_bytes += current_bytes;
-  current_bytes = sizeof(struct nfa) * nfa_pool_cursor;
-  printf("Allocated nfa elements: %d ( mem: %lu bytes )\n", nfa_pool_cursor, current_bytes);
-  total_bytes += current_bytes;
-  current_bytes = sizeof(struct nfa_transition) * nfa_transition_pool_cursor;
-  printf("Allocated nfa_transition elements: %d ( mem: %lu bytes )\n", nfa_transition_pool_cursor, current_bytes);
-  printf("\nTotal bytes: %lu\n", total_bytes);
-}
-
 static size_t nfa_state_set_nitems(struct nfa_state_set * set)
 {
   size_t nitems;
@@ -436,6 +418,8 @@ int main(void)
   debug_symbol(stdout, parse_tree, 0);
   puts("");
 
+  show_allocation_stats(stdout);
+
   exit(0);
 
   struct nfa * nfa;
@@ -576,8 +560,6 @@ next_char:
   visualize_nfa(dfa, output);
 
   fclose(output);
-
-  show_allocation_stats();
 
   return 0;
 }
