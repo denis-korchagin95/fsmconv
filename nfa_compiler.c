@@ -119,13 +119,23 @@ static void nfa_rule_compile(struct nfa * nfa, struct symbol * symbol)
 struct nfa * nfa_compile(struct symbol * symbol)
 {
 	struct nfa * nfa;
+	struct symbol * statement;
 
 	nfa = ___alloc_nfa();
 	nfa->states = NULL;
 	nfa->last_state = &nfa->states;
 
-	if (symbol->type == SYMBOL_STATEMENT) {
+	if (symbol->type == SYMBOL_STATEMENT && symbol->content.symbol->type == SYMBOL_RULE) {
 		nfa_rule_compile(nfa, symbol->content.symbol);
+		return;
+	}
+
+	statement = symbol->next;
+
+	while(statement != NULL) {
+		if (statement->content.symbol->type == SYMBOL_RULE)
+			nfa_rule_compile(nfa, statement->content.symbol);
+		statement = statement->next;
 	}
 
 	return nfa;
