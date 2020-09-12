@@ -127,7 +127,7 @@ struct nfa * nfa_compile(struct symbol * symbol)
 
 	if (symbol->type == SYMBOL_STATEMENT && symbol->content.symbol->type == SYMBOL_RULE) {
 		nfa_rule_compile(nfa, symbol->content.symbol);
-		return;
+		return nfa;
 	}
 
 	statement = symbol->next;
