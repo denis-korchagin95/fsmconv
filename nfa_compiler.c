@@ -92,21 +92,27 @@ static void nfa_transition_compile(struct nfa_state * source, struct nfa_state *
 
 static void nfa_rule_compile(struct nfa * nfa, struct symbol * symbol)
 {
-	struct nfa_state * from_state, * to_state;
+	struct nfa_state * source, * target;
 	struct symbol * character, * transition;
 
 	transition = symbol->content.rule.transition;
 
-	from_state = nfa_state_compile(nfa, transition->content.transition.from_state);
-	to_state = nfa_state_compile(nfa, transition->content.transition.to_state);
+	source = nfa_state_compile(nfa, transition->content.transition.source);
+	target = nfa_state_compile(nfa, transition->content.transition.target);
 
 	character = symbol->content.rule.character_list;
 
 	if (character->type == SYMBOL_CHARACTER || character->type == SYMBOL_SPECIAL_CHARACTER_BUILTIN) {
-		nfa_transition_compile(from_state, to_state, character);
+		nfa_transition_compile(source, target, character);
 		return;
 	}
 
+	character = character->next;
+
+	while(character != NULL) {
+		nfa_transition_compile(source, target, character);
+		character = character->next;
+	}
 }
 
 

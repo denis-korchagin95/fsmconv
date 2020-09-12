@@ -162,9 +162,9 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 		case SYMBOL_TRANSITION:
 			print_tree_borders(output, depth);
 			fprintf(output, "{TRANSITION}\n");
-			debug_symbol(output, symbol->content.transition.from_state, depth + 1);
+			debug_symbol(output, symbol->content.transition.source, depth + 1);
 			fprintf(output, "\n");
-			debug_symbol(output, symbol->content.transition.to_state, depth + 1);
+			debug_symbol(output, symbol->content.transition.target, depth + 1);
 			break;
 		case SYMBOL_RULE:
 			print_tree_borders(output, depth);

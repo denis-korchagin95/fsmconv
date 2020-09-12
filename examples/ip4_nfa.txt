@@ -1,4 +1,4 @@
-q0 to q1 by @empty;
+q0 to q1 by '0', '1', '2';
 
 # start q0;
 # end q16, q19;

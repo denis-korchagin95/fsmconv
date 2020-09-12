@@ -47,8 +47,8 @@ struct symbol
 	{
 		struct
 		{
-			struct symbol * from_state;
-			struct symbol * to_state;
+			struct symbol * source;
+			struct symbol * target;
 		} transition;
 
 		struct

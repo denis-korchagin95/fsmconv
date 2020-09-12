@@ -385,19 +385,19 @@ struct symbol * parse_state(void)
 
 struct symbol * parse_transition(void)
 {
-	struct symbol * from_state = parse_state();
+	struct symbol * source = parse_state();
 	struct token * token = read_token();
 	if (!is_keyword_as(token, KEYWORD_TO) && !is_punctuator_as(token, PUNCTUATOR_HYPHEN_LESS)) {
 		fprintf(stdout, "error: expected keyword 'to' or '->' punctuator that must refer to other state but given %s!\n", token_to_string(token));
 		exit(1);
 	}
-	struct symbol * to_state = parse_state();
+	struct symbol * target = parse_state();
 
 	struct symbol * transition = ___alloc_symbol();
 	transition->type = SYMBOL_TRANSITION;
 	transition->next = NULL;
-	transition->content.transition.from_state = from_state;
-	transition->content.transition.to_state = to_state;
+	transition->content.transition.source = source;
+	transition->content.transition.target = target;
 
 	return transition;
 }
