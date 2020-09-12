@@ -1,0 +1,6 @@
+start A;
+end C;
+
+A -> B by '0';
+A -> A by '0', '1';
+B -> C by '1';
