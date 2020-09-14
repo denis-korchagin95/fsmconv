@@ -8,6 +8,22 @@
 #include "allocator.h"
 
 
+void nfa_state_list_ordered_insert(struct nfa_state_list ** list, struct nfa_state_list * new_item)
+{
+    struct nfa_state_list ** it = list;
+    while(*it != NULL) {
+        if (new_item->state_id <= (*it)->state_id)
+            break;
+        it = &(*it)->next;
+    }
+    if (*it == NULL)
+        *it = new_item;
+    else {
+        new_item->next = *it;
+        *it = new_item;
+    }
+}
+
 struct nfa_state_list * nfa_state_list_create(uint32_t state_id)
 {
     struct nfa_state_list * state_item = ___alloc_nfa_state_list();

@@ -53,8 +53,8 @@ struct nfa_state_list * nfa_state_empty_closure(struct nfa_state * state)
 
             if (! nfa_state_list_has_state(empty_closure, state_item->state_id)) {
                 hold = nfa_state_list_create(state_item->state_id);
-                hold->next = empty_closure;
-                empty_closure = hold;
+
+                nfa_state_list_ordered_insert(&empty_closure, hold);
             }
         }
 
