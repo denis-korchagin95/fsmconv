@@ -1,5 +1,5 @@
-#ifndef NFA2DFACONV_UTIL_H
-#define NFA2DFACONV_UTIL_H 1
+#ifndef NFA2DFA_CONV_UTIL_H
+#define NFA2DFA_CONV_UTIL_H 1
 
 #define bit(n) (1u << (n))
 
@@ -7,4 +7,4 @@
 
 const char * char_to_string(int ch);
 
-#endif /* NFA2DFACONV_UTIL_H */
+#endif /* NFA2DFA_CONV_UTIL_H */

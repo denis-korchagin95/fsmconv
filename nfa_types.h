@@ -1,5 +1,5 @@
-#ifndef NFA2DFACONV_NFA_TYPES_H
-#define NFA2DFACONV_NFA_TYPES_H 1
+#ifndef NFA2DFA_CONV_NFA_TYPES_H
+#define NFA2DFA_CONV_NFA_TYPES_H 1
 
 #define EMPTY_CHAR (-1)
 
@@ -50,4 +50,4 @@ struct nfa {
   struct nfa_state ** last_state;
 };
 
-#endif /* NFA2DFACONV_NFA_TYPES_H */
+#endif /* NFA2DFA_CONV_NFA_TYPES_H */

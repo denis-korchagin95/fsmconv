@@ -1,6 +1,6 @@
-#ifndef NFA2DFACONV_NFA_COMPILER_H
-#define NFA2DFACONV_NFA_COMPILER_H 1
+#ifndef NFA2DFA_CONV_NFA_COMPILER_H
+#define NFA2DFA_CONV_NFA_COMPILER_H 1
 
-struct nfa * nfa_compile(struct symbol * ast);
+struct nfa * nfa_compile(struct symbol * symbol);
 
-#endif /* NFA2DFACONV_NFA_COMPLILER_H */
+#endif /* NFA2DFA_CONV_NFA_COMPILER_H */
