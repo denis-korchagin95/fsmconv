@@ -35,7 +35,7 @@ void visualize_nfa(struct nfa * nfa, FILE * output)
 		while(transition != NULL) {
 			state_list = transition->states;
 			while(state_list != NULL) {
-				fprintf(output, "\ts%d -> s%d [label=\"%s\"];\n", state->id, state_list->state->id, char_to_string(transition->ch));
+				fprintf(output, "\ts%d -> s%d [label=\"%s\"];\n", state->id, state_list->state_id, char_to_string(transition->ch));
 				state_list = state_list->next;
 			}
 			transition = transition->next;

@@ -36,7 +36,7 @@ static bool nfa_transition_has_state(struct nfa_transition * transition, struct 
 	struct nfa_state_list * it = transition->states;
 	while(it != NULL)
 	{
-		if (it->state == state)
+		if (it->state_id == state->id)
 			return true;
 		it = it->next;
 	}
@@ -84,7 +84,7 @@ static void nfa_transition_compile(struct nfa_state * source, struct nfa_state *
 
 	if (! nfa_transition_has_state(transition, target)) {
 		state_list = ___alloc_nfa_state_list();
-		state_list->state = target;
+		state_list->state_id = target->id;
 		state_list->next = transition->states;
 
 		transition->states = state_list;
