@@ -52,7 +52,7 @@ int main(int argc, char * argv[])
     exit(1);
   }
 
-  visualize_nfa(nfa, output);
+  visualize_nfa(output, nfa);
 
   /*
   struct nfa_state * it;

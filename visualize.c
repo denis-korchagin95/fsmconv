@@ -6,7 +6,7 @@
 #include "util.h"
 #include "visualize.h"
 
-void visualize_nfa(struct nfa * nfa, FILE * output)
+void visualize_nfa(FILE * output, struct nfa * nfa)
 {
 	struct nfa_state * state;
 	struct nfa_transition * transition;
