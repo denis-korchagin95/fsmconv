@@ -358,9 +358,14 @@ static struct nfa_state_set * nfa_empty_closure(struct nfa_state * nfa_states, s
 }
 */
 
-int main(void)
+int main(int argc, char * argv[])
 {
   init_parser();
+
+  if (argc < 2) {
+      fprintf(stderr, "%s: missing operand\n", argv[0]);
+      exit(1);
+  }
 
   FILE * file = fopen(filename, "r");
 

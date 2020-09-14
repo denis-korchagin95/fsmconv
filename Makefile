@@ -6,6 +6,8 @@ BIN=./bin/
 OBJ=./obj/
 PROGRAM=nfa2dfaconv
 
+SAMPLE_FILE=./examples/simple_nfa1.txt
+
 all: build run
 
 $(OBJ)debug.o: $(SRC)debug.c $(SRC)debug.h $(SRC)parser.h $(SRC)parser_types.h
@@ -50,6 +52,6 @@ clean:
 	rm -rf dfa.svg
 
 run:
-	$(BIN)$(PROGRAM)
+	$(BIN)$(PROGRAM) $(SAMPLE_FILE)
 	dot -Tsvg $(SRC)nfa.dot -o nfa.svg
 	dot -Tsvg $(SRC)dfa.dot -o dfa.svg
