@@ -15,8 +15,9 @@
 #include "allocator.h"
 #include "nfa_compiler.h"
 #include "visualize.h"
+#include "nfa.h"
 
-static const char * filename = "./examples/ip4_nfa.txt";
+
 static const char * nfa_graph_filename = "./nfa.dot";
 static const char * dfa_graph_filename = "./dfa.dot";
 
@@ -30,7 +31,7 @@ int main(int argc, char * argv[])
       exit(1);
   }
 
-  FILE * file = fopen(filename, "r");
+  FILE * file = fopen(argv[1], "r");
 
   struct symbol * parse_tree = parse(file);
 
@@ -53,6 +54,16 @@ int main(int argc, char * argv[])
 
   visualize_nfa(nfa, output);
 
+  /*
+  struct nfa_state * it;
+  list_foreach(it, nfa->states) {
+      struct nfa_state_list * empty_closure = nfa_state_empty_closure(it);
+      fprintf(stdout, "state(%s) has empty closure: ",it->name);
+      debug_nfa_state_list(stdout, empty_closure);
+      fprintf(stdout, "\n");
+  }
+  */
+
   fclose(output);
 
   /*
@@ -60,7 +71,7 @@ int main(int argc, char * argv[])
   puts("");
   */
 
-  show_allocation_stats(stdout);
+  /* show_allocation_stats(stdout); */
 
   exit(0);
 

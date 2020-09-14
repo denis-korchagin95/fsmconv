@@ -3,9 +3,9 @@
 
 #define EMPTY_CHAR (-1)
 
-#define NFA_STATE_ATTR_INITIAL      BIT(0)
-#define NFA_STATE_ATTR_FINISHED     BIT(1)
-#define NFA_STATE_ATTR_VISITED      BIT(2)
+#define NFA_STATE_ATTR_INITIAL      bit(0)
+#define NFA_STATE_ATTR_FINISHED     bit(1)
+#define NFA_STATE_ATTR_VISITED      bit(2)
 
 struct nfa_state_set {
   struct nfa_state_set * next;
@@ -36,12 +36,13 @@ struct nfa_transition {
 };
 
 struct nfa_state {
-  uint32_t id;
-  const char * name;
-  uint32_t attrs;
-  struct nfa_state_set * subset;
-  struct nfa_transition * transitions;
-  struct nfa_state * next;
+    struct nfa_state * next;
+    struct nfa * owner;
+    struct nfa_transition * transitions;
+    struct nfa_state_set * subset;
+    const char * name;
+    uint32_t id;
+    uint32_t attrs;
 };
 
 struct nfa {

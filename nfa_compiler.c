@@ -7,41 +7,8 @@
 #include "parser_types.h"
 #include "allocator.h"
 #include "util.h"
-
-static struct nfa_state * nfa_search_state_by_id(struct nfa * nfa, uint32_t id)
-{
-	struct nfa_state * it = nfa->states;
-	while(it != NULL) {
-		if (it->id == id)
-			return it;
-		it = it->next;
-	}
-	return NULL;
-}
-
-static struct nfa_transition * nfa_search_transition_by_character(struct nfa_state * state, int ch)
-{
-	struct nfa_transition * it = state->transitions;
-	while(it != NULL)
-	{
-		if (it->ch == ch)
-			return it;
-		it = it->next;
-	}
-	return NULL;
-}
-
-static bool nfa_transition_has_state(struct nfa_transition * transition, struct nfa_state * state)
-{
-	struct nfa_state_list * it = transition->states;
-	while(it != NULL)
-	{
-		if (it->state_id == state->id)
-			return true;
-		it = it->next;
-	}
-	return false;
-}
+#include "nfa.h"
+#include "nfa_state.h"
 
 static struct nfa_state * nfa_state_compile(struct nfa * nfa, struct symbol * symbol)
 {
@@ -53,11 +20,13 @@ static struct nfa_state * nfa_state_compile(struct nfa * nfa, struct symbol * sy
 		return state;
 
 	state = ___alloc_nfa_state();
-	state->id = symbol->content.state.id;
-	state->name = symbol->content.state.identifier->name;
-	state->subset = NULL;
-	state->transitions = NULL;
 	state->next = NULL;
+    state->owner = nfa;
+    state->transitions = NULL;
+    state->subset = NULL;
+    state->name = symbol->content.state.identifier->name;
+    state->id = symbol->content.state.id;
+	state->attrs = 0;
 
 	(*nfa->last_state) = state;
 	nfa->last_state = &state->next;
@@ -70,7 +39,7 @@ static void nfa_transition_compile(struct nfa_state * source, struct nfa_state *
 	struct nfa_transition * transition;
 	struct nfa_state_list * state_list;
 
-	transition = nfa_search_transition_by_character(source, character->content.code);
+	transition = nfa_state_search_transition_by_character(source, character->content.code);
 
 	if (transition == NULL)
 	{

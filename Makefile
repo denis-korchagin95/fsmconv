@@ -10,10 +10,10 @@ SAMPLE_FILE=./examples/simple_nfa1.txt
 
 all: build run
 
-$(OBJ)debug.o: $(SRC)debug.c $(SRC)debug.h $(SRC)parser.h $(SRC)parser_types.h
+$(OBJ)debug.o: $(SRC)debug.c $(SRC)debug.h $(SRC)parser.h $(SRC)parser_types.h $(SRC)nfa_types.h $(SRC)nfa_state_list.h
 	$(CC) $(CFLAGS) -c $(SRC)debug.c -o $(OBJ)debug.o
 
-$(OBJ)main.o: $(SRC)main.c $(SRC)parser.h $(SRC)allocator.h $(SRC)debug.h $(SRC)nfa_types.h $(SRC)util.h $(SRC)parser_types.h $(SRC)nfa_compiler.h
+$(OBJ)main.o: $(SRC)main.c $(SRC)parser.h $(SRC)allocator.h $(SRC)debug.h $(SRC)nfa_types.h $(SRC)util.h $(SRC)parser_types.h $(SRC)nfa_compiler.h $(SRC)nfa.h
 	$(CC) $(CFLAGS) -c $(SRC)main.c -o $(OBJ)main.o
 
 $(OBJ)parser.o: $(SRC)parser.c $(SRC)parser.h $(SRC)parser_types.h $(SRC)allocator.h $(SRC)debug.h $(SRC)nfa_types.h
@@ -22,7 +22,7 @@ $(OBJ)parser.o: $(SRC)parser.c $(SRC)parser.h $(SRC)parser_types.h $(SRC)allocat
 $(OBJ)allocator.o: $(SRC)allocator.c $(SRC)allocator.h $(SRC)nfa_types.h $(SRC)parser_types.h
 	$(CC) $(CFLAGS) -c $(SRC)allocator.c -o $(OBJ)allocator.o
 
-$(OBJ)nfa_compiler.o: $(SRC)nfa_compiler.c $(SRC)nfa_types.h $(SRC)parser_types.h $(SRC)allocator.h
+$(OBJ)nfa_compiler.o: $(SRC)nfa_compiler.c $(SRC)nfa_types.h $(SRC)parser_types.h $(SRC)allocator.h $(SRC)nfa.h $(SRC)nfa_state.h
 	$(CC) $(CFLAGS) -c $(SRC)nfa_compiler.c -o $(OBJ)nfa_compiler.o
 
 $(OBJ)visualize.o: $(SRC)visualize.c $(SRC)visualize.h $(SRC)nfa_types.h
@@ -31,17 +31,36 @@ $(OBJ)visualize.o: $(SRC)visualize.c $(SRC)visualize.h $(SRC)nfa_types.h
 $(OBJ)util.o: $(SRC)util.c $(SRC)util.h
 	$(CC) $(CFLAGS) -c $(SRC)util.c -o $(OBJ)util.o
 
+$(OBJ)nfa.o: $(SRC)nfa.c $(SRC)nfa.h $(SRC)nfa_types.h $(SRC)parser_types.h $(SRC)allocator.h $(SRC)util.h $(SRC)nfa_state.h $(SRC)nfa_state_list.h
+	$(CC) $(CFLAGS) -c $(SRC)nfa.c -o $(OBJ)nfa.o
+
+$(OBJ)nfa_state.o: $(SRC)nfa_state.c $(SRC)nfa_state.h $(SRC)nfa_types.h
+	$(CC) $(CFLAGS) -c $(SRC)nfa_state.c -o $(OBJ)nfa_state.o
+
+$(OBJ)nfa_state_list.o: $(SRC)nfa_state_list.c $(SRC)nfa_state_list.h $(SRC)nfa_types.h $(SRC)parser_types.h $(SRC)allocator.h
+	$(CC) $(CFLAGS) -c $(SRC)nfa_state_list.c -o $(OBJ)nfa_state_list.o
+
+$(OBJ)nfa_transition.o: $(SRC)nfa_transition.c $(SRC)nfa_transition.h $(SRC)nfa_types.h
+	$(CC) $(CFLAGS) -c $(SRC)nfa_transition.c -o $(OBJ)nfa_transition.o
+
+
 OBJECTS  = $(OBJ)allocator.o
 OBJECTS += $(OBJ)debug.o
 OBJECTS += $(OBJ)parser.o
 OBJECTS += $(OBJ)nfa_compiler.o
 OBJECTS += $(OBJ)visualize.o
 OBJECTS += $(OBJ)util.o
+OBJECTS += $(OBJ)nfa.o
+OBJECTS += $(OBJ)nfa_state.o
+OBJECTS += $(OBJ)nfa_state_list.o
+OBJECTS += $(OBJ)nfa_transition.o
 OBJECTS += $(OBJ)main.o
-
 
 build: $(OBJECTS)
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
+
+run:
+	$(BIN)$(PROGRAM) $(SAMPLE_FILE)
 
 clean:
 	rm -rf $(BIN)$(PROGRAM)
@@ -51,7 +70,7 @@ clean:
 	rm -rf nfa.svg
 	rm -rf dfa.svg
 
-run:
-	$(BIN)$(PROGRAM) $(SAMPLE_FILE)
+visualize:
 	dot -Tsvg $(SRC)nfa.dot -o nfa.svg
 	dot -Tsvg $(SRC)dfa.dot -o dfa.svg
+
