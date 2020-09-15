@@ -21,6 +21,55 @@ struct nfa_state * nfa_search_state_by_id(struct nfa * nfa, uint32_t id)
     return NULL;
 }
 
+struct nfa_state_list * nfa_empty_closure(struct nfa * nfa, struct nfa_state_list * states)
+{
+    struct nfa_state_list * empty_closure, * state_item, * hold, * stack, * current;
+    struct nfa_state * state;
+    struct nfa_transition * transition;
+
+    empty_closure = NULL;
+    stack = NULL;
+
+    list_foreach(state_item, states) {
+        hold = nfa_state_list_create(state_item->state_id);
+        nfa_state_list_ordered_insert(&empty_closure, hold);
+
+        hold = nfa_state_list_create(state_item->state_id);
+        hold->next = stack;
+        stack = hold;
+    }
+
+    while (stack != NULL) {
+        hold = stack->next;
+        current = stack;
+        stack = hold;
+
+        state = nfa_search_state_by_id(nfa, current->state_id);
+        if (state == NULL)
+            continue;
+
+        transition = nfa_state_search_transition_by_character(state, EMPTY_CHAR);
+
+        if (transition == NULL)
+            continue;
+
+        list_foreach(state_item, transition->states) {
+            if (! nfa_state_list_has_state(empty_closure, state_item->state_id)) {
+                hold = nfa_state_list_create(state_item->state_id);
+                nfa_state_list_ordered_insert(&empty_closure, hold);
+
+                hold = nfa_state_list_create(state_item->state_id);
+                hold->next = stack;
+                stack = hold;
+            }
+        }
+
+        /* TODO: free(current) */
+    }
+
+    return empty_closure;
+}
+
 struct nfa_state_list * nfa_state_empty_closure(struct nfa_state * state)
 {
     struct nfa_state_list * empty_closure, * stack, * hold, * current, * state_item;
