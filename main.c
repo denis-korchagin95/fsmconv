@@ -10,6 +10,8 @@
 #include "parser.h"
 #include "nfa_compiler.h"
 #include "visualize.h"
+#include "nfa_types.h"
+#include "nfa.h"
 
 int main(int argc, char * argv[])
 {
@@ -33,9 +35,7 @@ int main(int argc, char * argv[])
 
   struct nfa * nfa = nfa_compile(parse_tree);
 
-  visualize_nfa(stdout, nfa);
+  generate_nfa_language(stdout, nfa);
 
   exit(0);
-
-  return 0;
 }

@@ -5,6 +5,7 @@
 #include "nfa_types.h"
 #include "util.h"
 #include "visualize.h"
+#include "nfa.h"
 
 void visualize_nfa(FILE * output, struct nfa * nfa)
 {
@@ -47,4 +48,63 @@ void visualize_nfa(FILE * output, struct nfa * nfa)
 	fprintf(output, "}\n");
 
 	fflush(output);
+}
+
+void generate_nfa_language(FILE * output, struct nfa * nfa)
+{
+    struct nfa_state * state;
+
+    fprintf(output, "start ");
+    bool is_first = true;
+    list_foreach(state, nfa->states) {
+        if (state->attrs & NFA_STATE_ATTR_INITIAL) {
+            if (is_first) {
+                fprintf(output, "%s", state->name);
+                is_first = false;
+                continue;
+            }
+            fprintf(output, ", %s", state->name);
+        }
+    }
+    fprintf(output, ";\n");
+
+    fprintf(output, "end ");
+    is_first = true;
+    list_foreach(state, nfa->states) {
+        if (state->attrs & NFA_STATE_ATTR_FINISHED) {
+            if (is_first) {
+                fprintf(output, "%s", state->name);
+                is_first = false;
+                continue;
+            }
+            fprintf(output, ", %s", state->name);
+        }
+    }
+    fprintf(output, ";\n");
+
+    fprintf(output, "\n\n");
+
+    struct nfa_transition * transition;
+    struct nfa_state_list * state_item;
+    struct nfa_state * target_state;
+
+    list_foreach(state, nfa->states) {
+        list_foreach(transition, state->transitions) {
+            list_foreach(state_item, transition->states) {
+                target_state = nfa_search_state_by_id(nfa, state_item->state_id);
+                if (target_state == NULL)
+                    continue;
+                fprintf(output, "%s to %s by ", state->name, target_state->name);
+                if (transition->ch == EMPTY_CHAR) {
+                    fprintf(output, "@empty");
+                }
+                else {
+                    fprintf(output, "%c", transition->ch);
+                }
+                fprintf(output, ";\n");
+            }
+        }
+    }
+
+    fflush(output);
 }

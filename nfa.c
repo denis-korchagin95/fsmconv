@@ -248,20 +248,3 @@ struct nfa_state * nfa_search_state_by_subset(struct nfa * nfa, struct nfa_state
     }
     return NULL;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

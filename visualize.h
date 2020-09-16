@@ -3,4 +3,6 @@
 
 void visualize_nfa(FILE * output, struct nfa * nfa);
 
+void generate_nfa_language(FILE * output, struct nfa * nfa);
+
 #endif /* NFA2DFA_CONV_VISUALIZE_H */
