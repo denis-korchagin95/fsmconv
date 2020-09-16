@@ -47,10 +47,6 @@ struct nfa_state_list * nfa_empty_closure(struct nfa * nfa, struct nfa_state_lis
 
         state = nfa_search_state_by_id(nfa, current->state_id);
         if (state == NULL) {
-            if (nfa->ancestor)
-                state = nfa_search_state_by_id(nfa->ancestor, current->state_id);
-        }
-        if (state == NULL) {
             continue;
         }
 
@@ -137,10 +133,9 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
     struct nfa_transition * transition;
 
     dfa = ___alloc_nfa();
-    dfa->ancestor = nfa;
     dfa->states = NULL;
     dfa->last_state = &dfa->states;
-    dfa->state_count = nfa->state_count;
+    dfa->state_count = 0;
 
     characters = NULL;
 
@@ -175,9 +170,7 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
         list_foreach(character_item, characters) {
             state_list = NULL;
             list_foreach(state_item, state->subset) {
-                search_state = nfa_search_state_by_id(dfa, state_item->state_id);
-                if (search_state == NULL)
-                    search_state = nfa_search_state_by_id(nfa, state_item->state_id);
+                search_state = nfa_search_state_by_id(nfa, state_item->state_id);
                 if (search_state == NULL)
                     continue;
                 transition = nfa_state_search_transition_by_character(search_state, character_item->ch);
@@ -193,7 +186,7 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
             if (state_list == NULL)
                 continue;
 
-            empty_closure = nfa_empty_closure(dfa, state_list);
+            empty_closure = nfa_empty_closure(nfa, state_list);
 
             if (nfa_search_state_by_subset(dfa, empty_closure) == NULL) {
                 new_state = ___alloc_nfa_state();
@@ -233,8 +226,6 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
             }
         }
     }
-
-    dfa->ancestor = NULL;
 
     return dfa;
 }

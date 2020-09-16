@@ -142,7 +142,6 @@ struct nfa * nfa_compile(struct symbol * symbol)
 	struct symbol * statement;
 
 	nfa = ___alloc_nfa();
-	nfa->ancestor = NULL;
 	nfa->states = NULL;
 	nfa->last_state = &nfa->states;
 	nfa->state_count = parser_last_state_id();

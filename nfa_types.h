@@ -46,10 +46,6 @@ struct nfa_state {
 };
 
 struct nfa {
-    /*
-     * 'ancestor' uses during transformation from nfa to dfa
-     */
-    struct nfa * ancestor;
     struct nfa_state * states;
     struct nfa_state ** last_state;
     uint32_t state_count;
