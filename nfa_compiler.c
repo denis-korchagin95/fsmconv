@@ -38,15 +38,21 @@ static void nfa_transition_compile(struct nfa_state * source, struct nfa_state *
 {
 	struct nfa_transition * transition;
 	struct nfa_state_list * state_list;
+	int ch;
 
-	transition = nfa_state_search_transition_by_character(source, character->content.code);
+	if (character->type == SYMBOL_SPECIAL_CHARACTER_BUILTIN)
+	    ch = character->content.special_character.value->content.code;
+	else
+	    ch = character->content.code;
+
+	transition = nfa_state_search_transition_by_character(source, ch);
 
 	if (transition == NULL)
 	{
 		transition = ___alloc_nfa_transition();
 		transition->states = NULL;
 		transition->next = source->transitions;
-		transition->ch = character->type == SYMBOL_SPECIAL_CHARACTER_BUILTIN ? character->content.special_character.value->content.code : character->content.code;
+		transition->ch = ch;
 
 		source->transitions = transition;
 	}

@@ -1,0 +1,8 @@
+//
+// Created by denis on 16.09.2020.
+//
+
+#ifndef NFA2DFA_CONV_NFA_CHARACTER_LIST_H
+#define NFA2DFA_CONV_NFA_CHARACTER_LIST_H
+
+#endif //NFA2DFA_CONV_NFA_CHARACTER_LIST_H
