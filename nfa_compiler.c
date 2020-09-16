@@ -5,6 +5,7 @@
 
 #include "nfa_types.h"
 #include "parser_types.h"
+#include "parser.h"
 #include "allocator.h"
 #include "util.h"
 #include "nfa.h"
@@ -141,8 +142,10 @@ struct nfa * nfa_compile(struct symbol * symbol)
 	struct symbol * statement;
 
 	nfa = ___alloc_nfa();
+	nfa->ancestor = NULL;
 	nfa->states = NULL;
 	nfa->last_state = &nfa->states;
+	nfa->state_count = parser_last_state_id();
 
 	if (symbol->type == SYMBOL_STATEMENT && symbol->content.symbol->type == SYMBOL_RULE) {
 		nfa_rule_compile(nfa, symbol->content.symbol);

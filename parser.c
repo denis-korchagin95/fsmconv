@@ -602,6 +602,7 @@ struct symbol * parse(FILE * file)
 	struct token * token;
 
 	set_source(file);
+	state_id = 0;
 
 	statement = parse_statement();
 	token = read_token();
@@ -628,4 +629,9 @@ struct symbol * parse(FILE * file)
 	}
 
 	return statement_list;
+}
+
+uint32_t parser_last_state_id(void)
+{
+    return state_id;
 }

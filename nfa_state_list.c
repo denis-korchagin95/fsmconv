@@ -42,3 +42,29 @@ bool nfa_state_list_has_state(struct nfa_state_list * list, uint32_t state_id)
     }
     return false;
 }
+
+bool nfa_state_list_contains(struct nfa_state_list * first, struct nfa_state_list * second)
+{
+    while (second != NULL) {
+        if (! nfa_state_list_has_state(first, second->state_id)) {
+            return false;
+        }
+        second = second->next;
+    }
+    return true;
+}
+
+uint32_t nfa_state_list_length(struct nfa_state_list * list)
+{
+    uint32_t len = 0;
+    while (list != NULL) {
+        list = list->next;
+        ++len;
+    }
+    return len;
+}
+
+bool nfa_state_list_equals(struct nfa_state_list * first, struct nfa_state_list * second)
+{
+    return nfa_state_list_length(first) == nfa_state_list_length(second) && nfa_state_list_contains(first, second);
+}

@@ -39,15 +39,20 @@ struct nfa_state {
     struct nfa_state * next;
     struct nfa * owner;
     struct nfa_transition * transitions;
-    struct nfa_state_set * subset;
+    struct nfa_state_list * subset;
     const char * name;
     uint32_t id;
     uint32_t attrs;
 };
 
 struct nfa {
-  struct nfa_state * states;
-  struct nfa_state ** last_state;
+    /*
+     * 'ancestor' uses during transformation from nfa to dfa
+     */
+    struct nfa * ancestor;
+    struct nfa_state * states;
+    struct nfa_state ** last_state;
+    uint32_t state_count;
 };
 
 #endif /* NFA2DFA_CONV_NFA_TYPES_H */

@@ -7,20 +7,9 @@
 #include <limits.h>
 #include <stdint.h>
 
-#include "util.h"
 #include "parser.h"
-#include "nfa_types.h"
-#include "parser_types.h"
-#include "debug.h"
-#include "allocator.h"
 #include "nfa_compiler.h"
 #include "visualize.h"
-#include "nfa.h"
-
-
-static const char * nfa_graph_filename = "./nfa.dot";
-static const char * dfa_graph_filename = "./dfa.dot";
-
 
 int main(int argc, char * argv[])
 {
@@ -42,36 +31,9 @@ int main(int argc, char * argv[])
 	  exit(1);
   }
 
-  struct nfa * nfa;
+  struct nfa * nfa = nfa_compile(parse_tree);
 
-  nfa = nfa_compile(parse_tree);
-
-  FILE * output = fopen(nfa_graph_filename, "w");
-  if(!output) {
-    fprintf(stderr, "file '%s': %s\n", nfa_graph_filename, strerror(errno));
-    exit(1);
-  }
-
-  visualize_nfa(output, nfa);
-
-  /*
-  struct nfa_state * it;
-  list_foreach(it, nfa->states) {
-      struct nfa_state_list * empty_closure = nfa_state_empty_closure(it);
-      fprintf(stdout, "state(%s) has empty closure: ",it->name);
-      debug_nfa_state_list(stdout, empty_closure);
-      fprintf(stdout, "\n");
-  }
-  */
-
-  fclose(output);
-
-  /*
-  debug_symbol(stdout, parse_tree, 0);
-  puts("");
-  */
-
-  /* show_allocation_stats(stdout); */
+  visualize_nfa(stdout, nfa);
 
   exit(0);
 
