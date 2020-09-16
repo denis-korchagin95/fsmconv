@@ -35,7 +35,9 @@ int main(int argc, char * argv[])
 
   struct nfa * nfa = nfa_compile(parse_tree);
 
-  generate_nfa_language(stdout, nfa);
+  struct nfa * dfa = nfa_to_dfa(nfa);
+
+  generate_dfa_language(stdout, dfa);
 
   exit(0);
 }

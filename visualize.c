@@ -108,3 +108,22 @@ void generate_nfa_language(FILE * output, struct nfa * nfa)
 
     fflush(output);
 }
+
+void generate_dfa_language(FILE * output, struct nfa * dfa)
+{
+    struct nfa_state * state, * target_state;
+    struct nfa_transition * transition;
+
+    list_foreach(state, dfa->states) {
+        list_foreach(transition, state->transitions) {
+            if (transition->states == NULL)
+                continue;
+            target_state = nfa_search_state_by_subset(dfa, transition->states);
+            if (target_state == NULL)
+                continue;
+            fprintf(output, "s%u to s%u by %c;\n", state->id, target_state->id, transition->ch);
+        }
+    }
+
+    fflush(output);
+}
