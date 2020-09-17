@@ -1,3 +1,5 @@
+features:
+	(?) combine multiple initial states into one initial state on the target dfa
 memory:
 	(?) mark all places where program needs to release memory
 language:
