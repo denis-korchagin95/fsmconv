@@ -7,6 +7,24 @@
 #include "visualize.h"
 #include "fsm.h"
 
+static const char * transition_character_stringify(int ch)
+{
+	static char buffer[12];
+	switch(ch)
+	{
+		case '\\':
+			sprintf(buffer, "\\\\");
+			break;
+		case '\'':
+			sprintf(buffer, "\\'");
+			break;
+		default:
+			sprintf(buffer, "%c", (char) ch);
+
+	}
+	return buffer;
+}
+
 void visualize_nfa(FILE * output, struct fsm * fsm)
 {
 	struct fsm_state * state;
@@ -99,7 +117,7 @@ void generate_nfa_language(FILE * output, struct fsm * fsm)
                     fprintf(output, "@epsilon");
                 }
                 else {
-                    fprintf(output, "%c", transition->ch);
+                    fprintf(output, "'%s'", transition_character_stringify(transition->ch));
                 }
                 fprintf(output, ";\n");
             }
@@ -149,7 +167,7 @@ void generate_dfa_language(FILE * output, struct fsm * fsm)
             target_state = fsm_search_state_by_id(fsm, transition->states->state_id);
             if (target_state == NULL)
                 continue;
-            fprintf(output, "s%u to s%u by %c;\n", state->id, target_state->id, transition->ch);
+            fprintf(output, "s%u to s%u by '%s';\n", state->id, target_state->id, transition_character_stringify(transition->ch));
         }
     }
 
