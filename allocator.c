@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
+#include "character_list.h"
 #include "nfa_types.h"
 #include "parser_types.h"
 #include "allocator.h"
@@ -12,7 +14,7 @@ declare_allocator(nfa, struct nfa, 16)
 declare_allocator(nfa_transition, struct nfa_transition, 2048)
 declare_allocator(nfa_char_set, struct nfa_char_set, 128)
 declare_allocator(nfa_state_list, struct nfa_state_list, 4096)
-declare_allocator(nfa_character_list, struct nfa_character_list, 128)
+declare_allocator(character_list, struct character_list, 128)
 
 declare_allocator(token, struct token, 1024)
 declare_allocator(symbol, struct symbol, 1024)
@@ -54,9 +56,9 @@ void show_allocation_stats(FILE * output)
   total_allocation_unit_count += nfa_state_list_pool_cursor;
   total_bytes += current_bytes;
   
-  current_bytes = sizeof(struct nfa_character_list) * nfa_character_list_pool_cursor;
-  fprintf(output, "Allocated nfa_character_list elements: %d ( mem: %lu bytes )\n", nfa_character_list_pool_cursor, current_bytes);
-  total_allocation_unit_count += nfa_character_list_pool_cursor;
+  current_bytes = sizeof(struct character_list) * character_list_pool_cursor;
+  fprintf(output, "Allocated character_list elements: %d ( mem: %lu bytes )\n", character_list_pool_cursor, current_bytes);
+  total_allocation_unit_count += character_list_pool_cursor;
   total_bytes += current_bytes;
 
   current_bytes = sizeof(struct token) * token_pool_cursor;

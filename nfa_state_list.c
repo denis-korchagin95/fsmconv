@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "character_list.h"
 #include "nfa_types.h"
 #include "parser_types.h"
 #include "nfa_state_list.h"

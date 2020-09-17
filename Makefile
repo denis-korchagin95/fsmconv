@@ -31,7 +31,7 @@ $(OBJ)visualize.o: $(SRC)visualize.c $(SRC)visualize.h $(SRC)nfa_types.h
 $(OBJ)util.o: $(SRC)util.c $(SRC)util.h
 	$(CC) $(CFLAGS) -c $(SRC)util.c -o $(OBJ)util.o
 
-$(OBJ)nfa.o: $(SRC)nfa.c $(SRC)nfa.h $(SRC)nfa_types.h $(SRC)parser_types.h $(SRC)allocator.h $(SRC)util.h $(SRC)nfa_state.h $(SRC)nfa_state_list.h $(SRC)nfa_character_list.h
+$(OBJ)nfa.o: $(SRC)nfa.c $(SRC)nfa.h $(SRC)nfa_types.h $(SRC)parser_types.h $(SRC)allocator.h $(SRC)util.h $(SRC)nfa_state.h $(SRC)nfa_state_list.h $(SRC)character_list.h
 	$(CC) $(CFLAGS) -c $(SRC)nfa.c -o $(OBJ)nfa.o
 
 $(OBJ)nfa_state.o: $(SRC)nfa_state.c $(SRC)nfa_state.h $(SRC)nfa_types.h
@@ -43,8 +43,8 @@ $(OBJ)nfa_state_list.o: $(SRC)nfa_state_list.c $(SRC)nfa_state_list.h $(SRC)nfa_
 $(OBJ)nfa_transition.o: $(SRC)nfa_transition.c $(SRC)nfa_transition.h $(SRC)nfa_types.h
 	$(CC) $(CFLAGS) -c $(SRC)nfa_transition.c -o $(OBJ)nfa_transition.o
 
-$(OBJ)nfa_character_list.o: $(SRC)nfa_character_list.c $(SRC)nfa_character_list.h $(SRC)nfa_types.h $(SRC)util.h
-	$(CC) $(CFLAGS) -c $(SRC)nfa_character_list.c -o $(OBJ)nfa_character_list.o
+$(OBJ)character_list.o: $(SRC)character_list.c $(SRC)character_list.h $(SRC)nfa_types.h $(SRC)util.h
+	$(CC) $(CFLAGS) -c $(SRC)character_list.c -o $(OBJ)character_list.o
 
 OBJECTS  = $(OBJ)allocator.o
 OBJECTS += $(OBJ)debug.o
@@ -56,7 +56,7 @@ OBJECTS += $(OBJ)nfa.o
 OBJECTS += $(OBJ)nfa_state.o
 OBJECTS += $(OBJ)nfa_state_list.o
 OBJECTS += $(OBJ)nfa_transition.o
-OBJECTS += $(OBJ)nfa_character_list.o
+OBJECTS += $(OBJ)character_list.o
 OBJECTS += $(OBJ)main.o
 
 build: $(OBJECTS)

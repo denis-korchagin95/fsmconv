@@ -18,12 +18,6 @@ struct nfa_state_list
     uint32_t state_id;
 };
 
-struct nfa_character_list
-{
-    struct nfa_character_list * next;
-	int ch;
-};
-
 struct nfa_char_set {
   struct nfa_char_set * next;
   int ch;

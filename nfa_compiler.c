@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "character_list.h"
 #include "nfa_types.h"
 #include "parser_types.h"
 #include "parser.h"

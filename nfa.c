@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "character_list.h"
 #include "nfa_types.h"
 #include "parser_types.h"
 #include "nfa.h"
@@ -9,7 +10,6 @@
 #include "util.h"
 #include "nfa_state.h"
 #include "nfa_state_list.h"
-#include "nfa_character_list.h"
 
 struct nfa_state * nfa_search_state_by_id(struct nfa * nfa, uint32_t id)
 {
@@ -129,7 +129,7 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
     struct nfa * dfa;
     struct nfa_state * state, * new_state, * search_state;
     struct nfa_state_list * epsilon_closure, * state_list, * state_item, * state_item2, * new_state_item, * finished_states;
-    struct nfa_character_list * characters, * character_item;
+    struct character_list * characters, * character_item;
     struct nfa_transition * transition;
 
     dfa = ___alloc_nfa();
@@ -162,8 +162,8 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
 	    }
 
         list_foreach(transition, state->transitions) {
-            if (transition->ch != EMPTY_CHAR && !nfa_character_list_has_character(characters, transition->ch)) {
-                character_item = ___alloc_nfa_character_list();
+            if (transition->ch != EMPTY_CHAR && !character_list_has_character(characters, transition->ch)) {
+                character_item = ___alloc_character_list();
                 character_item->ch = transition->ch;
 
                 character_item->next = characters;

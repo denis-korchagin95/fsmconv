@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "character_list.h"
 #include "nfa_types.h"
 #include "parser.h"
 #include "parser_types.h"

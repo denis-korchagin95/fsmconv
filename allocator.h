@@ -26,7 +26,8 @@ define_allocator(nfa, struct nfa);
 define_allocator(nfa_state_set, struct nfa_state_set);
 define_allocator(nfa_char_set, struct nfa_char_set);
 define_allocator(nfa_state_list, struct nfa_state_list);
-define_allocator(nfa_character_list, struct nfa_character_list);
+
+define_allocator(character_list, struct character_list);
 
 define_allocator(token, struct token);
 define_allocator(symbol, struct symbol);
