@@ -7,20 +7,10 @@
 #define NFA_STATE_ATTR_FINISHED     bit(1)
 #define NFA_STATE_ATTR_VISITED      bit(2)
 
-struct nfa_state_set {
-  struct nfa_state_set * next;
-  uint32_t element;
-};
-
 struct nfa_state_list
 {
     struct nfa_state_list * next;
     uint32_t state_id;
-};
-
-struct nfa_char_set {
-  struct nfa_char_set * next;
-  int ch;
 };
 
 struct nfa_transition {
