@@ -1,5 +1,5 @@
-#ifndef NFA2DFA_CONV_PARSER_TYPES_H
-#define NFA2DFA_CONV_PARSER_TYPES_H 1
+#ifndef FSMCONV_PARSER_TYPES_H
+#define FSMCONV_PARSER_TYPES_H 1
 
 #define IDENTIFIER_MAX_SIZE 256
 
@@ -14,7 +14,7 @@ enum {
 enum {
 	PUNCTUATOR_HYPHEN_LESS, /* '->' */
 	PUNCTUATOR_SEMICOLON,   /* ';' */
-	PUNCTUATOR_COMMA,	/* ',' */
+	PUNCTUATOR_COMMA,       /* ',' */
 };
 
 enum {
@@ -93,8 +93,8 @@ struct token
     /* TODO: location in the source */
     union {
         int code;
-	struct identifier * identifier;
+        struct identifier * identifier;
     } content;
 };
 
-#endif /* NFA2DFA_CONV_PARSER_TYPES_H */
+#endif /* FSMCONV_PARSER_TYPES_H */

@@ -14,5 +14,3 @@ parser:
 	(?) implement hash table for any strings to low memory usage
 debug:
 	(?) fix parse tree printing ('debug_symbol' function)
-refactor:
-	(?) rename 'nfa_' term to 'fsm_' term in the code

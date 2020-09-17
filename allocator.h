@@ -1,5 +1,5 @@
-#ifndef NFA2DFA_CONV_ALLOCATOR_H
-#define NFA2DFA_CONV_ALLOCATOR_H 1
+#ifndef FSMCONV_ALLOCATOR_H
+#define FSMCONV_ALLOCATOR_H 1
 
 #define define_allocator(name, type)      \
   extern type * ___alloc_ ## name(void);  \
@@ -20,10 +20,10 @@
   }                                                                 \
 
 
-define_allocator(nfa_state, struct nfa_state);
-define_allocator(nfa_transition, struct nfa_transition);
-define_allocator(nfa, struct nfa);
-define_allocator(nfa_state_list, struct nfa_state_list);
+define_allocator(fsm_state, struct fsm_state);
+define_allocator(fsm_transition, struct fsm_transition);
+define_allocator(fsm, struct fsm);
+define_allocator(fsm_state_list, struct fsm_state_list);
 
 define_allocator(character_list, struct character_list);
 
@@ -34,4 +34,4 @@ define_allocator(identifier, struct identifier);
 void show_allocation_stats(FILE * output);
 
 
-#endif /* NFA2DFA_CONV_ALLOCATOR_H */
+#endif /* FSMCONV_ALLOCATOR_H */

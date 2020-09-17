@@ -2,13 +2,13 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "nfa_types.h"
-#include "nfa_transition.h"
+#include "fsm_types.h"
+#include "fsm_transition.h"
 
 
-bool nfa_transition_has_state(struct nfa_transition * transition, uint32_t state_id)
+bool fsm_transition_has_state(struct fsm_transition * transition, uint32_t state_id)
 {
-    struct nfa_state_list * it = transition->states;
+    struct fsm_state_list * it = transition->states;
     while(it != NULL)
     {
         if (it->state_id == state_id)

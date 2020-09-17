@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #include "character_list.h"
-#include "nfa_types.h"
+#include "fsm_types.h"
 #include "parser.h"
 #include "parser_types.h"
 #include "allocator.h"
@@ -365,7 +365,7 @@ struct symbol * parse_state(void)
 	}
 	identifier = token->content.identifier;
 	if (is_keyword(token)) {
-		fprintf(stderr, "error: keyword '%s' can't be used for naming nfa state\n", identifier->name);
+		fprintf(stderr, "error: keyword '%s' can't be used for naming fsm state\n", identifier->name);
 		exit(1);
 	}
 	struct symbol * state = search_symbol(identifier, SYMBOL_STATE);

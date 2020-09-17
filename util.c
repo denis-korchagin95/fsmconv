@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "util.h"
-#include "nfa_types.h"
+#include "fsm_types.h"
 
 const char * epsilon_utf8 = "\xCE\xB5";
 

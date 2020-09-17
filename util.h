@@ -1,5 +1,5 @@
-#ifndef NFA2DFA_CONV_UTIL_H
-#define NFA2DFA_CONV_UTIL_H 1
+#ifndef FSMCONV_UTIL_H
+#define FSMCONV_UTIL_H 1
 
 #define bit(n) (1u << (n))
 
@@ -9,4 +9,4 @@ extern const char * epsilon_utf8;
 
 const char * char_to_string(int ch);
 
-#endif /* NFA2DFA_CONV_UTIL_H */
+#endif /* FSMCONV_UTIL_H */

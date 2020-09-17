@@ -3,15 +3,15 @@
 #include <stdio.h>
 
 #include "character_list.h"
-#include "nfa_types.h"
+#include "fsm_types.h"
 #include "parser_types.h"
-#include "nfa_state_list.h"
+#include "fsm_state_list.h"
 #include "allocator.h"
 
 
-void nfa_state_list_ordered_insert(struct nfa_state_list ** list, struct nfa_state_list * new_item)
+void fsm_state_list_ordered_insert(struct fsm_state_list ** list, struct fsm_state_list * new_item)
 {
-    struct nfa_state_list ** it = list;
+    struct fsm_state_list ** it = list;
     while(*it != NULL) {
         if (new_item->state_id <= (*it)->state_id)
             break;
@@ -25,15 +25,15 @@ void nfa_state_list_ordered_insert(struct nfa_state_list ** list, struct nfa_sta
     }
 }
 
-struct nfa_state_list * nfa_state_list_create(uint32_t state_id)
+struct fsm_state_list * fsm_state_list_create(uint32_t state_id)
 {
-    struct nfa_state_list * state_item = ___alloc_nfa_state_list();
+    struct fsm_state_list * state_item = ___alloc_fsm_state_list();
     state_item->state_id = state_id;
     state_item->next = NULL;
     return state_item;
 }
 
-bool nfa_state_list_has_state(struct nfa_state_list * list, uint32_t state_id)
+bool fsm_state_list_has_state(struct fsm_state_list * list, uint32_t state_id)
 {
     while(list != NULL)
     {
@@ -44,10 +44,10 @@ bool nfa_state_list_has_state(struct nfa_state_list * list, uint32_t state_id)
     return false;
 }
 
-bool nfa_state_list_contains(struct nfa_state_list * first, struct nfa_state_list * second)
+bool fsm_state_list_contains(struct fsm_state_list * first, struct fsm_state_list * second)
 {
     while (second != NULL) {
-        if (! nfa_state_list_has_state(first, second->state_id)) {
+        if (! fsm_state_list_has_state(first, second->state_id)) {
             return false;
         }
         second = second->next;
@@ -55,7 +55,7 @@ bool nfa_state_list_contains(struct nfa_state_list * first, struct nfa_state_lis
     return true;
 }
 
-uint32_t nfa_state_list_length(struct nfa_state_list * list)
+uint32_t fsm_state_list_length(struct fsm_state_list * list)
 {
     uint32_t len = 0;
     while (list != NULL) {
@@ -65,7 +65,7 @@ uint32_t nfa_state_list_length(struct nfa_state_list * list)
     return len;
 }
 
-bool nfa_state_list_equals(struct nfa_state_list * first, struct nfa_state_list * second)
+bool fsm_state_list_equals(struct fsm_state_list * first, struct fsm_state_list * second)
 {
-    return nfa_state_list_length(first) == nfa_state_list_length(second) && nfa_state_list_contains(first, second);
+    return fsm_state_list_length(first) == fsm_state_list_length(second) && fsm_state_list_contains(first, second);
 }

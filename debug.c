@@ -4,8 +4,8 @@
 
 #include "parser.h"
 #include "parser_types.h"
-#include "nfa_types.h"
-#include "nfa_state_list.h"
+#include "fsm_types.h"
+#include "fsm_state_list.h"
 #include "debug.h"
 
 static void print_tree_borders(FILE * output, int depth)
@@ -180,7 +180,7 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 	}
 }
 
-void debug_nfa_state_list(FILE * output, struct nfa_state_list * list)
+void debug_fsm_state_list(FILE * output, struct fsm_state_list * list)
 {
     fprintf(output, "{");
     while(list != NULL) {

@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include "parser.h"
-#include "nfa_compiler.h"
+#include "fsm_compiler.h"
 #include "visualize.h"
-#include "nfa_types.h"
-#include "nfa.h"
+#include "fsm_types.h"
+#include "fsm.h"
 
 int main(int argc, char * argv[])
 {
@@ -33,9 +33,9 @@ int main(int argc, char * argv[])
 	  exit(1);
   }
 
-  struct nfa * nfa = nfa_compile(parse_tree);
+  struct fsm * nfa = fsm_compile(parse_tree);
 
-  struct nfa * dfa = nfa_to_dfa(nfa);
+  struct fsm * dfa = nfa_to_dfa(nfa);
 
   generate_dfa_language(stdout, dfa);
 

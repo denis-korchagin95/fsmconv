@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 #include "util.h"
-#include "nfa_types.h"
+#include "fsm_types.h"
 #include "character_list.h"
 
 

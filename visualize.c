@@ -2,25 +2,25 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "nfa_types.h"
+#include "fsm_types.h"
 #include "util.h"
 #include "visualize.h"
-#include "nfa.h"
+#include "fsm.h"
 
-void visualize_nfa(FILE * output, struct nfa * nfa)
+void visualize_nfa(FILE * output, struct fsm * fsm)
 {
-	struct nfa_state * state;
-	struct nfa_transition * transition;
-	struct nfa_state_list * state_list;
+	struct fsm_state * state;
+	struct fsm_transition * transition;
+	struct fsm_state_list * state_list;
 	bool is_initial, is_finished;
 
 	fprintf(output, "digraph nfa {\n");
 
-	state = nfa->states;
+	state = fsm->states;
 
 	while(state != NULL) {
-		is_initial = state->attrs & NFA_STATE_ATTR_INITIAL;
-		is_finished = state->attrs & NFA_STATE_ATTR_FINISHED;
+		is_initial = state->attrs & FSM_STATE_ATTR_INITIAL;
+		is_finished = state->attrs & FSM_STATE_ATTR_FINISHED;
 
 		if (is_initial && is_finished)
 			fprintf(output, "\ts%d [label=\"State '%s'\", shape=tripleoctagon];\n", state->id, state->name);
@@ -50,14 +50,14 @@ void visualize_nfa(FILE * output, struct nfa * nfa)
 	fflush(output);
 }
 
-void generate_nfa_language(FILE * output, struct nfa * nfa)
+void generate_nfa_language(FILE * output, struct fsm * fsm)
 {
-    struct nfa_state * state;
+    struct fsm_state * state;
 
     fprintf(output, "start ");
     bool is_first = true;
-    list_foreach(state, nfa->states) {
-        if (state->attrs & NFA_STATE_ATTR_INITIAL) {
+    list_foreach(state, fsm->states) {
+        if (state->attrs & FSM_STATE_ATTR_INITIAL) {
             if (is_first) {
                 fprintf(output, "%s", state->name);
                 is_first = false;
@@ -70,8 +70,8 @@ void generate_nfa_language(FILE * output, struct nfa * nfa)
 
     fprintf(output, "end ");
     is_first = true;
-    list_foreach(state, nfa->states) {
-        if (state->attrs & NFA_STATE_ATTR_FINISHED) {
+    list_foreach(state, fsm->states) {
+        if (state->attrs & FSM_STATE_ATTR_FINISHED) {
             if (is_first) {
                 fprintf(output, "%s", state->name);
                 is_first = false;
@@ -84,14 +84,14 @@ void generate_nfa_language(FILE * output, struct nfa * nfa)
 
     fprintf(output, "\n");
 
-    struct nfa_transition * transition;
-    struct nfa_state_list * state_item;
-    struct nfa_state * target_state;
+    struct fsm_transition * transition;
+    struct fsm_state_list * state_item;
+    struct fsm_state * target_state;
 
-    list_foreach(state, nfa->states) {
+    list_foreach(state, fsm->states) {
         list_foreach(transition, state->transitions) {
             list_foreach(state_item, transition->states) {
-                target_state = nfa_search_state_by_id(nfa, state_item->state_id);
+                target_state = fsm_search_state_by_id(fsm, state_item->state_id);
                 if (target_state == NULL)
                     continue;
                 fprintf(output, "%s to %s by ", state->name, target_state->name);
@@ -109,15 +109,15 @@ void generate_nfa_language(FILE * output, struct nfa * nfa)
     fflush(output);
 }
 
-void generate_dfa_language(FILE * output, struct nfa * dfa)
+void generate_dfa_language(FILE * output, struct fsm * fsm)
 {
-    struct nfa_state * state, * target_state;
-    struct nfa_transition * transition;
+    struct fsm_state * state, * target_state;
+    struct fsm_transition * transition;
 
     fprintf(output, "start ");
     bool is_first = true;
-    list_foreach(state, dfa->states) {
-        if (state->attrs & NFA_STATE_ATTR_INITIAL) {
+    list_foreach(state, fsm->states) {
+        if (state->attrs & FSM_STATE_ATTR_INITIAL) {
             if (is_first) {
                 fprintf(output, "s%u", state->id);
                 is_first = false;
@@ -130,8 +130,8 @@ void generate_dfa_language(FILE * output, struct nfa * dfa)
 
     fprintf(output, "end ");
     is_first = true;
-    list_foreach(state, dfa->states) {
-        if (state->attrs & NFA_STATE_ATTR_FINISHED) {
+    list_foreach(state, fsm->states) {
+        if (state->attrs & FSM_STATE_ATTR_FINISHED) {
             if (is_first) {
                 fprintf(output, "s%u", state->id);
                 is_first = false;
@@ -144,9 +144,9 @@ void generate_dfa_language(FILE * output, struct nfa * dfa)
 
     fprintf(output, "\n");
 
-    list_foreach(state, dfa->states) {
+    list_foreach(state, fsm->states) {
         list_foreach(transition, state->transitions) {
-            target_state = nfa_search_state_by_id(dfa, transition->states->state_id);
+            target_state = fsm_search_state_by_id(fsm, transition->states->state_id);
             if (target_state == NULL)
                 continue;
             fprintf(output, "s%u to s%u by %c;\n", state->id, target_state->id, transition->ch);
