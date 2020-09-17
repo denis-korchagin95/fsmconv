@@ -330,16 +330,16 @@ void init_parser(void)
 		}
 	}
 
-	/* define built-in special-character @empty */
+	/* define built-in special-character @epsilon */
 	{
-		const char * empty = "empty";
+		const char * keyword_epsilon = "epsilon";
 
 		struct symbol * character = ___alloc_symbol();
 		character->type = SYMBOL_CHARACTER;
 		character->next = NULL;
 		character->content.code = -1;
 
-		identifier = identifier_insert(hash(empty), empty);
+		identifier = identifier_insert(hash(keyword_epsilon), keyword_epsilon);
 
 		symbol = ___alloc_symbol();
 		symbol->type = SYMBOL_SPECIAL_CHARACTER_BUILTIN;

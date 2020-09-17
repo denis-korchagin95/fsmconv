@@ -1,5 +1,5 @@
 special characters:
-	@empty - it represents an 'epsilon' transition to state
+	@epsilon - it represents an 'epsilon' transition to state
 
 directives:
 	start - it allows mark states which represent an initial states

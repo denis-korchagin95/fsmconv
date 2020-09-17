@@ -96,7 +96,7 @@ void generate_nfa_language(FILE * output, struct nfa * nfa)
                     continue;
                 fprintf(output, "%s to %s by ", state->name, target_state->name);
                 if (transition->ch == EMPTY_CHAR) {
-                    fprintf(output, "@empty");
+                    fprintf(output, "@epsilon");
                 }
                 else {
                     fprintf(output, "%c", transition->ch);

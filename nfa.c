@@ -22,18 +22,18 @@ struct nfa_state * nfa_search_state_by_id(struct nfa * nfa, uint32_t id)
     return NULL;
 }
 
-struct nfa_state_list * nfa_empty_closure(struct nfa * nfa, struct nfa_state_list * states)
+struct nfa_state_list * nfa_epsilon_closure(struct nfa * nfa, struct nfa_state_list * states)
 {
-    struct nfa_state_list * empty_closure, * state_item, * hold, * stack, * current;
+    struct nfa_state_list * epsilon_closure, * state_item, * hold, * stack, * current;
     struct nfa_state * state;
     struct nfa_transition * transition;
 
-    empty_closure = NULL;
+    epsilon_closure = NULL;
     stack = NULL;
 
     list_foreach(state_item, states) {
         hold = nfa_state_list_create(state_item->state_id);
-        nfa_state_list_ordered_insert(&empty_closure, hold);
+        nfa_state_list_ordered_insert(&epsilon_closure, hold);
 
         hold = nfa_state_list_create(state_item->state_id);
         hold->next = stack;
@@ -56,9 +56,9 @@ struct nfa_state_list * nfa_empty_closure(struct nfa * nfa, struct nfa_state_lis
             continue;
 
         list_foreach(state_item, transition->states) {
-            if (! nfa_state_list_has_state(empty_closure, state_item->state_id)) {
+            if (! nfa_state_list_has_state(epsilon_closure, state_item->state_id)) {
                 hold = nfa_state_list_create(state_item->state_id);
-                nfa_state_list_ordered_insert(&empty_closure, hold);
+                nfa_state_list_ordered_insert(&epsilon_closure, hold);
 
                 hold = nfa_state_list_create(state_item->state_id);
                 hold->next = stack;
@@ -69,16 +69,16 @@ struct nfa_state_list * nfa_empty_closure(struct nfa * nfa, struct nfa_state_lis
         /* TODO: free(current) */
     }
 
-    return empty_closure;
+    return epsilon_closure;
 }
 
-struct nfa_state_list * nfa_state_empty_closure(struct nfa_state * state)
+struct nfa_state_list * nfa_state_epsilon_closure(struct nfa_state * state)
 {
-    struct nfa_state_list * empty_closure, * stack, * hold, * current, * state_item;
+    struct nfa_state_list * epsilon_closure, * stack, * hold, * current, * state_item;
     struct nfa_state * search_state;
     struct nfa_transition * transition;
 
-    empty_closure = nfa_state_list_create(state->id);
+    epsilon_closure = nfa_state_list_create(state->id);
     stack = nfa_state_list_create(state->id);
 
     while(stack != NULL)
@@ -98,9 +98,9 @@ struct nfa_state_list * nfa_state_empty_closure(struct nfa_state * state)
             continue;
 
         list_foreach(state_item, transition->states) {
-            if (! nfa_state_list_has_state(empty_closure, state_item->state_id)) {
+            if (! nfa_state_list_has_state(epsilon_closure, state_item->state_id)) {
                 hold = nfa_state_list_create(state_item->state_id);
-                nfa_state_list_ordered_insert(&empty_closure, hold);
+                nfa_state_list_ordered_insert(&epsilon_closure, hold);
 
                 hold = nfa_state_list_create(state_item->state_id);
                 hold->next = stack;
@@ -111,7 +111,7 @@ struct nfa_state_list * nfa_state_empty_closure(struct nfa_state * state)
         /* TODO: free(current) */
     }
 
-    return empty_closure;
+    return epsilon_closure;
 }
 
 static struct nfa_state * nfa_find_not_visited_state(struct nfa * nfa)
@@ -128,7 +128,7 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
 {
     struct nfa * dfa;
     struct nfa_state * state, * new_state, * search_state;
-    struct nfa_state_list * empty_closure, * state_list, * state_item, * state_item2, * new_state_item, * finished_states;
+    struct nfa_state_list * epsilon_closure, * state_list, * state_item, * state_item2, * new_state_item, * finished_states;
     struct nfa_character_list * characters, * character_item;
     struct nfa_transition * transition;
 
@@ -143,7 +143,7 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
     list_foreach(state, nfa->states) {
         if (state->attrs & NFA_STATE_ATTR_INITIAL) {
             new_state = ___alloc_nfa_state();
-            new_state->subset = nfa_state_empty_closure(state);
+            new_state->subset = nfa_state_epsilon_closure(state);
             new_state->owner = dfa;
             new_state->id = dfa->state_count++;
             new_state->next = NULL;
@@ -203,15 +203,15 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
             if (state_list == NULL)
                 continue;
 
-            empty_closure = nfa_empty_closure(nfa, state_list);
+            epsilon_closure = nfa_epsilon_closure(nfa, state_list);
             /* TODO: free(state_list) */
             state_list = NULL;
 
-            search_state = nfa_search_state_by_subset(dfa, empty_closure);
+            search_state = nfa_search_state_by_subset(dfa, epsilon_closure);
 
             if (search_state == NULL) {
                 new_state = ___alloc_nfa_state();
-                new_state->subset = empty_closure;
+                new_state->subset = epsilon_closure;
                 new_state->owner = dfa;
                 new_state->id = dfa->state_count++;
                 new_state->next = NULL;
