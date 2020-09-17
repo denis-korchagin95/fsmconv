@@ -1,5 +1,6 @@
 features:
 	(?) combine multiple initial states into one initial state on the target dfa
+	(?) determine what kind of fsm has been parsed from a file
 memory:
 	(?) mark all places where program needs to release memory
 language:
@@ -10,6 +11,7 @@ parser:
 	(?) reuse transition to low memory usage
 	(?) continue parsing to find out more errors after getting the first error
 	(?) after parsing check out parse tree on correctness
+	(?) it needs recovery after a syntax/fatal error
 	(?) show errors in context of the source
 	(?) implement hash table for any strings to low memory usage
 debug:
