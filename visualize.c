@@ -82,7 +82,7 @@ void generate_nfa_language(FILE * output, struct nfa * nfa)
     }
     fprintf(output, ";\n");
 
-    fprintf(output, "\n\n");
+    fprintf(output, "\n");
 
     struct nfa_transition * transition;
     struct nfa_state_list * state_item;
@@ -142,7 +142,7 @@ void generate_dfa_language(FILE * output, struct nfa * dfa)
     }
     fprintf(output, ";\n");
 
-    fprintf(output, "\n\n");
+    fprintf(output, "\n");
 
     list_foreach(state, dfa->states) {
         list_foreach(transition, state->transitions) {
