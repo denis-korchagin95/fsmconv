@@ -241,6 +241,9 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
         }
     }
 
+    /* TODO: free(finished_states); */
+    /* TODO: free(characters); */
+
     return dfa;
 }
 

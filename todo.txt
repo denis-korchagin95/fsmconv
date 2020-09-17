@@ -1,8 +1,6 @@
 features:
 	(?) combine multiple initial states into one initial state on the target dfa
 	(?) determine what kind of fsm has been parsed from a file
-memory:
-	(?) mark all places where program needs to release memory
 language:
 	(?) define user's special-characters to alias character list or character
 parser:

@@ -35,9 +35,14 @@ int main(int argc, char * argv[])
 
   struct fsm * nfa = fsm_compile(parse_tree);
 
+  /* TODO: free(parse_tree); */
+  /* TODO: free(nfa); */
+
   struct fsm * dfa = nfa_to_dfa(nfa);
 
   generate_dfa_language(stdout, dfa);
+
+  /* TODO: free(dfa); */
 
   exit(0);
 }
