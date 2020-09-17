@@ -12,14 +12,27 @@
 #include "visualize.h"
 #include "fsm_types.h"
 #include "fsm.h"
+#include "util.h"
+
+static const char * version = "0.0.1";
+
+static void usage(const char * program, FILE * output)
+{
+    const char * basename = strrchr(program, DIRECTORY_SEPARATOR);
+    if (basename != NULL)
+        ++basename;
+    fprintf(output, "%s version %s\n", basename, version);
+    fprintf(output, "Usage: %s source\n", basename);
+	fflush(output);
+}
 
 int main(int argc, char * argv[])
 {
   init_parser();
 
   if (argc < 2) {
-      fprintf(stderr, "%s: missing operand\n", argv[0]);
-      exit(1);
+      usage(argv[0], stdout);
+      exit(0);
   }
 
   FILE * file = fopen(argv[1], "r");
