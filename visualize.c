@@ -114,6 +114,36 @@ void generate_dfa_language(FILE * output, struct nfa * dfa)
     struct nfa_state * state, * target_state;
     struct nfa_transition * transition;
 
+    fprintf(output, "start ");
+    bool is_first = true;
+    list_foreach(state, dfa->states) {
+        if (state->attrs & NFA_STATE_ATTR_INITIAL) {
+            if (is_first) {
+                fprintf(output, "s%u", state->id);
+                is_first = false;
+                continue;
+            }
+            fprintf(output, ", s%u", state->id);
+        }
+    }
+    fprintf(output, ";\n");
+
+    fprintf(output, "end ");
+    is_first = true;
+    list_foreach(state, dfa->states) {
+        if (state->attrs & NFA_STATE_ATTR_FINISHED) {
+            if (is_first) {
+                fprintf(output, "s%u", state->id);
+                is_first = false;
+                continue;
+            }
+            fprintf(output, ", s%u", state->id);
+        }
+    }
+    fprintf(output, ";\n");
+
+    fprintf(output, "\n\n");
+
     list_foreach(state, dfa->states) {
         list_foreach(transition, state->transitions) {
             if (transition->states == NULL)

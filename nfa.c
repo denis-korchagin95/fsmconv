@@ -128,7 +128,7 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
 {
     struct nfa * dfa;
     struct nfa_state * state, * new_state, * search_state;
-    struct nfa_state_list * empty_closure, * state_list, * state_item, * state_item2, * new_state_item;
+    struct nfa_state_list * empty_closure, * state_list, * state_item, * state_item2, * new_state_item, * finished_states;
     struct nfa_character_list * characters, * character_item;
     struct nfa_transition * transition;
 
@@ -138,6 +138,7 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
     dfa->state_count = 0;
 
     characters = NULL;
+    finished_states = NULL;
 
     list_foreach(state, nfa->states) {
         if (state->attrs & NFA_STATE_ATTR_INITIAL) {
@@ -147,11 +148,18 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
             new_state->id = dfa->state_count++;
             new_state->next = NULL;
             new_state->transitions = NULL;
-            new_state->attrs = 0;
+            new_state->attrs = NFA_STATE_ATTR_INITIAL;
 
             *dfa->last_state = new_state;
             dfa->last_state = &new_state->next;
         }
+
+	    if(state->attrs & NFA_STATE_ATTR_FINISHED) {
+		    state_item = ___alloc_nfa_state_list();
+		    state_item->state_id = state->id;
+		    state_item->next = finished_states;
+		    finished_states = state_item;
+	    }
 
         list_foreach(transition, state->transitions) {
             if (transition->ch != EMPTY_CHAR && !nfa_character_list_has_character(characters, transition->ch)) {
@@ -166,6 +174,15 @@ struct nfa * nfa_to_dfa(struct nfa * nfa)
 
     while((state = nfa_find_not_visited_state(dfa)) != NULL) {
         state->attrs |= NFA_STATE_ATTR_VISITED;
+
+        if (! (state->attrs & NFA_STATE_ATTR_FINISHED)) {
+            list_foreach(state_item, state->subset) {
+                if (nfa_state_list_has_state(finished_states, state_item->state_id)) {
+                    state->attrs |= NFA_STATE_ATTR_FINISHED;
+                    break;
+                }
+            }
+        }
 
         list_foreach(character_item, characters) {
             state_list = NULL;
