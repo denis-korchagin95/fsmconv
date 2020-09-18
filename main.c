@@ -41,7 +41,10 @@ static void print_fsm(FILE * output, struct fsm * fsm, int format, bool is_dfa)
                 generate_nfa_language(output, fsm);
             break;
         case FSM_OUTPUT_FORMAT_DOT:
-            visualize_nfa(output, fsm);
+            if (is_dfa)
+                visualize_dfa(output, fsm);
+            else
+                visualize_nfa(output, fsm);
             break;
     }
 }

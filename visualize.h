@@ -2,6 +2,7 @@
 #define FSMCONV_VISUALIZE_H 1
 
 void visualize_nfa(FILE * output, struct fsm * nfa);
+void visualize_dfa(FILE * output, struct fsm * dfa);
 
 void generate_nfa_language(FILE * output, struct fsm * nfa);
 void generate_dfa_language(FILE * output, struct fsm * dfa);

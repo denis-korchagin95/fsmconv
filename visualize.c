@@ -173,3 +173,46 @@ void generate_dfa_language(FILE * output, struct fsm * fsm)
 
     fflush(output);
 }
+
+void visualize_dfa(FILE * output, struct fsm * dfa)
+{
+    struct fsm_state * state;
+    struct fsm_transition * transition;
+    struct fsm_state_list * state_list;
+    bool is_initial, is_finished;
+
+    fprintf(output, "digraph dfa {\n");
+
+    state = dfa->states;
+
+    while(state != NULL) {
+        is_initial = state->attrs & FSM_STATE_ATTR_INITIAL;
+        is_finished = state->attrs & FSM_STATE_ATTR_FINISHED;
+
+        if (is_initial && is_finished)
+            fprintf(output, "\ts%u [label=\"State %u\", shape=tripleoctagon];\n", state->id, state->id);
+        else if (is_initial && !is_finished)
+            fprintf(output, "\ts%u [label=\"State %u\", shape=invhouse];\n", state->id, state->id);
+        else if (!is_initial && is_finished)
+            fprintf(output, "\ts%u [label=\"State %u\", shape=doubleoctagon];\n", state->id, state->id);
+        else
+            fprintf(output, "\ts%u [label=\"State %u\"]; \n", state->id, state->id);
+
+        transition = state->transitions;
+
+        while(transition != NULL) {
+            state_list = transition->states;
+            while(state_list != NULL) {
+                fprintf(output, "\ts%d -> s%d [label=\"%s\"];\n", state->id, state_list->state_id, char_to_string(transition->ch));
+                state_list = state_list->next;
+            }
+            transition = transition->next;
+        }
+
+        state = state->next;
+    }
+
+    fprintf(output, "}\n");
+
+    fflush(output);
+}
