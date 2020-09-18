@@ -5,6 +5,7 @@ SRC=./
 BIN=./bin/
 OBJ=./obj/
 PROGRAM=fsmconv
+INSTALL_PATH=/usr/local/bin/
 
 SAMPLE_FILE=./examples/simple_nfa1.txt
 
@@ -65,6 +66,12 @@ build: $(OBJECTS)
 run:
 	$(BIN)$(PROGRAM) $(SAMPLE_FILE)
 
+install: build
+	cp $(BIN)$(PROGRAM) $(INSTALL_PATH)$(PROGRAM)
+
+uninstall:
+	rm -v $(INSTALL_PATH)$(PROGRAM)
+
 clean:
 	rm -rf $(BIN)$(PROGRAM)
 	rm -rf $(OBJ)*
@@ -76,4 +83,3 @@ clean:
 visualize:
 	dot -Tsvg $(SRC)nfa.dot -o nfa.svg
 	dot -Tsvg $(SRC)dfa.dot -o dfa.svg
-
