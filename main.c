@@ -14,48 +14,97 @@
 #include "fsm.h"
 #include "util.h"
 
-static const char * version = "0.0.1";
+enum {
+    FSM_OUTPUT_FORMAT_NATIVE = 0,
+    FSM_OUTPUT_FORMAT_DOT = 1,
+};
 
 static void usage(const char * program, FILE * output)
 {
-    const char * basename = strrchr(program, DIRECTORY_SEPARATOR);
-    if (basename != NULL)
-        ++basename;
-    fprintf(output, "%s version %s\n", basename, version);
-    fprintf(output, "Usage: %s source\n", basename);
-	fflush(output);
+    fprintf(output, "Usage: file [options]\n");
+    fflush(output);
 }
+
+static void print_fsm(FILE * output, struct fsm * fsm, int format, bool is_dfa)
+{
+    switch (format)
+    {
+        case FSM_OUTPUT_FORMAT_NATIVE:
+            if (is_dfa)
+                generate_dfa_language(output, fsm);
+            else
+                generate_nfa_language(output, fsm);
+            break;
+        case FSM_OUTPUT_FORMAT_DOT:
+            visualize_nfa(output, fsm);
+            break;
+    }
+}
+
+static bool print_input_fsm_only = false;
+static int fsm_output_format = FSM_OUTPUT_FORMAT_NATIVE;
 
 int main(int argc, char * argv[])
 {
-  init_parser();
+    if (argc < 2) {
+        usage(argv[0], stdout);
+        exit(0);
+    }
+    const char * input_file = argv[1];
 
-  if (argc < 2) {
-      usage(argv[0], stdout);
-      exit(0);
-  }
+    int i;
+    for(i = 2; i < argc; ++i) {
+        const char * arg = argv[i];
 
-  FILE * file = fopen(argv[1], "r");
+        if (!strcmp(arg, "--format=native")) {
+            continue;
+        }
 
-  struct symbol * parse_tree = parse(file);
+        if (!strcmp(arg, "--format=dot")) {
+            fsm_output_format = FSM_OUTPUT_FORMAT_DOT;
+            continue;
+        }
 
-  fclose(file);
+        if (!strcmp(arg, "--print-only")) {
+            print_input_fsm_only = true;
+            continue;
+        }
 
-  if (parse_tree == NULL) {
-	  printf("parse file error!\n");
-	  exit(1);
-  }
+        fprintf(stderr, "unknown option: %s\n", arg);
+        exit(0);
+    }
 
-  struct fsm * nfa = fsm_compile(parse_tree);
+    init_parser();
 
-  /* TODO: free(parse_tree); */
-  /* TODO: free(nfa); */
+    FILE * file = fopen(input_file, "r");
 
-  struct fsm * dfa = nfa_to_dfa(nfa);
+    struct symbol * parse_tree = parse(file);
 
-  generate_dfa_language(stdout, dfa);
+    fclose(file);
 
-  /* TODO: free(dfa); */
+    if (parse_tree == NULL) {
+        printf("parse file error!\n");
+        exit(1);
+    }
 
-  exit(0);
+    struct fsm * nfa = fsm_compile(parse_tree);
+
+    if (print_input_fsm_only) {
+        print_fsm(stdout, nfa, fsm_output_format, false);
+
+        /* TODO: free(parse_tree); */
+        /* TODO: free(nfa); */
+
+        exit(0);
+    }
+
+    struct fsm * dfa = nfa_to_dfa(nfa);
+
+    print_fsm(stdout, dfa, fsm_output_format, true);
+
+    /* TODO: free(parse_tree); */
+    /* TODO: free(nfa); */
+    /* TODO: free(dfa); */
+
+    exit(0);
 }
