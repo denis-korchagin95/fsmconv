@@ -21,7 +21,12 @@ enum {
 
 static void usage(const char * program, FILE * output)
 {
-    fprintf(output, "Usage: file [options]\n");
+    fprintf(output, "Usage: file [options]\n\n");
+    fprintf(output, "OPTIONS\n");
+    fprintf(output, "\t--print-only\n");
+    fprintf(output, "\t\tPrint only the given FSM and exit.\n");
+    fprintf(output, "\t--format=[native|dot] (native by default)\n");
+    fprintf(output, "\t\tPrint the FSM in a given format, where format can be one of 'native', or 'dot'.\n");
     fflush(output);
 }
 
