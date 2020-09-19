@@ -1,13 +1,5 @@
-features:
-	(?) combine multiple initial states into one initial state on the target dfa
-	(?) determine what kind of fsm has been parsed from a file
-	(?) convert epsilon-nfa to nfa
-	(?) optimization of dfa
-	(?) minimization of dfa
 language:
 	(?) define user's special-characters to alias character list or character
-memory:
-    (?) write release static memory allocator
 parser:
 	(?) reuse characters to low memory usage
 	(?) reuse character list to low memory usage
@@ -17,5 +9,3 @@ parser:
 	(?) it needs recovery after a syntax/fatal error
 	(?) show errors in context of the source
 	(?) implement hash table for any strings to low memory usage
-debug:
-	(?) fix parse tree printing ('debug_symbol' function)
