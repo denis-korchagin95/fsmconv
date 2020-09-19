@@ -133,6 +133,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
     struct fsm_transition * transition;
 
     dfa = ___alloc_fsm();
+    dfa->type = FSM_TYPE_DFA;
     dfa->states = NULL;
     dfa->last_state = &dfa->states;
     dfa->state_count = 0;
@@ -255,4 +256,58 @@ struct fsm_state * fsm_search_state_by_subset(struct fsm * fsm, struct fsm_state
             return it;
     }
     return NULL;
+}
+
+uint32_t fsm_determine_type(struct fsm * fsm)
+{
+	struct character_list * characters, * character_item;
+	struct fsm_state * state;
+	struct fsm_transition * transition;
+
+	bool has_epsilon_transition = false;
+	bool has_multiple_transitions_by_character = false;
+
+	characters = NULL;
+
+    list_foreach(state, fsm->states) {
+        list_foreach(transition, state->transitions) {
+            if (!has_epsilon_transition && transition->ch == EMPTY_CHAR)
+				has_epsilon_transition = true;
+			if (!has_multiple_transitions_by_character && transition->states != NULL && transition->states->next != NULL)
+				has_multiple_transitions_by_character = true;
+
+			if(!character_list_has_character(characters, transition->ch))
+			{
+				character_item = ___alloc_character_list();
+				character_item->ch = transition->ch;
+				character_item->next = characters;
+
+				characters = character_item;
+			}
+        }
+    }
+
+	if (has_epsilon_transition)
+		return FSM_TYPE_EPSILON_NFA;
+	else if (has_multiple_transitions_by_character)
+		return FSM_TYPE_NFA;
+
+	bool has_missed_transitions = false;
+
+	list_foreach(character_item, characters) {
+		list_foreach(state, fsm->states) {
+			if (fsm_state_search_transition_by_character(state, character_item->ch) == NULL) {
+				has_missed_transitions = true;
+				goto out_loop;
+			}
+		}
+	}
+
+out_loop:
+	/* TODO: free(characters); */
+
+	if(has_missed_transitions)
+		return FSM_TYPE_FAKE_DFA;
+
+	return FSM_TYPE_DFA;
 }

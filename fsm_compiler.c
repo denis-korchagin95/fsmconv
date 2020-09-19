@@ -143,6 +143,7 @@ struct fsm * fsm_compile(struct symbol * symbol)
 	struct symbol * statement;
 
 	fsm = ___alloc_fsm();
+    fsm->type = FSM_TYPE_UNDEFINED;
 	fsm->states = NULL;
 	fsm->last_state = &fsm->states;
 	fsm->state_count = parser_last_state_id();
@@ -157,9 +158,12 @@ struct fsm * fsm_compile(struct symbol * symbol)
 	/* compile rules */
 	while(statement != NULL) {
 		if (statement->content.symbol->type == SYMBOL_RULE)
-			fsm_rule_compile(fsm, statement->content.symbol);
-		statement = statement->next;
+		    fsm_rule_compile(fsm, statement->content.symbol);
+        statement = statement->next;
 	}
+
+	/* determination type of the FSM */
+	fsm->type = fsm_determine_type(fsm);
 
 	statement = symbol->next;
 

@@ -1,0 +1,7 @@
+# a DFA
+start q0;
+end q3;
+
+q0 -> q1 by 'a';
+q1 -> q2 by 'b';
+q2 -> q3 by 'c';

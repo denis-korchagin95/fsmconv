@@ -1,0 +1,8 @@
+# an epsilon-NFA
+start q0;
+end q2, q3;
+
+q0 -> q1 by '1';
+q1 -> q2 by '2';
+q2 -> q3 by '7';
+q0 -> q2 by @epsilon;
