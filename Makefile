@@ -12,13 +12,13 @@ SAMPLE_FILE=./examples/simple_nfa1.txt
 vpath %.c $(SRC)
 vpath %.h $(SRC)
 
-all: $(BIN)$(PROGRAM) run
+all: build run
 
 OBJECTS = allocator.o debug.o parser.o fsm_compiler.o visualize.o util.o \
 	  fsm.o fsm_state.o fsm_state_list.o fsm_transition.o character_list.o main.o
 
-$(BIN)$(PROGRAM): $(addprefix $(OBJ), $(OBJECTS))
-	@$(CC) $(LFLAGS) $^ -o $@
+build: $(addprefix $(OBJ), $(OBJECTS))
+	@$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
 
 run:
 	$(BIN)$(PROGRAM) $(SAMPLE_FILE)
@@ -40,6 +40,8 @@ clean:
 visualize:
 	dot -Tsvg $(SRC)nfa.dot -o nfa.svg
 	dot -Tsvg $(SRC)dfa.dot -o dfa.svg
+
+.PHONY: build clean run all visualize install uninstall
 
 $(OBJ)%.o: %.c
 	$(CC) $(CFLAGS) -c $(SRC)$*.c -o $@

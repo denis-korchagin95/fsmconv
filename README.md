@@ -66,13 +66,18 @@ B to C by @epsilon;
 ## Usage
 
 ```
-Usage: file [options]
+Usage: fsmconv file [options]
+
+DESCRIPTION
+        A command-line tool for converting FSA from one to another representation.
 
 OPTIONS
         --print-only
                 Print only the given FSM and exit.
         --format=[native|dot] (native by default)
                 Print the FSM in a given format, where format can be one of 'native', or 'dot'.
+        --output=<file>
+                Place the output into <file>.
 ```
 
 ## Example
