@@ -9,77 +9,50 @@ INSTALL_PATH=/usr/local/bin/
 
 SAMPLE_FILE=./examples/simple_nfa1.txt
 
-all: build run
+vpath %.c $(SRC)
+vpath %.h $(SRC)
 
-$(OBJ)debug.o: $(SRC)debug.c $(SRC)debug.h $(SRC)parser.h $(SRC)parser_types.h $(SRC)fsm_types.h $(SRC)fsm_state_list.h
-	$(CC) $(CFLAGS) -c $(SRC)debug.c -o $(OBJ)debug.o
+all: $(BIN)$(PROGRAM) run
 
-$(OBJ)main.o: $(SRC)main.c $(SRC)parser.h $(SRC)allocator.h $(SRC)debug.h $(SRC)fsm_types.h $(SRC)util.h $(SRC)parser_types.h $(SRC)fsm_compiler.h $(SRC)fsm.h
-	$(CC) $(CFLAGS) -c $(SRC)main.c -o $(OBJ)main.o
+OBJECTS = allocator.o debug.o parser.o fsm_compiler.o visualize.o util.o \
+	  fsm.o fsm_state.o fsm_state_list.o fsm_transition.o character_list.o main.o
 
-$(OBJ)parser.o: $(SRC)parser.c $(SRC)parser.h $(SRC)parser_types.h $(SRC)allocator.h $(SRC)debug.h $(SRC)fsm_types.h
-	$(CC) $(CFLAGS) -c $(SRC)parser.c -o $(OBJ)parser.o
-
-$(OBJ)allocator.o: $(SRC)allocator.c $(SRC)allocator.h $(SRC)fsm_types.h $(SRC)parser_types.h
-	$(CC) $(CFLAGS) -c $(SRC)allocator.c -o $(OBJ)allocator.o
-
-$(OBJ)fsm_compiler.o: $(SRC)fsm_compiler.c $(SRC)fsm_types.h $(SRC)parser_types.h $(SRC)allocator.h $(SRC)fsm.h $(SRC)fsm_state.h $(SRC)parser.h
-	$(CC) $(CFLAGS) -c $(SRC)fsm_compiler.c -o $(OBJ)fsm_compiler.o
-
-$(OBJ)visualize.o: $(SRC)visualize.c $(SRC)visualize.h $(SRC)fsm_types.h
-	$(CC) $(CFLAGS) -c $(SRC)visualize.c -o $(OBJ)visualize.o
-
-$(OBJ)util.o: $(SRC)util.c $(SRC)util.h
-	$(CC) $(CFLAGS) -c $(SRC)util.c -o $(OBJ)util.o
-
-$(OBJ)fsm.o: $(SRC)fsm.c $(SRC)fsm.h $(SRC)fsm_types.h $(SRC)parser_types.h $(SRC)allocator.h $(SRC)util.h $(SRC)fsm_state.h $(SRC)fsm_state_list.h $(SRC)character_list.h
-	$(CC) $(CFLAGS) -c $(SRC)fsm.c -o $(OBJ)fsm.o
-
-$(OBJ)fsm_state.o: $(SRC)fsm_state.c $(SRC)fsm_state.h $(SRC)fsm_types.h
-	$(CC) $(CFLAGS) -c $(SRC)fsm_state.c -o $(OBJ)fsm_state.o
-
-$(OBJ)fsm_state_list.o: $(SRC)fsm_state_list.c $(SRC)fsm_state_list.h $(SRC)fsm_types.h $(SRC)parser_types.h $(SRC)allocator.h
-	$(CC) $(CFLAGS) -c $(SRC)fsm_state_list.c -o $(OBJ)fsm_state_list.o
-
-$(OBJ)fsm_transition.o: $(SRC)fsm_transition.c $(SRC)fsm_transition.h $(SRC)fsm_types.h
-	$(CC) $(CFLAGS) -c $(SRC)fsm_transition.c -o $(OBJ)fsm_transition.o
-
-$(OBJ)character_list.o: $(SRC)character_list.c $(SRC)character_list.h $(SRC)fsm_types.h $(SRC)util.h
-	$(CC) $(CFLAGS) -c $(SRC)character_list.c -o $(OBJ)character_list.o
-
-OBJECTS  = $(OBJ)allocator.o
-OBJECTS += $(OBJ)debug.o
-OBJECTS += $(OBJ)parser.o
-OBJECTS += $(OBJ)fsm_compiler.o
-OBJECTS += $(OBJ)visualize.o
-OBJECTS += $(OBJ)util.o
-OBJECTS += $(OBJ)fsm.o
-OBJECTS += $(OBJ)fsm_state.o
-OBJECTS += $(OBJ)fsm_state_list.o
-OBJECTS += $(OBJ)fsm_transition.o
-OBJECTS += $(OBJ)character_list.o
-OBJECTS += $(OBJ)main.o
-
-build: $(OBJECTS)
-	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
+$(BIN)$(PROGRAM): $(addprefix $(OBJ), $(OBJECTS))
+	@$(CC) $(LFLAGS) $^ -o $@
 
 run:
 	$(BIN)$(PROGRAM) $(SAMPLE_FILE)
 
 install: build
-	cp $(BIN)$(PROGRAM) $(INSTALL_PATH)$(PROGRAM)
+	@cp $(BIN)$(PROGRAM) $(INSTALL_PATH)$(PROGRAM)
 
 uninstall:
-	rm -v $(INSTALL_PATH)$(PROGRAM)
+	@rm -v $(INSTALL_PATH)$(PROGRAM)
 
 clean:
-	rm -rf $(BIN)$(PROGRAM)
-	rm -rf $(OBJ)*
-	rm -rf nfa.dot
-	rm -rf dfa.dot
-	rm -rf nfa.svg
-	rm -rf dfa.svg
+	@rm -rfv $(BIN)$(PROGRAM)
+	@rm -rfv $(OBJ)*
+	@rm -rfv nfa.dot
+	@rm -rfv dfa.dot
+	@rm -rfv nfa.svg
+	@rm -rfv dfa.svg
 
 visualize:
 	dot -Tsvg $(SRC)nfa.dot -o nfa.svg
 	dot -Tsvg $(SRC)dfa.dot -o dfa.svg
+
+$(OBJ)%.o: %.c
+	$(CC) $(CFLAGS) -c $(SRC)$*.c -o $@
+
+$(OBJ)allocator.o: allocator.c character_list.h fsm_types.h parser_types.h allocator.h
+$(OBJ)character_list.o: character_list.c fsm_types.h util.h character_list.h
+$(OBJ)debug.o: debug.c parser.h parser_types.h fsm_types.h fsm_state_list.h debug.h
+$(OBJ)fsm.o: fsm.c character_list.h fsm_types.h parser_types.h fsm.h allocator.h util.h fsm_state.h fsm_state_list.h
+$(OBJ)fsm_compiler.o: fsm_compiler.c character_list.h fsm_types.h parser_types.h parser.h allocator.h util.h fsm.h fsm_state.h
+$(OBJ)fsm_state.o: fsm_state.c fsm_types.h fsm_state.h
+$(OBJ)fsm_state_list.o: fsm_state_list.c character_list.h fsm_types.h parser_types.h fsm_state_list.h allocator.h
+$(OBJ)fsm_transition.o: fsm_transition.c fsm_types.h fsm_transition.h
+$(OBJ)parser.o: parser.c character_list.h fsm_types.h parser.h parser_types.h allocator.h debug.h
+$(OBJ)util.o: util.c util.h fsm_types.h
+$(OBJ)visualize.o: visualize.c fsm_types.h util.h visualize.h fsm.h
+$(OBJ)main.o: main.c parser.h fsm_compiler.h visualize.h fsm_types.h fsm.h util.h
