@@ -260,14 +260,11 @@ struct fsm_state * fsm_search_state_by_subset(struct fsm * fsm, struct fsm_state
 
 uint32_t fsm_determine_type(struct fsm * fsm)
 {
-	struct character_list * characters, * character_item;
 	struct fsm_state * state;
 	struct fsm_transition * transition;
 
 	bool has_epsilon_transition = false;
 	bool has_multiple_transitions_by_character = false;
-
-	characters = NULL;
 
     list_foreach(state, fsm->states) {
         list_foreach(transition, state->transitions) {
@@ -275,7 +272,20 @@ uint32_t fsm_determine_type(struct fsm * fsm)
 				has_epsilon_transition = true;
 			if (!has_multiple_transitions_by_character && transition->states != NULL && transition->states->next != NULL)
 				has_multiple_transitions_by_character = true;
+        }
+		if(has_epsilon_transition || has_multiple_transitions_by_character)
+			break;
+    }
 
+	if (has_epsilon_transition)
+		return FSM_TYPE_EPSILON_NFA;
+	else if (has_multiple_transitions_by_character)
+		return FSM_TYPE_NFA;
+
+	struct character_list * characters = NULL, * character_item;
+
+	list_foreach(state, fsm->states) {
+		list_foreach(transition, state->transitions) {
 			if(!character_list_has_character(characters, transition->ch))
 			{
 				character_item = ___alloc_character_list();
@@ -284,13 +294,8 @@ uint32_t fsm_determine_type(struct fsm * fsm)
 
 				characters = character_item;
 			}
-        }
-    }
-
-	if (has_epsilon_transition)
-		return FSM_TYPE_EPSILON_NFA;
-	else if (has_multiple_transitions_by_character)
-		return FSM_TYPE_NFA;
+		}
+	}
 
 	bool has_missed_transitions = false;
 
