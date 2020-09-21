@@ -1,16 +1,10 @@
-#include <ctype.h>
-#include <string.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-
-#include "character_list.h"
-#include "fsm_types.h"
 #include "parser.h"
-#include "parser_types.h"
 #include "allocator.h"
-#include "debug.h"
+
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <ctype.h>
 
 #define PUTBACK_BUFFER_SIZE 3
 #define PUTBACK_TOKEN_BUFFER_SIZE 3

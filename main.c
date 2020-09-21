@@ -1,18 +1,15 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <errno.h>
 #include <string.h>
 #include <stdbool.h>
-#include <limits.h>
-#include <stdint.h>
+#include <stdlib.h>
+#include <errno.h>
 
+#include "util.h"
+#include "fsm_types.h"
+#include "visualize.h"
 #include "parser.h"
 #include "fsm_compiler.h"
-#include "visualize.h"
-#include "fsm_types.h"
 #include "fsm.h"
-#include "util.h"
 
 enum {
     FSM_OUTPUT_FORMAT_NATIVE = 0,

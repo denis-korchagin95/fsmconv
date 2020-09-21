@@ -1,6 +1,10 @@
 #ifndef FSMCONV_TYPES_H
 #define FSMCONV_TYPES_H 1
 
+#include <stdint.h>
+
+#include "util.h"
+
 #define EMPTY_CHAR (-1)
 
 #define FSM_STATE_ATTR_INITIAL      bit(0)

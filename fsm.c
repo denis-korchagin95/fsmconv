@@ -1,15 +1,9 @@
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-
-#include "character_list.h"
-#include "fsm_types.h"
-#include "parser_types.h"
 #include "fsm.h"
-#include "allocator.h"
-#include "util.h"
-#include "fsm_state.h"
 #include "fsm_state_list.h"
+#include "fsm_state.h"
+#include "allocator.h"
+
+#include <stddef.h>
 
 struct fsm_state * fsm_search_state_by_id(struct fsm * fsm, uint32_t id)
 {

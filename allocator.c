@@ -1,12 +1,5 @@
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdbool.h>
-
-#include "character_list.h"
-#include "fsm_types.h"
-#include "parser_types.h"
 #include "allocator.h"
+
 
 declare_allocator(fsm_state, struct fsm_state, 1024)
 declare_allocator(fsm, struct fsm, 16)

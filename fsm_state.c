@@ -1,9 +1,6 @@
-#include <stdint.h>
-#include <stddef.h>
-
-#include "fsm_types.h"
 #include "fsm_state.h"
 
+#include <stddef.h>
 
 struct fsm_transition * fsm_state_search_transition_by_character(struct fsm_state * state, int ch)
 {

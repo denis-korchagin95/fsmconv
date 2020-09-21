@@ -1,11 +1,7 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-
-#include "fsm_types.h"
-#include "util.h"
 #include "visualize.h"
 #include "fsm.h"
+
+#include <stdbool.h>
 
 static const char * transition_character_stringify(int ch)
 {

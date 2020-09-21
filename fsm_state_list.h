@@ -1,6 +1,11 @@
 #ifndef FSMCONV_FSM_STATE_LIST_H
 #define FSMCONV_FSM_STATE_LIST_H 1
 
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "fsm_types.h"
+
 struct fsm_state_list * fsm_state_list_create(uint32_t state_id);
 void fsm_state_list_ordered_insert(struct fsm_state_list ** list, struct fsm_state_list * new_item);
 

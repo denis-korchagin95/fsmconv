@@ -1,6 +1,14 @@
 #ifndef FSMCONV_ALLOCATOR_H
 #define FSMCONV_ALLOCATOR_H 1
 
+#include <stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "fsm_types.h"
+#include "parser_types.h"
+#include "character_list.h"
+
 #define define_allocator(name, type)      \
   extern type * ___alloc_ ## name(void);  \
   extern uint32_t name ## _pool_cursor;   \

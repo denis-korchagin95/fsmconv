@@ -1,6 +1,11 @@
 #ifndef FSMCONV_PARSER_H
 #define FSMCONV_PARSER_H 1
 
+#include <stdint.h>
+#include <stdio.h>
+
+#include "parser_types.h"
+
 extern struct token eof_token;
 
 void init_parser(void);

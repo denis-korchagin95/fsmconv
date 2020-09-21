@@ -1,13 +1,7 @@
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-
-#include "character_list.h"
-#include "fsm_types.h"
-#include "parser_types.h"
 #include "fsm_state_list.h"
 #include "allocator.h"
 
+#include <stddef.h>
 
 void fsm_state_list_ordered_insert(struct fsm_state_list ** list, struct fsm_state_list * new_item)
 {

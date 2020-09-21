@@ -1,16 +1,11 @@
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-#include "character_list.h"
-#include "fsm_types.h"
-#include "parser_types.h"
-#include "parser.h"
-#include "allocator.h"
-#include "util.h"
+#include "fsm_compiler.h"
 #include "fsm.h"
+#include "allocator.h"
+#include "fsm_transition.h"
 #include "fsm_state.h"
+#include "parser.h"
+
+#include <stddef.h>
 
 static struct fsm_state * fsm_state_compile(struct fsm * fsm, struct symbol * symbol)
 {
@@ -59,7 +54,7 @@ static void fsm_transition_compile(struct fsm_state * source, struct fsm_state *
 		source->transitions = transition;
 	}
 
-	if (! fsm_transition_has_state(transition, target)) {
+	if (! fsm_transition_has_state(transition, target->id)) {
 		state_list = ___alloc_fsm_state_list();
 		state_list->state_id = target->id;
 		state_list->next = transition->states;

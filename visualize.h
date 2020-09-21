@@ -1,6 +1,10 @@
 #ifndef FSMCONV_VISUALIZE_H
 #define FSMCONV_VISUALIZE_H 1
 
+#include <stdio.h>
+
+#include "fsm_types.h"
+
 void visualize_nfa(FILE * output, struct fsm * nfa);
 void visualize_dfa(FILE * output, struct fsm * dfa);
 

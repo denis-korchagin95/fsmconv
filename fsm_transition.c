@@ -1,10 +1,6 @@
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
-
-#include "fsm_types.h"
 #include "fsm_transition.h"
 
+#include <stddef.h>
 
 bool fsm_transition_has_state(struct fsm_transition * transition, uint32_t state_id)
 {

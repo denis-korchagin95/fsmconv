@@ -1,6 +1,8 @@
 #ifndef FSMCONV_UTIL_H
 #define FSMCONV_UTIL_H 1
 
+#include <stddef.h>
+
 #if _WIN32
     #define DIRECTORY_SEPARATOR '\\'
 #else

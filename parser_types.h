@@ -1,6 +1,8 @@
 #ifndef FSMCONV_PARSER_TYPES_H
 #define FSMCONV_PARSER_TYPES_H 1
 
+#include <stdint.h>
+
 #define IDENTIFIER_MAX_SIZE 256
 
 enum {
@@ -41,6 +43,14 @@ enum {
 	SYMBOL_STATEMENT_LIST,
 };
 
+struct identifier
+{
+	char name[IDENTIFIER_MAX_SIZE];
+	struct symbol * symbols;
+	struct symbol ** last_symbol;
+	struct identifier * next;
+};
+
 struct symbol
 {
 	union
@@ -77,14 +87,6 @@ struct symbol
 	} content;
 	struct symbol * next;
 	int type;
-};
-
-struct identifier
-{
-	char name[IDENTIFIER_MAX_SIZE];
-	struct symbol * symbols;
-	struct symbol ** last_symbol;
-	struct identifier * next;
 };
 
 struct token

@@ -1,12 +1,5 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "parser.h"
-#include "parser_types.h"
-#include "fsm_types.h"
-#include "fsm_state_list.h"
 #include "debug.h"
+#include "parser.h"
 
 static void print_tree_borders(FILE * output, int depth)
 {

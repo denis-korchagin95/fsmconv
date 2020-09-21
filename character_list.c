@@ -1,11 +1,5 @@
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-
-#include "util.h"
-#include "fsm_types.h"
 #include "character_list.h"
-
+#include "util.h"
 
 bool character_list_has_character(struct character_list * characters, int ch)
 {
