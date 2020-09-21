@@ -1,6 +1,9 @@
 /.idea
-/bin/
-/obj/
-*.svg
-*.dot
-*.png
+/bin
+/obj
+/dependencies.mk
+/*.svg
+/*.dot
+/*.png
+*.o
+*.out
