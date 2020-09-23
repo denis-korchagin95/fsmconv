@@ -89,14 +89,20 @@ struct symbol
 	int type;
 };
 
+struct source_location
+{
+	uint32_t line;
+	uint32_t column;
+};
+
 struct token
 {
-    int type;
-    /* TODO: location in the source */
     union {
         int code;
         struct identifier * identifier;
     } content;
+	struct source_location location;
+    int type;
 };
 
 #endif /* FSMCONV_PARSER_TYPES_H */

@@ -24,6 +24,8 @@ static struct keyword keywords[] = {
 };
 
 static FILE * source;
+static uint32_t line;
+static uint32_t column;
 
 static uint32_t state_id = 0;
 static int putback_buffer[PUTBACK_BUFFER_SIZE];
@@ -110,7 +112,19 @@ static int getch(void)
 {
 	if(putback_buffer_pos > 0)
 		return putback_buffer[--putback_buffer_pos];
-	return fgetc(source);
+	int ch = fgetc(source);
+	switch(ch)
+	{
+		case '\n':
+			{
+				++line;
+				column = 0;
+			}
+			break;
+	}
+	if(ch != EOF)
+		++column;
+	return ch;
 }
 
 static void ungetch(int ch)
@@ -251,6 +265,9 @@ repeat:
 
 	token = ___alloc_token();
 
+	token->location.line = line;
+	token->location.column = column;
+
 	if (isalpha(ch) || ch == '_') {
 		token->type = TOKEN_IDENTIFIER;
 		return read_identifier(ch, token);
@@ -303,6 +320,8 @@ void init_parser(void)
 	struct symbol * symbol;
 	struct identifier * identifier;
 	int item_count, i;
+
+	line = column = 0;
 
 	/* define built-in keywords */
 	{
