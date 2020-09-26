@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#define IDENTIFIER_MAX_SIZE 256
-
 enum {
 	TOKEN_INVALID,
 	TOKEN_IDENTIFIER,
@@ -45,7 +43,7 @@ enum {
 
 struct identifier
 {
-	char name[IDENTIFIER_MAX_SIZE];
+	char * name;
 	struct symbol * symbols;
 	struct symbol ** last_symbol;
 	struct identifier * next;

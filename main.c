@@ -10,6 +10,7 @@
 #include "parser.h"
 #include "fsm_compiler.h"
 #include "fsm.h"
+#include "internal_allocators.h"
 
 enum {
     FSM_OUTPUT_FORMAT_NATIVE = 0,
@@ -69,6 +70,8 @@ int main(int argc, char * argv[])
     }
     const char * input_file = argv[1];
     const char * output_file = NULL;
+
+	atexit(drop_internal_allocators);
 
     int i;
     for(i = 2; i < argc; ++i) {

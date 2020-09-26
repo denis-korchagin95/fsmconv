@@ -16,7 +16,7 @@ vpath %.h $(SRC)
 all: build run
 
 OBJECTS = allocator.o debug.o parser.o fsm_compiler.o visualize.o util.o \
-	  fsm.o fsm_state.o fsm_state_list.o fsm_transition.o character_list.o main.o
+	  fsm.o fsm_state.o fsm_state_list.o fsm_transition.o character_list.o main.o internal_allocators.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | $(DEPENDENCIES_FILE)
 	@$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)

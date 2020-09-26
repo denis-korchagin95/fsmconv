@@ -1,14 +1,16 @@
 #include "parser.h"
 #include "allocator.h"
+#include "internal_allocators.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
 
-#define PUTBACK_BUFFER_SIZE 3
-#define PUTBACK_TOKEN_BUFFER_SIZE 3
-#define IDENTIFIER_TABLE_SIZE 101
+#define PUTBACK_BUFFER_SIZE			(3)
+#define PUTBACK_TOKEN_BUFFER_SIZE	(3)
+#define IDENTIFIER_TABLE_SIZE		(101)
+#define IDENTIFIER_MAX_SIZE			(256)
 
 struct keyword
 {
@@ -151,8 +153,14 @@ static struct identifier * identifier_insert(uint32_t hash, const char * name)
 {
 	uint32_t index = hash % IDENTIFIER_TABLE_SIZE;
 
+	size_t len = strlen(name);
+
 	struct identifier * identifier = ___alloc_identifier();
-	strncpy(identifier->name, name, IDENTIFIER_MAX_SIZE);
+
+	identifier->name = (char *) alloc_bytes(len + 1);
+	strncpy(identifier->name, name, len);
+	identifier->name[len] = '\0';
+
 	identifier->symbols = NULL;
 	identifier->last_symbol = &identifier->symbols;
 
