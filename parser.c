@@ -155,7 +155,7 @@ static struct identifier * identifier_insert(uint32_t hash, const char * name)
 
 	size_t len = strlen(name);
 
-	struct identifier * identifier = ___alloc_identifier();
+	struct identifier * identifier = alloc_identifier();
 
 	identifier->name = (char *) alloc_bytes(len + 1);
 	strncpy(identifier->name, name, len);

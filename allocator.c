@@ -78,7 +78,6 @@ declare_allocator(character_list, struct character_list, 128)
 
 declare_allocator(token, struct token, 1024)
 declare_allocator(symbol, struct symbol, 1024)
-declare_allocator(identifier, struct identifier, 1024)
 
 void show_allocation_stats(FILE * output)
 {
@@ -119,11 +118,6 @@ void show_allocation_stats(FILE * output)
   current_bytes = sizeof(struct symbol) * symbol_pool_cursor;
   fprintf(output, "Allocated symbol elements: %d ( mem: %lu bytes )\n", symbol_pool_cursor, current_bytes);
   total_allocation_unit_count += symbol_pool_cursor;
-  total_bytes += current_bytes;
-
-  current_bytes = sizeof(struct identifier) * identifier_pool_cursor;
-  fprintf(output, "Allocated identifier elements: %d ( mem: %lu bytes )\n", identifier_pool_cursor, current_bytes);
-  total_allocation_unit_count += identifier_pool_cursor;
   total_bytes += current_bytes;
 
   fprintf(output, "\n\nTotal allocation unit count: %lu\n", total_allocation_unit_count);
