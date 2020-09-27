@@ -1,4 +1,4 @@
-# a NFA
+// a NFA
 initial q0;
 final q2, q4;
 

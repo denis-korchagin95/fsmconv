@@ -1,4 +1,4 @@
-# this nfa for `aa*|bb*` regular expression
+// this nfa for `aa*|bb*` regular expression
 initial q0;
 final q2, q4;
 

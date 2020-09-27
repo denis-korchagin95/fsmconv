@@ -263,11 +263,15 @@ repeat:
 	if (ch == EOF)
 		return &eof_token;
 
-	if (ch == '#') { /* single-line comment */
-		do
-			ch = getch();
-		while(ch != '\n' && ch != EOF);
-		goto repeat;
+	if (ch == '/') { 
+		int next_ch = getch();
+		if(next_ch == '/') { /* single-line comment */
+			do
+				ch = getch();
+			while(ch != '\n' && ch != EOF);
+			goto repeat;
+		}
+		ungetch(next_ch);
 	}
 
 	token = ___alloc_token();

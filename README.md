@@ -46,12 +46,12 @@ To mark some states as initial or finished you can use directives 'initial' or '
 
 There is a special character that can be written by `@epsilon` to give the opportunity to write epsilon-NFA rules.
 
-You can comment out some lines putting the `#` character at the beginning of the line.
+You can comment out some lines putting the double `/` character at the beginning of the line.
 
 Example:
 
 ```
-# An nfa FSM example
+// An nfa FSM example
 initial A;
 final B;
 

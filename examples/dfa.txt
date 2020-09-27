@@ -1,4 +1,4 @@
-# a DFA
+// a DFA
 initial q0;
 final q3;
 

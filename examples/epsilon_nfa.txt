@@ -1,4 +1,4 @@
-# an epsilon-NFA
+// an epsilon-NFA
 initial q0;
 final q2, q3;
 
