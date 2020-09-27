@@ -162,7 +162,6 @@ static struct identifier * identifier_insert(uint32_t hash, const char * name)
 	identifier->name[len] = '\0';
 
 	identifier->symbols = NULL;
-	identifier->last_symbol = &identifier->symbols;
 
 	identifier->next = identifiers[index];
 	identifiers[index] = identifier;
@@ -345,10 +344,9 @@ void init_parser(void)
 			symbol = ___alloc_symbol();
 			symbol->type = SYMBOL_KEYWORD;
 			symbol->content.code = keyword->code;
-			symbol->next = NULL;
 
-			(*identifier->last_symbol) = symbol;
-			identifier->last_symbol = &symbol->next;
+			symbol->next = identifier->symbols;
+			identifier->symbols = symbol;
 		}
 	}
 
@@ -365,12 +363,11 @@ void init_parser(void)
 
 		symbol = ___alloc_symbol();
 		symbol->type = SYMBOL_SPECIAL_CHARACTER_BUILTIN;
-		symbol->next = NULL;
 		symbol->content.special_character.identifier = identifier;
 		symbol->content.special_character.value = character;
 
-		(*identifier->last_symbol) = symbol;
-		identifier->last_symbol = &symbol->next;
+		symbol->next = identifier->symbols;
+		identifier->symbols = symbol;
 	}
 }
 
@@ -399,8 +396,8 @@ struct symbol * parse_state(void)
 	state->content.state.identifier = identifier;
 	state->content.state.id = state_id++;
 
-	(*identifier->last_symbol) = state;
-	identifier->last_symbol = &state->next;
+	state->next = identifier->symbols;
+	identifier->symbols = state;
 
 	return state;
 }

@@ -45,7 +45,6 @@ struct identifier
 {
 	char * name;
 	struct symbol * symbols;
-	struct symbol ** last_symbol;
 	struct identifier * next;
 };
 
