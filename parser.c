@@ -19,10 +19,10 @@ struct keyword
 };
 
 static struct keyword keywords[] = {
-	{ "start", KEYWORD_START },
-	{ "end",   KEYWORD_END   },
-	{ "to",    KEYWORD_TO    },
-	{ "by",    KEYWORD_BY    },
+	{ "initial", 	KEYWORD_INITIAL },
+	{ "final",   	KEYWORD_FINAL   },
+	{ "to",    		KEYWORD_TO    	},
+	{ "by",    		KEYWORD_BY    	},
 };
 
 static FILE * source;
@@ -54,8 +54,8 @@ static const char * keyword_to_string(int type)
 {
 	switch(type)
 	{
-		case KEYWORD_START:	return "start";
-		case KEYWORD_END: 	return "end";
+		case KEYWORD_INITIAL:	return "initial";
+		case KEYWORD_FINAL: 	return "final";
 		case KEYWORD_TO: 	return "to";
 		case KEYWORD_BY: 	return "by";
 	}
@@ -544,13 +544,13 @@ struct symbol * parse_state_list(void)
 	return state_list;
 }
 
-struct symbol * parse_start_directive(void)
+struct symbol * parse_directive_initial(void)
 {
 	struct symbol * directive;
 	struct token * token;
 
 	directive = ___alloc_symbol();
-	directive->type = SYMBOL_DIRECTIVE_START;
+	directive->type = SYMBOL_DIRECTIVE_INITIAL;
 	directive->next = NULL;
 	directive->content.symbol = parse_state_list();
 
@@ -563,13 +563,13 @@ struct symbol * parse_start_directive(void)
 	return directive;
 }
 
-struct symbol * parse_end_directive(void)
+struct symbol * parse_directive_final(void)
 {
 	struct symbol * directive;
 	struct token * token;
 
 	directive = ___alloc_symbol();
-	directive->type = SYMBOL_DIRECTIVE_END;
+	directive->type = SYMBOL_DIRECTIVE_FINAL;
 	directive->next = NULL;
 	directive->content.symbol = parse_state_list();
 
@@ -603,12 +603,12 @@ struct symbol * parse_statement(void)
 		statement->content.symbol = parse_rule();
 		return statement;
 	}
-	if (symbol->content.code == KEYWORD_START) {
-		statement->content.symbol = parse_start_directive();
+	if (symbol->content.code == KEYWORD_INITIAL) {
+		statement->content.symbol = parse_directive_initial();
 		return statement;
 	}
-	else if(symbol->content.code == KEYWORD_END) {
-		statement->content.symbol = parse_end_directive();
+	else if(symbol->content.code == KEYWORD_FINAL) {
+		statement->content.symbol = parse_directive_final();
 		return statement;
 	}
 	fprintf(stdout, "error: keyword '%s' cannot start any directive!\n", keyword_to_string(symbol->content.code));

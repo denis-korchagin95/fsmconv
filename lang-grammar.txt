@@ -2,8 +2,8 @@ special characters:
 	@epsilon - it represents an 'epsilon' transition to state
 
 directives:
-	start - it allows mark states which represent an initial states
-	end - it allows mark states which represent a final states
+	initial - it allows mark states which represent an initial states
+	final - it allows mark states which represent a final states
 
 file: statement_list;
 
@@ -21,20 +21,20 @@ transition: state "to" state
 
 state: identifier ;
 
-directive: start_directive
-	| end_directive
+directive: directive_initial
+	| directive_final
 	;
 
-start_directive: "start" state_list;
+directive_initial: "initial" state_list;
 
-end_directive: "end" state_list;
+directive_final: "final" state_list;
 
 state_list: state
 	| state, state_list
 	;
 
-keyword: "start"
-	| "end"
+keyword: "initial"
+	| "final"
 	| "to"
 	| "by"
 	;

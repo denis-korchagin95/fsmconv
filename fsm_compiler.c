@@ -88,7 +88,7 @@ static void fsm_rule_compile(struct fsm * fsm, struct symbol * symbol)
 	}
 }
 
-static void fsm_directive_start_compile(struct fsm * fsm, struct symbol * directive)
+static void fsm_directive_initial_compile(struct fsm * fsm, struct symbol * directive)
 {
 	struct symbol * state;
 	struct fsm_state * fsm_state;
@@ -110,7 +110,7 @@ static void fsm_directive_start_compile(struct fsm * fsm, struct symbol * direct
 	}
 }
 
-static void fsm_directive_end_compile(struct fsm * fsm, struct symbol * directive)
+static void fsm_directive_final_compile(struct fsm * fsm, struct symbol * directive)
 {
 	struct symbol * state;
 	struct fsm_state * fsm_state;
@@ -166,11 +166,11 @@ struct fsm * fsm_compile(struct symbol * symbol)
 	while(statement != NULL) {
 		switch(statement->content.symbol->type)
 		{
-			case SYMBOL_DIRECTIVE_START:
-				fsm_directive_start_compile(fsm, statement->content.symbol);
+			case SYMBOL_DIRECTIVE_INITIAL:
+				fsm_directive_initial_compile(fsm, statement->content.symbol);
 				break;
-			case SYMBOL_DIRECTIVE_END:
-				fsm_directive_end_compile(fsm, statement->content.symbol);
+			case SYMBOL_DIRECTIVE_FINAL:
+				fsm_directive_final_compile(fsm, statement->content.symbol);
 				break;
 		}
 		statement = statement->next;

@@ -40,9 +40,9 @@ Each statement must be ends by semicolon character.
 The rules of FSA have to be written by next format: `STATE to STATE by CHARACTERS` or `STATE -> STATE by CHARACTERS`. 
 For example `q0 -> q1 by 'a'`.
 
-To mark some states as initial or finished you can use directives 'start' or 'end':
+To mark some states as initial or finished you can use directives 'initial' or 'final':
 
-`start q0;` or `end q1, q2;`
+`initial q0;` or `final q1, q2;`
 
 There is a special character that can be written by `@epsilon` to give the opportunity to write epsilon-NFA rules.
 
@@ -52,8 +52,8 @@ Example:
 
 ```
 # An nfa FSM example
-start A;
-end B;
+initial A;
+final B;
 
 A to A by 'a', 'b';
 A to B by 'b';

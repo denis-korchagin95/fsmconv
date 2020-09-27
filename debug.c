@@ -94,11 +94,11 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 			print_tree_borders(output, depth);
 			switch(symbol->content.code)
 			{
-				case KEYWORD_START:
-					fprintf(output, "{KEYWORD start}");
+				case KEYWORD_INITIAL:
+					fprintf(output, "{KEYWORD initial}");
 					break;
-				case KEYWORD_END:
-					fprintf(output, "{KEYWORD end}");
+				case KEYWORD_FINAL:
+					fprintf(output, "{KEYWORD final}");
 					break;
 				case KEYWORD_TO:
 					fprintf(output, "{KEYWORD to}");
@@ -118,14 +118,14 @@ void debug_symbol(FILE * output, struct symbol * symbol, int depth)
 			print_tree_borders(output, depth);
 			fprintf(output, "{STATE %s}", symbol->content.state.identifier->name);
 			break;
-		case SYMBOL_DIRECTIVE_END:
+		case SYMBOL_DIRECTIVE_FINAL:
 			print_tree_borders(output, depth);
-			fprintf(output, "{DIRECTIVE_END}\n");
+			fprintf(output, "{DIRECTIVE_FINAL}\n");
 			debug_symbol(output, symbol->content.symbol, depth + 1);
 			break;
-		case SYMBOL_DIRECTIVE_START:
+		case SYMBOL_DIRECTIVE_INITIAL:
 			print_tree_borders(output, depth);
-			fprintf(output, "{DIRECTIVE_START}\n");
+			fprintf(output, "{DIRECTIVE_INITIAL}\n");
 			debug_symbol(output, symbol->content.symbol, depth + 1);
 			break;
 		case SYMBOL_STATE_LIST:

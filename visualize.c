@@ -68,7 +68,7 @@ void generate_nfa_language(FILE * output, struct fsm * fsm)
 {
     struct fsm_state * state;
 
-    fprintf(output, "start ");
+    fprintf(output, "initial ");
     bool is_first = true;
     list_foreach(state, fsm->states) {
         if (state->attrs & FSM_STATE_ATTR_INITIAL) {
@@ -82,7 +82,7 @@ void generate_nfa_language(FILE * output, struct fsm * fsm)
     }
     fprintf(output, ";\n");
 
-    fprintf(output, "end ");
+    fprintf(output, "final ");
     is_first = true;
     list_foreach(state, fsm->states) {
         if (state->attrs & FSM_STATE_ATTR_FINISHED) {
@@ -128,7 +128,7 @@ void generate_dfa_language(FILE * output, struct fsm * fsm)
     struct fsm_state * state, * target_state;
     struct fsm_transition * transition;
 
-    fprintf(output, "start ");
+    fprintf(output, "initial ");
     bool is_first = true;
     list_foreach(state, fsm->states) {
         if (state->attrs & FSM_STATE_ATTR_INITIAL) {
@@ -142,7 +142,7 @@ void generate_dfa_language(FILE * output, struct fsm * fsm)
     }
     fprintf(output, ";\n");
 
-    fprintf(output, "end ");
+    fprintf(output, "final ");
     is_first = true;
     list_foreach(state, fsm->states) {
         if (state->attrs & FSM_STATE_ATTR_FINISHED) {
