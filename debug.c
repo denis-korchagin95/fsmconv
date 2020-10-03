@@ -60,7 +60,7 @@ void debug_token(FILE * output, struct token * token)
 				case KEYWORD_TO: fprintf(output, "to"); break;
 				case KEYWORD_BY: fprintf(output, "by"); break;
 				default:
-					fprintf(output, "unknown");
+					fprintf(output, "<unknown>");
 			}
 			fprintf(output, "]");
 			break;
