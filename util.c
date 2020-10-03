@@ -19,19 +19,19 @@ void u8_bits_set(unsigned char * bits, unsigned int nbits, unsigned int bit)
 {
 	unsigned int byte_index = bit / CHAR_BIT;
 	unsigned int bit_offset = bit - byte_index * CHAR_BIT;
-	*(bits + byte_index) |= (1 << (CHAR_BIT - 1 - bit_offset));
+	*(bits + byte_index) |= bit(CHAR_BIT - 1 - bit_offset);
 }
 
 void u8_bits_unset(unsigned char * bits, unsigned int nbits, unsigned int bit)
 {
 	unsigned int byte_index = bit / CHAR_BIT;
 	unsigned int bit_offset = bit - byte_index * CHAR_BIT;
-	*(bits + byte_index) &= ~(1 << (CHAR_BIT - 1 - bit_offset));
+	*(bits + byte_index) &= ~bit(CHAR_BIT - 1 - bit_offset);
 }
 
 bool u8_bits_check(unsigned char * bits, unsigned int nbits, unsigned int bit)
 {
 	unsigned int byte_index = bit / CHAR_BIT;
 	unsigned int bit_offset = bit - byte_index * CHAR_BIT;
-	return *(bits + byte_index) & (1 << (CHAR_BIT - 1 - bit_offset));
+	return *(bits + byte_index) & bit(CHAR_BIT - 1 - bit_offset);
 }
