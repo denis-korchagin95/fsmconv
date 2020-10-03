@@ -40,7 +40,7 @@ Each statement must be ends by semicolon character.
 The rules of FSA have to be written by next format: `STATE to STATE by CHARACTERS` or `STATE -> STATE by CHARACTERS`. 
 For example `q0 -> q1 by 'a'`.
 
-To mark some states as initial or finished you can use directives 'initial' or 'final':
+To mark some states as initial or final you can use directives 'initial' or 'final':
 
 `#initial q0;` or `#final q1, q2;`
 

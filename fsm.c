@@ -125,7 +125,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
 {
     struct fsm * dfa;
     struct fsm_state * state, * new_state, * search_state;
-    struct fsm_state_list * epsilon_closure, * state_list, * state_item, * state_item2, * new_state_item, * finished_states;
+    struct fsm_state_list * epsilon_closure, * state_list, * state_item, * state_item2, * new_state_item, * final_states;
     struct character_list * characters, * character_item;
     struct fsm_transition * transition;
 
@@ -136,7 +136,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
     dfa->state_count = 0;
 
     characters = NULL;
-    finished_states = NULL;
+    final_states = NULL;
 
     list_foreach(state, nfa->states) {
         if (state->attrs & FSM_STATE_ATTR_INITIAL) {
@@ -155,8 +155,8 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
 	    if(state->attrs & FSM_STATE_ATTR_FINAL) {
 		    state_item = alloc_fsm_state_list();
 		    state_item->state_id = state->id;
-		    state_item->next = finished_states;
-		    finished_states = state_item;
+		    state_item->next = final_states;
+		    final_states = state_item;
 	    }
 
         list_foreach(transition, state->transitions) {
@@ -175,7 +175,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
 
         if (! (state->attrs & FSM_STATE_ATTR_FINAL)) {
             list_foreach(state_item, state->subset) {
-                if (fsm_state_list_has_state(finished_states, state_item->state_id)) {
+                if (fsm_state_list_has_state(final_states, state_item->state_id)) {
                     state->attrs |= FSM_STATE_ATTR_FINAL;
                     break;
                 }
@@ -239,7 +239,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
         }
     }
 
-    /* TODO: free(finished_states); */
+    /* TODO: free(final_states); */
     /* TODO: free(characters); */
 
     return dfa;
