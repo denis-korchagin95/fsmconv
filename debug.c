@@ -1,9 +1,10 @@
 #include "debug.h"
 #include "parser.h"
 #include "tokenizer.h"
-#include "fsm_types.h"
 #include "symbol.h"
 #include "ast.h"
+#include "util.h"
+#include "fsm_state_list.h"
 
 #include <stdlib.h>
 #include <limits.h>

@@ -19,7 +19,7 @@ OBJECTS=allocator.o internal_allocators.o parser.o tokenizer.o fsm_compiler.o sy
 	util.o fsm.o fsm_state.o fsm_state_list.o fsm_transition.o character_list.o visualize.o
 
 TEST_PARSING_OBJECTS=test-parsing.o tokenizer.o parser.o stream.o allocator.o internal_allocators.o symbol.o debug.o util.o
-TEST_TOKENIZER_OBJECTS=test-tokenizer.o debug.o tokenizer.o stream.o allocator.o internal_allocators.o symbol.o parser.o
+TEST_TOKENIZER_OBJECTS=test-tokenizer.o debug.o tokenizer.o stream.o allocator.o internal_allocators.o symbol.o parser.o util.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	@$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
