@@ -1,5 +1,5 @@
 #include "util.h"
-#include "fsm_types.h"
+#include "fsm_transition.h"
 
 #include <stdio.h>
 #include <limits.h>

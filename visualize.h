@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include "fsm_types.h"
+struct fsm;
 
 extern void visualize_nfa(FILE * output, struct fsm * nfa);
 extern void visualize_dfa(FILE * output, struct fsm * dfa);

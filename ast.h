@@ -12,6 +12,8 @@ enum {
 	AST_CHARACTER_LIST,
 };
 
+struct symbol;
+
 struct ast_list
 {
 	struct ast_list * next;
@@ -41,6 +43,5 @@ struct ast
 	} value;
 	unsigned int type;
 };
-
 
 #endif /* FSMCONV_AST_H */

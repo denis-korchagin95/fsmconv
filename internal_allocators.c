@@ -2,8 +2,11 @@
 #include "tokenizer.h"
 #include "ast.h"
 #include "symbol.h"
-#include "fsm_types.h"
 #include "character_list.h"
+#include "fsm.h"
+#include "fsm_state.h"
+#include "fsm_transition.h"
+#include "fsm_state_list.h"
 
 static struct allocator bytes_allocator = {
 	"bytes", NULL, NULL, __alignof__(void), INTERNAL_ALLOCATOR_DEFAULT_CHUNK_SIZE

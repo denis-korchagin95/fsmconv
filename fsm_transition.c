@@ -1,4 +1,5 @@
 #include "fsm_transition.h"
+#include "fsm_state_list.h"
 
 #include <stddef.h>
 

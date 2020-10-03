@@ -1,5 +1,8 @@
 #include "visualize.h"
 #include "fsm.h"
+#include "fsm_state.h"
+#include "fsm_transition.h"
+#include "fsm_state_list.h"
 
 #include <stdbool.h>
 

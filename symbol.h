@@ -18,6 +18,9 @@ enum {
 		(identifier)->symbols = (symbol);		\
 	}
 
+struct ast;
+struct identifier;
+
 struct symbol
 {
 	struct identifier * identifier;

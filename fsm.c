@@ -3,6 +3,8 @@
 #include "fsm_state.h"
 #include "internal_allocators.h"
 #include "character_list.h"
+#include "fsm_transition.h"
+#include "fsm_state_list.h"
 
 #include <stddef.h>
 

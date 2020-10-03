@@ -3,7 +3,8 @@
 
 #include "stream.h"
 
-struct stream;
+struct source_location;
+struct symbol;
 
 enum {
 	TOKEN_EOF,

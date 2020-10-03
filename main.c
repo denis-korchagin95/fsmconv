@@ -11,6 +11,7 @@
 #include "tokenizer.h"
 #include "fsm_compiler.h"
 #include "fsm.h"
+#include "util.h"
 
 enum {
     FSM_OUTPUT_FORMAT_NATIVE = 0,

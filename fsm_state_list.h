@@ -3,7 +3,11 @@
 
 #include <stdbool.h>
 
-#include "fsm_types.h"
+struct fsm_state_list
+{
+    struct fsm_state_list * next;
+    unsigned int state_id;
+};
 
 struct fsm_state_list * fsm_state_list_create(unsigned int state_id);
 void fsm_state_list_ordered_insert(struct fsm_state_list ** list, struct fsm_state_list * new_item);

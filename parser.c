@@ -4,6 +4,7 @@
 #include "internal_allocators.h"
 #include "ast.h"
 #include "fsm.h"
+#include "fsm_transition.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
