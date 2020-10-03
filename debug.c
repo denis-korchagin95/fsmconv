@@ -16,7 +16,7 @@
 
 static unsigned char is_tree_node_latest_in_depth[MAX_TREE_DEPTH];
 
-static void do_ident(FILE * output, int depth)
+static void do_indent(FILE * output, int depth)
 {
 	if(depth <= 0) return;
 	int i;
@@ -108,7 +108,7 @@ static void do_debug_ast(FILE * output, struct ast * ast, int depth)
 		fprintf(output, "<bad ast node>");
 		return;
 	}
-	do_ident(output, depth);
+	do_indent(output, depth);
 	switch(ast->type)
 	{
 		case AST_RULE_LIST:
