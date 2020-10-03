@@ -56,15 +56,15 @@ static void read_character(struct stream * stream, struct token * token, int ch)
 {
 	if (ch == EOF) {
 		fprintf(stderr, "error: not terminated character constant!\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	else if(ch == '\'') {
 		fprintf(stderr, "error: empty character constant!\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	else if(ch == '\n') {
 		fprintf(stderr, "error: new line character in cannot allow in character constant!\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	else if(ch == '\\') { /* handle escape sequence */
 		int next_ch = stream_getchar(stream);
@@ -76,7 +76,7 @@ static void read_character(struct stream * stream, struct token * token, int ch)
 		}
 		else {
 			fprintf(stderr, "error: unknown escape sequence in character constant: \\%c\n", next_ch);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -86,7 +86,7 @@ static void read_character(struct stream * stream, struct token * token, int ch)
 
 	if (ch != '\'') {
 		fprintf(stderr, "error: not terminated character constant!\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
