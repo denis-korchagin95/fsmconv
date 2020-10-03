@@ -20,10 +20,10 @@ struct stream
 	unsigned int char_stack_pos;
 };
 
-int stream_init(struct stream * stream, const char * pathname);
-void stream_destroy(struct stream * stream);
+extern int stream_init(struct stream * stream, const char * pathname);
+extern void stream_destroy(struct stream * stream);
 
-int stream_getchar(struct stream * stream);
-void stream_ungetchar(struct stream * stream, int ch);
+extern int stream_getchar(struct stream * stream);
+extern void stream_ungetchar(struct stream * stream, int ch);
 
 #endif /* FSMCONV_STREAM_H */

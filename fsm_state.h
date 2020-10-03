@@ -21,6 +21,6 @@ struct fsm_state {
     unsigned int attrs;
 };
 
-struct fsm_transition * fsm_state_search_transition_by_character(struct fsm_state * state, int ch);
+extern struct fsm_transition * fsm_state_search_transition_by_character(struct fsm_state * state, int ch);
 
 #endif /* FSMCONV_FSM_STATE_H */

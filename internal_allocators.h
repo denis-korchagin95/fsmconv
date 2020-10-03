@@ -6,8 +6,8 @@
 #define INTERNAL_ALLOCATOR_DEFAULT_CHUNK_SIZE (8192)
 
 #define internal_object_allocator_define(identifier, type)  \
-	type * alloc_ ## identifier(void);                      \
-	void free_ ## identifier(type * object);                \
+	extern type * alloc_ ## identifier(void);               \
+	extern void free_ ## identifier(type * object);         \
 
 #define internal_object_allocator_declare(identifier, type, name, chunk_size) \
 	static struct allocator name ## _allocator = {                            \
@@ -33,7 +33,7 @@ struct fsm;
 struct fsm_state;
 struct character_list;
 
-void * alloc_bytes(unsigned int nbytes);
+extern void * alloc_bytes(unsigned int nbytes);
 
 internal_object_allocator_define(identifier, struct identifier)
 internal_object_allocator_define(token, struct token)
@@ -47,7 +47,6 @@ internal_object_allocator_define(fsm, struct fsm)
 internal_object_allocator_define(fsm_state, struct fsm_state)
 internal_object_allocator_define(character_list, struct character_list)
 
-void drop_internal_allocators(void);
-
+extern void drop_internal_allocators(void);
 
 #endif /* FSMCONV_INTERNAL_ALLOCATORS_H */

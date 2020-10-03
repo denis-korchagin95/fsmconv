@@ -4,6 +4,6 @@
 struct ast;
 struct fsm;
 
-struct fsm * fsm_compile(struct ast * tree);
+extern struct fsm * fsm_compile(struct ast * tree);
 
 #endif /* FSMCONV_FSM_COMPILER_H */

@@ -13,6 +13,6 @@ struct fsm_transition {
   int ch;
 };
 
-bool fsm_transition_has_state(struct fsm_transition * transition, unsigned int state_id);
+extern bool fsm_transition_has_state(struct fsm_transition * transition, unsigned int state_id);
 
 #endif /* FSMCONV_FSM_TRANSITION_H */

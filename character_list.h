@@ -9,6 +9,6 @@ struct character_list
     int ch;
 };
 
-bool character_list_has_character(struct character_list * characters, int ch);
+extern bool character_list_has_character(struct character_list * characters, int ch);
 
 #endif /* FSMCONV_CHARACTER_LIST_H */
