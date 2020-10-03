@@ -67,7 +67,7 @@ int main(int argc, char * argv[])
 {
     if (argc < 2) {
         usage(argv[0], stdout);
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
     const char * input_file = argv[1];
     const char * output_file = NULL;
@@ -97,8 +97,8 @@ int main(int argc, char * argv[])
             continue;
         }
 
-        fprintf(stderr, "unknown option: %s\n", arg);
-        exit(0);
+        fprintf(stderr, "error: unknown option '%s'!\n", arg);
+        exit(EXIT_FAILURE);
     }
 
     init_symbols();
