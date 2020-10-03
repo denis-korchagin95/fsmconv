@@ -21,10 +21,10 @@ OBJECTS=allocator.o internal_allocators.o parser.o tokenizer.o fsm_compiler.o sy
 TEST_PARSING_OBJECTS=test-parsing.o tokenizer.o parser.o stream.o allocator.o internal_allocators.o symbol.o debug.o util.o
 TEST_TOKENIZER_OBJECTS=test-tokenizer.o debug.o tokenizer.o stream.o allocator.o internal_allocators.o symbol.o parser.o
 
-build: $(addprefix $(OBJ), $(OBJECTS)) | $(DEPENDENCIES_FILE)
+build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	@$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
 
-$(DEPENDENCIES_FILE):
+dependencies:
 	@rm -rf $(DEPENDENCIES_FILE)
 	@$(foreach file, $(OBJECTS), $(CC) -MT $(OBJ)$(file) -MM $(patsubst %.o, %.c, $(file)) >> $(DEPENDENCIES_FILE);)
 
