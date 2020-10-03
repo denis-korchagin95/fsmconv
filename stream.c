@@ -6,7 +6,7 @@
 
 int stream_init(struct stream * stream, const char * pathname)
 {
-	if((stream->file = fopen(pathname, "r")) == NULL)
+	if(! (stream->file = fopen(pathname, "r")))
 		return -1;
 	stream->location.line = 0;
 	stream->location.column = 0;

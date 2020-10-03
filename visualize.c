@@ -35,7 +35,7 @@ void visualize_nfa(FILE * output, struct fsm * fsm)
 
 	state = fsm->states;
 
-	while(state != NULL) {
+	while(state) {
 		is_initial = state->attrs & FSM_STATE_ATTR_INITIAL;
 		is_final = state->attrs & FSM_STATE_ATTR_FINAL;
 
@@ -50,9 +50,9 @@ void visualize_nfa(FILE * output, struct fsm * fsm)
 
 		transition = state->transitions;
 
-		while(transition != NULL) {
+		while(transition) {
 			state_list = transition->states;
-			while(state_list != NULL) {
+			while(state_list) {
 				fprintf(output, "\ts%d -> s%d [label=\"%s\"];\n", state->id, state_list->state_id, char_to_string(transition->ch));
 				state_list = state_list->next;
 			}
@@ -109,7 +109,7 @@ void generate_nfa_language(FILE * output, struct fsm * fsm)
         list_foreach(transition, state->transitions) {
             list_foreach(state_item, transition->states) {
                 target_state = fsm_search_state_by_id(fsm, state_item->state_id);
-                if (target_state == NULL)
+                if (! target_state)
                     continue;
                 fprintf(output, "%s to %s by ", state->name, target_state->name);
                 if (transition->ch == EPSILON_CHAR) {
@@ -164,7 +164,7 @@ void generate_dfa_language(FILE * output, struct fsm * fsm)
     list_foreach(state, fsm->states) {
         list_foreach(transition, state->transitions) {
             target_state = fsm_search_state_by_id(fsm, transition->states->state_id);
-            if (target_state == NULL)
+            if (! target_state)
                 continue;
             fprintf(output, "s%u to s%u by '%s';\n", state->id, target_state->id, transition_character_stringify(transition->ch));
         }
@@ -184,7 +184,7 @@ void visualize_dfa(FILE * output, struct fsm * dfa)
 
     state = dfa->states;
 
-    while(state != NULL) {
+    while(state) {
         is_initial = state->attrs & FSM_STATE_ATTR_INITIAL;
         is_final = state->attrs & FSM_STATE_ATTR_FINAL;
 
@@ -199,9 +199,9 @@ void visualize_dfa(FILE * output, struct fsm * dfa)
 
         transition = state->transitions;
 
-        while(transition != NULL) {
+        while(transition) {
             state_list = transition->states;
-            while(state_list != NULL) {
+            while(state_list) {
                 fprintf(output, "\ts%d -> s%d [label=\"%s\"];\n", state->id, state_list->state_id, char_to_string(transition->ch));
                 state_list = state_list->next;
             }

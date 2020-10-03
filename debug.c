@@ -34,7 +34,7 @@ static void do_ident(FILE * output, int depth)
 
 void debug_token(FILE * output, struct token * token)
 {
-	if(token == NULL || token == &eof_token)
+	if(! token || token == &eof_token)
 		return;
 	switch(token->type)
 	{
@@ -91,8 +91,8 @@ void debug_token(FILE * output, struct token * token)
 void debug_fsm_state_list(FILE * output, struct fsm_state_list * list)
 {
     fprintf(output, "{");
-    while(list != NULL) {
-        fprintf(output, " %u%s", list->state_id, list->next == NULL ? " " : ",");
+    while(list) {
+        fprintf(output, " %u%s", list->state_id, !list->next ? " " : ",");
         list = list->next;
     }
     fprintf(output, "}");
@@ -104,7 +104,7 @@ static void do_debug_ast(FILE * output, struct ast * ast, int depth)
 		fprintf(stderr, "error: the tree is too many depths!\n");
 		exit(EXIT_FAILURE);
 	}
-	if(!ast) {
+	if(! ast) {
 		fprintf(output, "<bad ast node>");
 		return;
 	}
@@ -122,7 +122,7 @@ static void do_debug_ast(FILE * output, struct ast * ast, int depth)
 				fprintf(output, "RuleList<%u>\n", count);
 				it = ast->value.list;
 				while(it) {
-					if(it->next == NULL)
+					if(! it->next)
 						u8_bits_set(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
 					else
 						u8_bits_unset(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);

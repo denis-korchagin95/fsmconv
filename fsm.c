@@ -11,7 +11,7 @@
 struct fsm_state * fsm_search_state_by_id(struct fsm * fsm, unsigned int id)
 {
     struct fsm_state * it = fsm->states;
-    while(it != NULL) {
+    while(it) {
         if (it->id == id)
             return it;
         it = it->next;
@@ -37,19 +37,19 @@ struct fsm_state_list * fsm_epsilon_closure(struct fsm * fsm, struct fsm_state_l
         stack = hold;
     }
 
-    while (stack != NULL) {
+    while (stack) {
         hold = stack->next;
         current = stack;
         stack = hold;
 
         state = fsm_search_state_by_id(fsm, current->state_id);
-        if (state == NULL) {
+        if (! state) {
             continue;
         }
 
         transition = fsm_state_search_transition_by_character(state, EPSILON_CHAR);
 
-        if (transition == NULL)
+        if (! transition)
             continue;
 
         list_foreach(state_item, transition->states) {
@@ -78,7 +78,7 @@ struct fsm_state_list * fsm_state_epsilon_closure(struct fsm_state * state)
     epsilon_closure = fsm_state_list_create(state->id);
     stack = fsm_state_list_create(state->id);
 
-    while(stack != NULL)
+    while(stack)
     {
         hold = stack->next;
         current = stack;
@@ -86,12 +86,12 @@ struct fsm_state_list * fsm_state_epsilon_closure(struct fsm_state * state)
 
         search_state = current->state_id == state->id ? state : fsm_search_state_by_id(state->fsm, current->state_id);
 
-        if (search_state == NULL)
+        if (! search_state)
             continue;
 
         transition = fsm_state_search_transition_by_character(search_state, EPSILON_CHAR);
 
-        if (transition == NULL)
+        if (! transition)
             continue;
 
         list_foreach(state_item, transition->states) {
@@ -170,7 +170,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
         }
     }
 
-    while((state = fsm_find_not_visited_state(dfa)) != NULL) {
+    while((state = fsm_find_not_visited_state(dfa))) {
         state->attrs |= FSM_STATE_ATTR_VISITED;
 
         if (! (state->attrs & FSM_STATE_ATTR_FINAL)) {
@@ -186,10 +186,10 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
             state_list = NULL;
             list_foreach(state_item, state->subset) {
                 search_state = fsm_search_state_by_id(nfa, state_item->state_id);
-                if (search_state == NULL)
+                if (! search_state)
                     continue;
                 transition = fsm_state_search_transition_by_character(search_state, character_item->ch);
-                if (transition == NULL)
+                if (! transition)
                     continue;
                 list_foreach(state_item2, transition->states) {
                     new_state_item = fsm_state_list_create(state_item2->state_id);
@@ -198,7 +198,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
                 }
             }
 
-            if (state_list == NULL)
+            if (! state_list)
                 continue;
 
             epsilon_closure = fsm_epsilon_closure(nfa, state_list);
@@ -207,7 +207,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
 
             search_state = fsm_search_state_by_subset(dfa, epsilon_closure);
 
-            if (search_state == NULL) {
+            if (! search_state) {
                 new_state = alloc_fsm_state();
                 new_state->subset = epsilon_closure;
                 new_state->fsm = dfa;
@@ -224,7 +224,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
 
             transition = fsm_state_search_transition_by_character(state, character_item->ch);
 
-            if (transition == NULL) {
+            if (! transition) {
                 transition = alloc_fsm_transition();
                 transition->states = fsm_state_list_create(search_state->id);
                 transition->ch = character_item->ch;
@@ -267,7 +267,7 @@ unsigned int fsm_determine_type(struct fsm * fsm)
         list_foreach(transition, state->transitions) {
             if (!has_epsilon_transition && transition->ch == EPSILON_CHAR)
 				has_epsilon_transition = true;
-			if (!has_multiple_transitions_by_character && transition->states != NULL && transition->states->next != NULL)
+			if (!has_multiple_transitions_by_character && transition->states && transition->states->next)
 				has_multiple_transitions_by_character = true;
         }
 		if(has_epsilon_transition || has_multiple_transitions_by_character)
@@ -283,7 +283,7 @@ unsigned int fsm_determine_type(struct fsm * fsm)
 
 	list_foreach(state, fsm->states) {
 		list_foreach(transition, state->transitions) {
-			if(!character_list_has_character(characters, transition->ch))
+			if(! character_list_has_character(characters, transition->ch))
 			{
 				character_item = alloc_character_list();
 				character_item->ch = transition->ch;
@@ -298,7 +298,7 @@ unsigned int fsm_determine_type(struct fsm * fsm)
 
 	list_foreach(character_item, characters) {
 		list_foreach(state, fsm->states) {
-			if (fsm_state_search_transition_by_character(state, character_item->ch) == NULL) {
+			if (! fsm_state_search_transition_by_character(state, character_item->ch)) {
 				has_missed_transitions = true;
 				goto out_loop;
 			}

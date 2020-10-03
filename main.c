@@ -23,7 +23,7 @@ static void usage(const char * program, FILE * output)
     const char * basename = program;
     const char * search;
 
-    if ((search = strrchr(program, DIRECTORY_SEPARATOR)) != NULL)
+    if ((search = strrchr(program, DIRECTORY_SEPARATOR)))
         basename = search + 1;
 
     fprintf(output, "Usage: %s file [options]\n", basename);
@@ -78,21 +78,21 @@ int main(int argc, char * argv[])
     for(i = 2; i < argc; ++i) {
         const char * arg = argv[i];
 
-	    if (!memcmp(arg, "--output=", 9)) {
+	    if (! memcmp(arg, "--output=", 9)) {
 		    output_file = arg + 9;
 		    continue;
 	    }
 
-        if (!strcmp(arg, "--format=native")) {
+        if (! strcmp(arg, "--format=native")) {
             continue;
         }
 
-        if (!strcmp(arg, "--format=dot")) {
+        if (! strcmp(arg, "--format=dot")) {
             fsm_output_format = FSM_OUTPUT_FORMAT_DOT;
             continue;
         }
 
-        if (!strcmp(arg, "--print-only")) {
+        if (! strcmp(arg, "--print-only")) {
             print_input_fsm_only = true;
             continue;
         }
@@ -116,7 +116,7 @@ int main(int argc, char * argv[])
 
    	(void)parse(token_list, &tree);
 
-    if (tree == NULL) {
+    if (! tree) {
         fprintf(stderr, "error: there is no any rules to construct the fsm!\n");
 		stream_destroy(&stream);
         exit(EXIT_FAILURE);
@@ -126,13 +126,13 @@ int main(int argc, char * argv[])
 
     FILE * output = NULL;
 
-    if (output_file != NULL) {
+    if (output_file) {
 		output = fopen(output_file, "w");
-		if(!output)
+		if(! output)
 			fprintf(stderr, "warning: failed to open the output file '%s': %s!\n", output_file, strerror(errno));
 	}
 
-	if(!output)
+	if(! output)
 		output = stdout;
 
 	if(print_input_fsm_only) {

@@ -4,7 +4,7 @@
 struct symbol * lookup_symbol(struct identifier * identifier, int type)
 {
 	struct symbol * it = identifier->symbols;
-	while(it != NULL) {
+	while(it) {
 		if(it->type == type)
 			return it;
 		it = it->next;

@@ -27,7 +27,7 @@ static struct identifier * identifier_search(unsigned int hash, const char * nam
 {
 	unsigned int index = hash % IDENTIFIER_TABLE_SIZE;
 	struct identifier * it;
-	for(it = identifiers[index]; it != NULL; it = it->next) {
+	for(it = identifiers[index]; it; it = it->next) {
 		if (strcmp(name, it->name) == 0) {
 			return it;
 		}
@@ -112,7 +112,7 @@ static void read_identifier(struct stream * stream, struct token * token, int ch
 	}
 
 	struct identifier * identifier = identifier_search(hash, buffer);
-	if (identifier == NULL)
+	if (! identifier)
 		identifier = identifier_insert(hash, buffer, i);
 
 	token->value.identifier = identifier;
@@ -204,7 +204,7 @@ struct token * tokenize(struct stream * stream)
 	struct source_location location;
 
 	while(ch != EOF) {
-		if(!isspace(ch)) {
+		if(! isspace(ch)) {
 			location = stream->location;
 
 			if(ch == '/') { /* try to skip comment */

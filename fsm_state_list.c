@@ -6,12 +6,12 @@
 void fsm_state_list_ordered_insert(struct fsm_state_list ** list, struct fsm_state_list * new_item)
 {
     struct fsm_state_list ** it = list;
-    while(*it != NULL) {
+    while(*it) {
         if (new_item->state_id <= (*it)->state_id)
             break;
         it = &(*it)->next;
     }
-    if (*it == NULL)
+    if (! *it)
         *it = new_item;
     else {
         new_item->next = *it;
@@ -29,7 +29,7 @@ struct fsm_state_list * fsm_state_list_create(unsigned int state_id)
 
 bool fsm_state_list_has_state(struct fsm_state_list * list, unsigned int state_id)
 {
-    while(list != NULL)
+    while(list)
     {
         if (list->state_id == state_id)
             return true;
@@ -40,7 +40,7 @@ bool fsm_state_list_has_state(struct fsm_state_list * list, unsigned int state_i
 
 bool fsm_state_list_contains(struct fsm_state_list * first, struct fsm_state_list * second)
 {
-    while (second != NULL) {
+    while (second) {
         if (! fsm_state_list_has_state(first, second->state_id)) {
             return false;
         }
@@ -52,7 +52,7 @@ bool fsm_state_list_contains(struct fsm_state_list * first, struct fsm_state_lis
 unsigned int fsm_state_list_length(struct fsm_state_list * list)
 {
     unsigned int len = 0;
-    while (list != NULL) {
+    while (list) {
         list = list->next;
         ++len;
     }
