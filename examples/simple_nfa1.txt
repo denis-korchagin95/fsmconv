@@ -1,5 +1,5 @@
-initial A;
-final C;
+#initial A;
+#final C;
 
 A -> B by '0', @epsilon;
 A -> A by '0', '1';

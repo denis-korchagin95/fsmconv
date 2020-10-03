@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "util.h"
-#include "fsm_types.h"
+#include "internal_allocators.h"
 #include "visualize.h"
 #include "parser.h"
+#include "stream.h"
+#include "tokenizer.h"
 #include "fsm_compiler.h"
 #include "fsm.h"
-#include "internal_allocators.h"
 
 enum {
     FSM_OUTPUT_FORMAT_NATIVE = 0,
@@ -100,59 +100,52 @@ int main(int argc, char * argv[])
         exit(0);
     }
 
-    FILE * input = fopen(input_file, "r");
-    if (input == NULL) {
-	    fprintf(stderr, "%s: %s\n", input_file, strerror(errno));
-	    exit(1);
+    init_symbols();
+
+	struct stream stream;
+
+	if(stream_init(&stream, input_file) == -1) {
+		fprintf(stderr, "error: cannot initialize stream (%s: %s)\n", input_file, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	struct token * token_list = tokenize(&stream);
+
+	struct ast * tree = NULL;
+
+   	(void)parse(token_list, &tree);
+
+    if (tree == NULL) {
+        fprintf(stderr, "error: there is no any rules to construct the fsm!\n");
+		stream_destroy(&stream);
+        exit(EXIT_FAILURE);
     }
 
-    FILE * output;
+	struct fsm * nfa = fsm_compile(tree);
 
-    if (output_file == NULL)
-	    output = stdout;
-    else
-    {
-    	output = fopen(output_file, "w");
-    	if (output == NULL) {
-	    	fprintf(stderr, "%s: %s\n", output_file, strerror(errno));
-	    	exit(1);
-    	}
-    }
+    FILE * output = NULL;
 
-    init_parser();
+    if (output_file != NULL) {
+		output = fopen(output_file, "w");
+		if(!output)
+			fprintf(stderr, "warning: failed to open the output file '%s': %s!\n", output_file, strerror(errno));
+	}
 
-    struct symbol * parse_tree = parse(input);
+	if(!output)
+		output = stdout;
 
-    if (parse_tree == NULL) {
-        printf("parse file error!\n");
-	    fclose(input);
-	    fclose(output);
-        exit(1);
-    }
+	if(print_input_fsm_only) {
+		print_fsm(output, nfa, fsm_output_format, false);
+		stream_destroy(&stream);
+		exit(EXIT_FAILURE);
+	}
 
-    struct fsm * nfa = fsm_compile(parse_tree);
+	struct fsm * dfa = nfa_to_dfa(nfa);
 
-    if (print_input_fsm_only) {
-        print_fsm(output, nfa, fsm_output_format, false);
+	print_fsm(output, dfa, fsm_output_format, true);
 
-        /* TODO: free(parse_tree); */
-        /* TODO: free(nfa); */
+	stream_destroy(&stream);
+    exit(EXIT_SUCCESS);
 
-	    fclose(input);
-	    fclose(output);
-        exit(0);
-    }
-
-    struct fsm * dfa = nfa_to_dfa(nfa);
-
-    print_fsm(output, dfa, fsm_output_format, true);
-
-    /* TODO: free(parse_tree); */
-    /* TODO: free(nfa); */
-    /* TODO: free(dfa); */
-
-	fclose(input);
-	fclose(output);
-
-    exit(0);
+	return 0;
 }

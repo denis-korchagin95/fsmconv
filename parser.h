@@ -1,15 +1,13 @@
 #ifndef FSMCONV_PARSER_H
 #define FSMCONV_PARSER_H 1
 
-#include <stdint.h>
 #include <stdio.h>
 
-#include "parser_types.h"
+struct token;
+struct ast;
 
-extern struct token eof_token;
-
-void init_parser(void);
-uint32_t parser_last_state_id(void);
-struct symbol * parse(FILE * source); 
+extern void init_symbols();
+extern struct token * parse(struct token * token, struct ast ** tree); 
+extern unsigned int parser_last_state_id(void);
 
 #endif /* FSMCONV_PARSER_H */

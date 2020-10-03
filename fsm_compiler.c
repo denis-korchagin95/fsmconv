@@ -1,52 +1,28 @@
 #include "fsm_compiler.h"
-#include "fsm.h"
-#include "allocator.h"
-#include "fsm_transition.h"
+#include "ast.h"
+#include "fsm_types.h"
 #include "fsm_state.h"
+#include "internal_allocators.h"
+#include "fsm_transition.h"
+#include "fsm.h"
+#include "symbol.h"
+#include "tokenizer.h"
 #include "parser.h"
 
-#include <stddef.h>
-
-static struct fsm_state * fsm_state_compile(struct fsm * fsm, struct symbol * symbol)
+static void fsm_compile_transition(struct fsm_state * source, struct fsm_state * target, struct ast * node)
 {
-	struct fsm_state * state;
-
-	state = fsm_search_state_by_id(fsm, symbol->content.state.id);
-
-	if (state != NULL)
-		return state;
-
-	state = ___alloc_fsm_state();
-	state->next = NULL;
-	state->fsm = fsm;
-	state->transitions = NULL;
-	state->subset = NULL;
-	state->name = symbol->content.state.identifier->name;
-	state->id = symbol->content.state.id;
-	state->attrs = 0;
-
-	(*fsm->last_state) = state;
-	fsm->last_state = &state->next;
-
-	return state;
-}
-
-static void fsm_transition_compile(struct fsm_state * source, struct fsm_state * target, struct symbol * character)
-{
-	struct fsm_transition * transition;
-	struct fsm_state_list * state_list;
 	int ch;
 
-	if (character->type == SYMBOL_SPECIAL_CHARACTER_BUILTIN)
-	    ch = character->content.special_character.value->content.code;
+	if(node->type == AST_SPECIAL_CHARACTER)
+		ch = node->value.special_character.value->value.ch;
 	else
-	    ch = character->content.code;
+		ch = node->value.ch;
 
-	transition = fsm_state_search_transition_by_character(source, ch);
+	struct fsm_transition * transition = fsm_state_search_transition_by_character(source, ch);
 
-	if (transition == NULL)
+	if(!transition)
 	{
-		transition = ___alloc_fsm_transition();
+		transition = alloc_fsm_transition();
 		transition->states = NULL;
 		transition->next = source->transitions;
 		transition->ch = ch;
@@ -54,8 +30,8 @@ static void fsm_transition_compile(struct fsm_state * source, struct fsm_state *
 		source->transitions = transition;
 	}
 
-	if (! fsm_transition_has_state(transition, target->id)) {
-		state_list = ___alloc_fsm_state_list();
+	if(!transition->states || !fsm_transition_has_state(transition, target->id)) {
+		struct fsm_state_list * state_list = alloc_fsm_state_list();
 		state_list->state_id = target->id;
 		state_list->next = transition->states;
 
@@ -63,118 +39,74 @@ static void fsm_transition_compile(struct fsm_state * source, struct fsm_state *
 	}
 }
 
-static void fsm_rule_compile(struct fsm * fsm, struct symbol * symbol)
+static struct fsm_state * fsm_compile_state(struct fsm * fsm, struct ast * node)
 {
-	struct fsm_state * source, * target;
-	struct symbol * character, * transition;
+	struct symbol * symbol = node->value.symbol;
 
-	transition = symbol->content.rule.transition;
+	struct fsm_state * state = fsm_search_state_by_id(fsm, symbol->value.state.state_id);
 
-	source = fsm_state_compile(fsm, transition->content.transition.source);
-	target = fsm_state_compile(fsm, transition->content.transition.target);
+	if(state)
+		return state;
 
-	character = symbol->content.rule.character_list;
+	unsigned int attrs = 0;
 
-	if (character->type == SYMBOL_CHARACTER || character->type == SYMBOL_SPECIAL_CHARACTER_BUILTIN) {
-		fsm_transition_compile(source, target, character);
+	if(symbol->attributes & SYMBOL_ATTRIBUTE_INITIAL_STATE)
+		attrs |= FSM_STATE_ATTR_INITIAL;
+	if(symbol->attributes & SYMBOL_ATTRIBUTE_FINAL_STATE)
+		attrs |= FSM_STATE_ATTR_FINAL;
+
+	state = alloc_fsm_state();
+	state->next = NULL;
+	state->fsm = fsm;
+	state->transitions = NULL;
+	state->subset = NULL;
+	state->name = symbol->identifier->name;
+	state->id = symbol->value.state.state_id;
+	state->attrs = attrs;
+
+	*fsm->last_state = state;
+	fsm->last_state = &state->next;
+
+	return state;
+}
+
+static void fsm_compile_rule(struct fsm * fsm, struct ast * node)
+{
+	struct fsm_state * source = fsm_compile_state(fsm, node->value.rule.source);
+	struct fsm_state * target = fsm_compile_state(fsm, node->value.rule.target);
+
+	struct ast * by = node->value.rule.by;
+
+	if(by->type == AST_CHARACTER || (by->type == AST_SPECIAL_CHARACTER && by->value.special_character.value->type == AST_CHARACTER)) {
+		fsm_compile_transition(source, target, by);
 		return;
 	}
 
-	character = character->next;
+	struct ast_list * it = by->type == AST_SPECIAL_CHARACTER ? by->value.special_character.value->value.list : by->value.list;
 
-	while(character != NULL) {
-		fsm_transition_compile(source, target, character);
-		character = character->next;
+	while(it) {
+		fsm_compile_transition(source, target, it->node);
+		it = it->next;
 	}
 }
 
-static void fsm_directive_initial_compile(struct fsm * fsm, struct symbol * directive)
+struct fsm * fsm_compile(struct ast * node)
 {
-	struct symbol * state;
-	struct fsm_state * fsm_state;
-
-	if (directive->content.symbol->type == SYMBOL_STATE) {
-		fsm_state = fsm_search_state_by_id(fsm, directive->content.symbol->content.state.id);
-		if (fsm_state != NULL)
-			fsm_state->attrs |= FSM_STATE_ATTR_INITIAL;
-		return;
-	}
-
-	state = directive->content.symbol->next;
-
-	while(state != NULL) {
-		fsm_state = fsm_search_state_by_id(fsm, state->content.state.id);
-		if (fsm_state != NULL)
-			fsm_state->attrs |= FSM_STATE_ATTR_INITIAL;
-		state = state->next;
-	}
-}
-
-static void fsm_directive_final_compile(struct fsm * fsm, struct symbol * directive)
-{
-	struct symbol * state;
-	struct fsm_state * fsm_state;
-
-	if (directive->content.symbol->type == SYMBOL_STATE) {
-		fsm_state = fsm_search_state_by_id(fsm, directive->content.symbol->content.state.id);
-		if (fsm_state != NULL)
-			fsm_state->attrs |= FSM_STATE_ATTR_FINISHED;
-		return;
-	}
-
-	state = directive->content.symbol->next;
-
-	while(state != NULL) {
-		fsm_state = fsm_search_state_by_id(fsm, state->content.state.id);
-		if (fsm_state != NULL)
-			fsm_state->attrs |= FSM_STATE_ATTR_FINISHED;
-		state = state->next;
-	}
-}
-
-struct fsm * fsm_compile(struct symbol * symbol)
-{
-	struct fsm * fsm;
-	struct symbol * statement;
-
-	fsm = ___alloc_fsm();
-    fsm->type = FSM_TYPE_UNDEFINED;
+	struct fsm * fsm = alloc_fsm();
+	fsm->type = FSM_TYPE_UNDEFINED;
 	fsm->states = NULL;
 	fsm->last_state = &fsm->states;
 	fsm->state_count = parser_last_state_id();
 
-	if (symbol->type == SYMBOL_STATEMENT && symbol->content.symbol->type == SYMBOL_RULE) {
-		fsm_rule_compile(fsm, symbol->content.symbol);
-		return fsm;
-	}
-
-	statement = symbol->next;
-
 	/* compile rules */
-	while(statement != NULL) {
-		if (statement->content.symbol->type == SYMBOL_RULE)
-		    fsm_rule_compile(fsm, statement->content.symbol);
-        statement = statement->next;
+	struct ast_list * it = node->value.list;
+
+	while(it) {
+		fsm_compile_rule(fsm, it->node);
+		it = it->next;
 	}
 
-	/* determination type of the FSM */
 	fsm->type = fsm_determine_type(fsm);
-
-	statement = symbol->next;
-
-	/* compile directives */
-	while(statement != NULL) {
-		switch(statement->content.symbol->type)
-		{
-			case SYMBOL_DIRECTIVE_INITIAL:
-				fsm_directive_initial_compile(fsm, statement->content.symbol);
-				break;
-			case SYMBOL_DIRECTIVE_FINAL:
-				fsm_directive_final_compile(fsm, statement->content.symbol);
-				break;
-		}
-		statement = statement->next;
-	}
 
 	return fsm;
 }

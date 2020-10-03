@@ -1,5 +1,5 @@
 #include "fsm_state_list.h"
-#include "allocator.h"
+#include "internal_allocators.h"
 
 #include <stddef.h>
 
@@ -21,7 +21,7 @@ void fsm_state_list_ordered_insert(struct fsm_state_list ** list, struct fsm_sta
 
 struct fsm_state_list * fsm_state_list_create(uint32_t state_id)
 {
-    struct fsm_state_list * state_item = ___alloc_fsm_state_list();
+    struct fsm_state_list * state_item = alloc_fsm_state_list();
     state_item->state_id = state_id;
     state_item->next = NULL;
     return state_item;

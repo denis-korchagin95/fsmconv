@@ -1,9 +1,9 @@
 #ifndef FSMCONV_FSM_COMPILER_H
 #define FSMCONV_FSM_COMPILER_H 1
 
-#include "fsm_types.h"
-#include "parser_types.h"
+struct ast;
+struct fsm;
 
-struct fsm * fsm_compile(struct symbol * symbol);
+struct fsm * fsm_compile(struct ast * tree);
 
 #endif /* FSMCONV_FSM_COMPILER_H */

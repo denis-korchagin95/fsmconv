@@ -26,7 +26,7 @@ void visualize_nfa(FILE * output, struct fsm * fsm)
 	struct fsm_state * state;
 	struct fsm_transition * transition;
 	struct fsm_state_list * state_list;
-	bool is_initial, is_finished;
+	bool is_initial, is_final;
 
 	fprintf(output, "digraph nfa {\n");
 
@@ -34,13 +34,13 @@ void visualize_nfa(FILE * output, struct fsm * fsm)
 
 	while(state != NULL) {
 		is_initial = state->attrs & FSM_STATE_ATTR_INITIAL;
-		is_finished = state->attrs & FSM_STATE_ATTR_FINISHED;
+		is_final = state->attrs & FSM_STATE_ATTR_FINAL;
 
-		if (is_initial && is_finished)
+		if (is_initial && is_final)
 			fprintf(output, "\ts%d [label=\"State '%s'\", shape=tripleoctagon];\n", state->id, state->name);
-		else if (is_initial && !is_finished)
+		else if (is_initial && !is_final)
 			fprintf(output, "\ts%d [label=\"State '%s'\", shape=invhouse];\n", state->id, state->name);
-		else if (!is_initial && is_finished)
+		else if (!is_initial && is_final)
 			fprintf(output, "\ts%d [label=\"State '%s'\", shape=doubleoctagon];\n", state->id, state->name);
 		else
 			fprintf(output, "\ts%d [label=\"State '%s'\"]; \n", state->id, state->name);
@@ -68,7 +68,7 @@ void generate_nfa_language(FILE * output, struct fsm * fsm)
 {
     struct fsm_state * state;
 
-    fprintf(output, "initial ");
+    fprintf(output, "#initial ");
     bool is_first = true;
     list_foreach(state, fsm->states) {
         if (state->attrs & FSM_STATE_ATTR_INITIAL) {
@@ -82,10 +82,10 @@ void generate_nfa_language(FILE * output, struct fsm * fsm)
     }
     fprintf(output, ";\n");
 
-    fprintf(output, "final ");
+    fprintf(output, "#final ");
     is_first = true;
     list_foreach(state, fsm->states) {
-        if (state->attrs & FSM_STATE_ATTR_FINISHED) {
+        if (state->attrs & FSM_STATE_ATTR_FINAL) {
             if (is_first) {
                 fprintf(output, "%s", state->name);
                 is_first = false;
@@ -109,7 +109,7 @@ void generate_nfa_language(FILE * output, struct fsm * fsm)
                 if (target_state == NULL)
                     continue;
                 fprintf(output, "%s to %s by ", state->name, target_state->name);
-                if (transition->ch == EMPTY_CHAR) {
+                if (transition->ch == EPSILON_CHAR) {
                     fprintf(output, "@epsilon");
                 }
                 else {
@@ -128,7 +128,7 @@ void generate_dfa_language(FILE * output, struct fsm * fsm)
     struct fsm_state * state, * target_state;
     struct fsm_transition * transition;
 
-    fprintf(output, "initial ");
+    fprintf(output, "#initial ");
     bool is_first = true;
     list_foreach(state, fsm->states) {
         if (state->attrs & FSM_STATE_ATTR_INITIAL) {
@@ -142,10 +142,10 @@ void generate_dfa_language(FILE * output, struct fsm * fsm)
     }
     fprintf(output, ";\n");
 
-    fprintf(output, "final ");
+    fprintf(output, "#final ");
     is_first = true;
     list_foreach(state, fsm->states) {
-        if (state->attrs & FSM_STATE_ATTR_FINISHED) {
+        if (state->attrs & FSM_STATE_ATTR_FINAL) {
             if (is_first) {
                 fprintf(output, "s%u", state->id);
                 is_first = false;
@@ -175,7 +175,7 @@ void visualize_dfa(FILE * output, struct fsm * dfa)
     struct fsm_state * state;
     struct fsm_transition * transition;
     struct fsm_state_list * state_list;
-    bool is_initial, is_finished;
+    bool is_initial, is_final;
 
     fprintf(output, "digraph dfa {\n");
 
@@ -183,13 +183,13 @@ void visualize_dfa(FILE * output, struct fsm * dfa)
 
     while(state != NULL) {
         is_initial = state->attrs & FSM_STATE_ATTR_INITIAL;
-        is_finished = state->attrs & FSM_STATE_ATTR_FINISHED;
+        is_final = state->attrs & FSM_STATE_ATTR_FINAL;
 
-        if (is_initial && is_finished)
+        if (is_initial && is_final)
             fprintf(output, "\ts%u [label=\"State %u\", shape=tripleoctagon];\n", state->id, state->id);
-        else if (is_initial && !is_finished)
+        else if (is_initial && !is_final)
             fprintf(output, "\ts%u [label=\"State %u\", shape=invhouse];\n", state->id, state->id);
-        else if (!is_initial && is_finished)
+        else if (!is_initial && is_final)
             fprintf(output, "\ts%u [label=\"State %u\", shape=doubleoctagon];\n", state->id, state->id);
         else
             fprintf(output, "\ts%u [label=\"State %u\"]; \n", state->id, state->id);

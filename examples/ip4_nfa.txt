@@ -1,5 +1,5 @@
-initial q0;
-final q16, q19;
+#initial q0;
+#final q16, q19;
 
 q0 to q1 by '0';
 q0 to q3 by '1', '2', '3', '4', '5', '6', '7', '8', '9';

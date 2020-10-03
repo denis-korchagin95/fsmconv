@@ -1,660 +1,500 @@
 #include "parser.h"
-#include "allocator.h"
+#include "tokenizer.h"
+#include "symbol.h"
 #include "internal_allocators.h"
+#include "ast.h"
+#include "fsm.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
-#include <ctype.h>
 
-#define PUTBACK_BUFFER_SIZE			(3)
-#define PUTBACK_TOKEN_BUFFER_SIZE	(3)
-#define IDENTIFIER_TABLE_SIZE		(101)
-#define IDENTIFIER_MAX_SIZE			(256)
-
-struct keyword
+struct builtin_symbol
 {
 	char * name;
+	int type;
 	int code;
 };
 
-static struct keyword keywords[] = {
-	{ "initial", 	KEYWORD_INITIAL },
-	{ "final",   	KEYWORD_FINAL   },
-	{ "to",    		KEYWORD_TO    	},
-	{ "by",    		KEYWORD_BY    	},
+static struct builtin_symbol builtin_symbols[] = {
+	{ "to",    		SYMBOL_KEYWORD, 	KEYWORD_TO    		},
+	{ "by",    		SYMBOL_KEYWORD, 	KEYWORD_BY   		},
+	{ "initial",	SYMBOL_DIRECTIVE, 	DIRECTIVE_INITIAL	},
+	{ "final",		SYMBOL_DIRECTIVE, 	DIRECTIVE_FINAL 	},
 };
 
-static FILE * source;
-static uint32_t line;
-static uint32_t column;
-
-static uint32_t state_id = 0;
-static int putback_buffer[PUTBACK_BUFFER_SIZE];
-static int putback_buffer_pos = 0;
-static struct token * putback_token_buffer[PUTBACK_TOKEN_BUFFER_SIZE];
-static int putback_token_buffer_pos = 0;
-static struct identifier * identifiers[IDENTIFIER_TABLE_SIZE];
-
-struct token eof_token = { 0 };
-
-static struct symbol * search_symbol(struct identifier * identifier, int type)
+void init_symbols(void)
 {
-	struct symbol * it = identifier->symbols;
-	while(it != NULL) {
-		if (it->type == type) {
-			return it;
+	int i = 0, len = sizeof(builtin_symbols) / sizeof(*builtin_symbols);
+
+	struct symbol * symbol;
+	struct identifier * identifier;
+
+	for(; i < len; ++i) {
+		struct builtin_symbol * builtin_symbol = builtin_symbols + i;
+
+		identifier = identifier_create(builtin_symbol->name);
+
+		symbol = alloc_symbol();
+		symbol->identifier = identifier;
+		symbol->next = NULL;
+		symbol->attributes = SYMBOL_ATTRIBUTE_USED;
+		symbol->type = builtin_symbol->type;
+		symbol->reserved = 0;
+
+
+		if(builtin_symbol->type == SYMBOL_DIRECTIVE)
+		{
+			symbol->value.directive.code = builtin_symbol->code;
+			symbol->value.directive.node = NULL;
 		}
-		it = it->next;
+		else
+			symbol->value.code = builtin_symbol->code;
+
+		attach_symbol(identifier, symbol);
 	}
-	return NULL;
+
+
+	/* @epsilon - special character */
+	struct ast * value = alloc_ast();
+	value->type = AST_CHARACTER;
+	value->value.ch = EPSILON_CHAR;
+
+	struct ast * node = alloc_ast();
+	node->type = AST_SPECIAL_CHARACTER;
+	node->value.special_character.value = value;
+
+	identifier = identifier_create("epsilon");
+
+	symbol = alloc_symbol();
+	symbol->identifier = identifier;
+	symbol->next = NULL;
+	symbol->attributes = SYMBOL_ATTRIBUTE_USED;
+	symbol->type = SYMBOL_SPECIAL_CHARACTER;
+	symbol->reserved = 0;
+	symbol->value.node = node;
+
+	node->value.special_character.key = symbol;
+
+	attach_symbol(identifier, symbol);
 }
 
-static const char * keyword_to_string(int type)
-{
-	switch(type)
-	{
-		case KEYWORD_INITIAL:	return "initial";
-		case KEYWORD_FINAL: 	return "final";
-		case KEYWORD_TO: 	return "to";
-		case KEYWORD_BY: 	return "by";
-	}
-	return "<unknown token>";
-}
+static unsigned int state_id = 0;
 
-static const char * token_to_string(struct token * token)
+static const char * token_stringify(struct token * token)
 {
 	switch(token->type)
 	{
-		case TOKEN_INVALID:    return "invalid";
-		case TOKEN_IDENTIFIER: return "identifier";
-		case TOKEN_PUNCTUATOR: return "punctuator";
-		case TOKEN_CHARACTER:  return "character";
+		case TOKEN_EOF:		   	return "eof";
+		case TOKEN_INVALID:    	return "invalid";
+		case TOKEN_KEYWORD:	   	return "keyword";
+		case TOKEN_DIRECTIVE:	return "directive";
+		case TOKEN_IDENTIFIER: 	return "identifier";
+		case TOKEN_PUNCTUATOR: 	return "punctuator";
+		case TOKEN_CHARACTER:  	return "character";
 	}
 	return "<unknown token>";
 }
 
-static bool is_punctuator_as(struct token * token, int type)
-{
-	return token->type == TOKEN_PUNCTUATOR && token->content.code == type;
-}
 
-static bool is_keyword(struct token * token)
-{
-	return token->type == TOKEN_IDENTIFIER && search_symbol(token->content.identifier, SYMBOL_KEYWORD) != NULL;
-}
+void init_parser(void) { } 
 
-static bool is_keyword_as(struct token * token, int type)
-{
-	if (token->type != TOKEN_IDENTIFIER)
-		return false;
-	struct symbol * symbol = search_symbol(token->content.identifier, SYMBOL_KEYWORD);
-	if (symbol == NULL)
-		return false;
-	return symbol->content.code == type;
-}
 
-static uint32_t hash(const char * name)
+struct token * parse_state(struct token * token, struct ast ** state)
 {
-	uint32_t value = 0;
-	while(*name != '\0') {
-		value = *name + 31 * value;
-		++name;
+	if(token->type != TOKEN_IDENTIFIER) {
+		fprintf(stderr, "error: expected identifier but given %s\n", token_stringify(token));
+		exit(EXIT_FAILURE);
 	}
-	return value;
-}
+	struct symbol * symbol = lookup_symbol(token->value.identifier, SYMBOL_STATE);
 
-static void set_source(FILE * file)
-{
-	source = file;
-	putback_buffer_pos = 0;
-}
-
-static int getch(void)
-{
-	if(putback_buffer_pos > 0)
-		return putback_buffer[--putback_buffer_pos];
-	int ch = fgetc(source);
-	switch(ch)
+	if(!symbol)
 	{
-		case '\n':
-			{
-				++line;
-				column = 0;
-			}
-			break;
+		struct ast * node = alloc_ast();
+		node->type = AST_STATE;
+
+		symbol = alloc_symbol();
+		symbol->identifier = token->value.identifier;
+		symbol->next = NULL;
+		symbol->value.state.state_id = state_id++;
+		symbol->value.state.node = node;
+		symbol->attributes = 0;
+		symbol->type = SYMBOL_STATE;
+		symbol->reserved = 0;
+
+		node->value.symbol = symbol;
+
+		attach_symbol(token->value.identifier, symbol);
 	}
-	if(ch != EOF)
-		++column;
-	return ch;
+
+	*state = symbol->value.state.node;
+
+	return token->next;
 }
 
-static void ungetch(int ch)
+struct token * parse_character(struct token * token, struct ast ** node)
 {
-	if (ch == EOF) return;
-	if (putback_buffer_pos >= PUTBACK_BUFFER_SIZE)
-		putback_buffer_pos = 0;
-	putback_buffer[putback_buffer_pos++] = ch;
+	if(token->type != TOKEN_CHARACTER && token->type != TOKEN_SPECIAL_CHARACTER) {
+		fprintf(stderr, "error: expected character constant or special character but given %s\n", token_stringify(token));
+		exit(EXIT_FAILURE);
+	}
+
+	if(token->type == TOKEN_CHARACTER)
+	{
+		struct ast * character = alloc_ast();
+		character->type = AST_CHARACTER;
+		character->value.ch = token->value.code;
+		*node = character;
+		return token->next;
+	}
+
+	struct symbol * symbol = lookup_symbol(token->value.identifier, SYMBOL_SPECIAL_CHARACTER);
+
+	if(!symbol) {
+		fprintf(stderr, "error: undefined special character @%s\n", token->value.identifier->name);
+		exit(EXIT_FAILURE);
+	}
+
+	*node = symbol->value.node;
+
+	return token->next;
 }
 
-static struct identifier * identifier_search(uint32_t hash, const char * name)
+struct token * parse_character_list(struct token * token, void ** node, bool * is_list)
 {
-	uint32_t index = hash % IDENTIFIER_TABLE_SIZE;
-	struct identifier * it;
-	for(it = identifiers[index]; it != NULL; it = it->next) {
-		if (strcmp(name, it->name) == 0) {
-			return it;
-		}
+	struct ast * character;
+
+	token = parse_character(token, &character);
+
+	if(!(token->type == TOKEN_PUNCTUATOR && token->value.code == PUNCTUATOR_COMMA)) {
+		*node = (void *) character;
+		*is_list = false;
+		return token;
 	}
-	return NULL;
+
+	struct ast_list * list, ** last_element, * new_element;
+
+	list = NULL;
+	last_element = &list;
+
+	new_element = alloc_ast_list();
+	new_element->node = character;
+	new_element->next = NULL;
+
+	*last_element = new_element;
+	last_element = &new_element->next;
+
+	do
+	{
+		token = parse_character(token->next, &character);
+
+		new_element = alloc_ast_list();
+		new_element->node = character;
+		new_element->next = NULL;
+
+		*last_element = new_element;
+		last_element = &new_element->next;
+	}
+	while(token->type == TOKEN_PUNCTUATOR && token->value.code == PUNCTUATOR_COMMA);
+
+	*node = (void *) list;
+	*is_list = true;
+
+	return token;
 }
 
-static struct identifier * identifier_insert(uint32_t hash, const char * name)
+struct token * parse_rule(struct token * token, struct ast ** rule)
 {
-	uint32_t index = hash % IDENTIFIER_TABLE_SIZE;
+	struct ast * source, * target;
 
-	size_t len = strlen(name);
+	token = parse_state(token, &source);
 
-	struct identifier * identifier = alloc_identifier();
+	if(!((token->type == TOKEN_KEYWORD && token->value.code == KEYWORD_TO)
+		|| (token->type == TOKEN_PUNCTUATOR && token->value.code == PUNCTUATOR_HYPHEN_LESS))) {
+		fprintf(stderr, "error: expected keyword 'to' or '->' punctuator that must refer to other state but given %s!\n", token_stringify(token));
+		exit(EXIT_FAILURE);
+	}
 
-	identifier->name = (char *) alloc_bytes(len + 1);
-	strncpy(identifier->name, name, len);
-	identifier->name[len] = '\0';
+	token = parse_state(token->next, &target);
 
-	identifier->symbols = NULL;
+	if(!(token->type == TOKEN_KEYWORD && token->value.code == KEYWORD_BY)) {
+		fprintf(stderr, "error: expected keyword 'by' but given %s\n", token_stringify(token));
+		exit(EXIT_FAILURE);
+	}
 
-	identifier->next = identifiers[index];
-	identifiers[index] = identifier;
-	return identifier;
+	void * object;
+	bool is_list;
+	struct ast * by;
+
+	token = parse_character_list(token->next, &object, &is_list);
+
+	if(is_list) {
+		by = alloc_ast();
+		by->type = AST_CHARACTER_LIST;
+		by->value.list = (struct ast_list *) object;
+	}
+	else
+		by = (struct ast *) object;
+
+	struct ast * node = alloc_ast();
+	node->type = AST_RULE;
+	node->value.rule.source = source;
+	node->value.rule.target = target;
+	node->value.rule.by = by;
+	*rule = node;
+
+	return token;
 }
 
-static struct token * read_character(int ch, struct token * token)
+struct token * parse_state_list(struct token * token, void ** node, bool * is_list)
 {
-	if (ch == EOF) {
-		fprintf(stderr, "error: not terminated character constant!\n");
-		exit(1);
+	struct ast * state;
+
+	token = parse_state(token, &state);
+
+	if(!(token->type == TOKEN_PUNCTUATOR && token->value.code == PUNCTUATOR_COMMA)) {
+		*node = (void *) state;
+		*is_list = false;
+		return token;
 	}
-	else if(ch == '\'') {
-		fprintf(stderr, "error: empty character constant!\n");
-		exit(1);
+
+	struct ast_list * list, ** last_element, * new_element;
+
+	list = NULL;
+	last_element = &list;
+
+	new_element = alloc_ast_list();
+	new_element->node = state;
+	new_element->next = NULL;
+
+	*last_element = new_element;
+	last_element = &new_element->next;
+
+	do
+	{
+		token = parse_state(token->next, &state);
+
+		new_element = alloc_ast_list();
+		new_element->node = state;
+		new_element->next = NULL;
+
+		*last_element = new_element;
+		last_element = &new_element->next;
 	}
-	else if(ch == '\n') {
-		fprintf(stderr, "error: new line character in cannot allow in character constant!\n");
-		exit(1);
-	}
-	else if(ch == '\\') { /* handle escape sequence */
-		int next_ch = getch();
-		if (next_ch == '\'') {
-			ch = '\'';
-		}
-		else if(next_ch == '\\') {
-			ch = '\\';
+	while(token->type == TOKEN_PUNCTUATOR && token->value.code == PUNCTUATOR_COMMA);
+
+	*node = (void *) list;
+	*is_list = true;
+
+	return token;
+}
+
+struct token * parse_directive_initial(struct token * token, struct symbol * symbol, struct ast ** directive)
+{
+	/*
+		We does not need to create any tree-nodes,
+		because this directive only changes the symbol
+		who represents the 'initial' directive.
+	*/
+	*directive = NULL;
+
+	void * object;
+	bool is_list;
+
+	token = parse_state_list(token->next, &object, &is_list);
+
+	/*
+		It needs to unset initial flag for all previous states and then mark new ones.
+		Free memory if we got a list of states.
+	*/
+	if(symbol->value.directive.node) {
+		fprintf(stderr, "warning: duplicate of initial directive!\n");
+
+		if(symbol->value.directive.node->type == AST_STATE) {
+			symbol->value.directive.node->value.symbol->attributes &= ~SYMBOL_ATTRIBUTE_INITIAL_STATE;
+			symbol->value.directive.node = NULL;
 		}
 		else {
-			fprintf(stderr, "error: unknown escape sequence in character constant: \\%c\n", next_ch);
-			exit(1);
-		}
-	}
-
-	token->type = TOKEN_CHARACTER;
-	token->content.code = ch;
-	ch = getch();
-
-	if (ch != '\'') {
-		fprintf(stderr, "error: not terminated character constant!\n");
-		exit(1);
-	}
-
-	return token;
-}
-
-static struct token * read_identifier(int ch, struct token * token)
-{
-	static char buffer[IDENTIFIER_MAX_SIZE];
-	int i = 0;
-	uint32_t hash = 0;
-
-	while(ch != EOF && (isalpha(ch) || isdigit(ch) || ch == '_') && i < IDENTIFIER_MAX_SIZE - 1) {
-		buffer[i++] = ch;
-		hash = ch + 31 * hash;
-		ch = getch();
-	}
-	buffer[i] = '\0';
-	if (ch != EOF)
-		ungetch(ch);
-	if(i >= IDENTIFIER_MAX_SIZE - 1) {
-		fprintf(stderr, "warning: identifier too long!\n");
-		while(isalpha(ch) || isdigit(ch) || ch == '_')
-			ch = getch();
-		ungetch(ch);
-	}
-
-	struct identifier * identifier = identifier_search(hash, buffer);
-	if (identifier == NULL)
-		identifier = identifier_insert(hash, buffer);
-
-	token->content.identifier = identifier;
-
-	return token;
-}
-
-static void unread_token(struct token * token)
-{
-	if (token == &eof_token) return;
-	if (putback_token_buffer_pos >= PUTBACK_TOKEN_BUFFER_SIZE)
-		putback_token_buffer_pos = 0;
-	putback_token_buffer[putback_token_buffer_pos++] = token;
-}
-
-static struct token * read_token(void)
-{
-	if(putback_token_buffer_pos > 0)
-		return putback_token_buffer[--putback_token_buffer_pos];
-
-	int ch;
-	struct token * token;
-
-repeat:
-	ch = getch();
-
-	while(isspace(ch))
-		ch = getch();
-
-	if (ch == EOF)
-		return &eof_token;
-
-	if (ch == '/') { 
-		int next_ch = getch();
-		if(next_ch == '/') { /* single-line comment */
-			do
-				ch = getch();
-			while(ch != '\n' && ch != EOF);
-			goto repeat;
-		}
-		ungetch(next_ch);
-	}
-
-	token = ___alloc_token();
-
-	token->location.line = line;
-	token->location.column = column;
-
-	if (isalpha(ch) || ch == '_') {
-		token->type = TOKEN_IDENTIFIER;
-		return read_identifier(ch, token);
-	}
-
-	switch(ch) {
-		case ',':
-			token->type = TOKEN_PUNCTUATOR;
-			token->content.code = PUNCTUATOR_COMMA;
-			goto ret;
-		case ';':
-			token->type = TOKEN_PUNCTUATOR;
-			token->content.code = PUNCTUATOR_SEMICOLON;
-			goto ret;
-		case '@':
-			{
-				int next_ch = getch();
-				if(isalpha(next_ch) || next_ch == '_') {
-					token->type = TOKEN_SPECIAL_CHARACTER;
-					return read_identifier(next_ch, token);
-				}
-				ungetch(next_ch);
+			struct ast_list ** next, ** current = &symbol->value.directive.node->value.list;
+			while(*current) {
+				(*current)->node->value.symbol->attributes &= ~SYMBOL_ATTRIBUTE_INITIAL_STATE;
+				next = &(*current)->next;
+				free_ast_list(*current);
+				*current = NULL;
+				current = next;
 			}
-			goto invalid;
-		case '-':
+		}
+	}
+
+	struct ast * node;
+
+	if(is_list) {
+		struct ast_list * it = (struct ast_list *) object;
+
+		node = alloc_ast();
+		node->type = AST_STATE_LIST;
+		node->value.list = it;
+
+		while(it) {
+			it->node->value.symbol->attributes |= SYMBOL_ATTRIBUTE_INITIAL_STATE;
+			it = it->next;
+		} 
+	}
+	else {
+		node = (struct ast *) object;
+		node->value.symbol->attributes |= SYMBOL_ATTRIBUTE_INITIAL_STATE;
+	}
+
+	symbol->value.directive.node = node;
+
+	return token;
+}
+
+struct token * parse_directive_final(struct token * token, struct symbol * symbol, struct ast ** directive)
+{
+	/*
+		We does not need to create any tree-nodes,
+		because this directive only changes the symbol
+		who represents the 'final' directive.
+	*/
+	*directive = NULL;
+
+	void * object;
+	bool is_list;
+
+	token = parse_state_list(token->next, &object, &is_list);
+
+	/*
+		It needs to unset final flag for all previous states and then mark new ones.
+		Free memory if we got a list of states
+	*/
+	if(symbol->value.directive.node) {
+		fprintf(stderr, "warning: duplicate of final directive!\n");
+
+		if(symbol->value.directive.node->type == AST_STATE) {
+			symbol->value.directive.node->value.symbol->attributes &= ~SYMBOL_ATTRIBUTE_FINAL_STATE;
+			symbol->value.directive.node = NULL;
+		}
+		else {
+			struct ast_list ** next, ** current = &symbol->value.directive.node->value.list;
+			while(*current) {
+				(*current)->node->value.symbol->attributes &= ~SYMBOL_ATTRIBUTE_FINAL_STATE;
+				next = &(*current)->next;
+				free_ast_list(*current);
+				*current = NULL;
+				current = next;
+			}
+		}
+	}
+
+	struct ast * node;
+
+	if(is_list) {
+		struct ast_list * it = (struct ast_list *) object;
+
+		node = alloc_ast();
+		node->type = AST_STATE_LIST;
+		node->value.list = it;
+
+		while(it) {
+			it->node->value.symbol->attributes |= SYMBOL_ATTRIBUTE_FINAL_STATE;
+			it = it->next;
+		} 
+	}
+	else {
+		node = (struct ast *) object;
+		node->value.symbol->attributes |= SYMBOL_ATTRIBUTE_FINAL_STATE;
+	}
+
+	symbol->value.directive.node = node;
+
+	return token;
+}
+
+struct token * parse_directive(struct token * token, struct symbol * symbol, struct ast ** directive)
+{
+	switch(symbol->value.directive.code)
+	{
+		case DIRECTIVE_INITIAL:
+			token = parse_directive_initial(token, symbol, directive);
+			break;
+		case DIRECTIVE_FINAL:
+			token = parse_directive_final(token, symbol, directive);
+			break;
+		default:
+			fprintf(stderr, "error: unknown directive!\n");
+			exit(EXIT_FAILURE);
+	}
+	return token;
+}
+
+struct token * parse_statement(struct token * token, struct ast ** statement)
+{
+	switch(token->type)
+	{
+		case TOKEN_DIRECTIVE:
 			{
-				int next_ch = getch();
-				if (next_ch == '>') {
-					token->type = TOKEN_PUNCTUATOR;
-					token->content.code = PUNCTUATOR_HYPHEN_LESS;
-					goto ret;
+				struct symbol * symbol = lookup_symbol(token->value.identifier, SYMBOL_DIRECTIVE);
+				if(!symbol) {
+					fprintf(stderr, "error: undefined directive #%s!\n", token->value.identifier->name);
+					exit(EXIT_FAILURE);
 				}
-				ungetch(next_ch);
+				token = parse_directive(token, symbol, statement);
 			}
 			break;
-		case '\'':
-			return read_character(getch(), token);
+		case TOKEN_IDENTIFIER:
+			token = parse_rule(token, statement);
+			break;
+		default:
+			fprintf(stderr, "error: expected directive or identifier but given %s\n", token_stringify(token));
+			exit(EXIT_FAILURE);
 	}
 
-invalid:
-	token->type = TOKEN_INVALID;
-	token->content.code = ch;
+	if(!(token->type == TOKEN_PUNCTUATOR && token->value.code == PUNCTUATOR_SEMICOLON)) {
+		fprintf(stderr, "error: expected ';' but given %s\n", token_stringify(token));
+		exit(EXIT_FAILURE);
+	}
 
-ret:
-	return token;
+	return token->next;
 }
 
-void init_parser(void)
+struct token * parse(struct token * token, struct ast ** tree)
 {
-	struct symbol * symbol;
-	struct identifier * identifier;
-	int item_count, i;
+	struct ast_list * list, ** last_element, * new_element;
+	struct ast * statement;
 
-	line = column = 0;
-
-	/* define built-in keywords */
-	{
-		struct keyword * keyword;
-
-		item_count = sizeof(keywords) / sizeof(keywords[0]);
-
-		for(i = 0; i < item_count; ++i) {
-			keyword = keywords + i;
-
-			identifier = identifier_insert(hash(keyword->name), keyword->name);
-
-			symbol = ___alloc_symbol();
-			symbol->type = SYMBOL_KEYWORD;
-			symbol->content.code = keyword->code;
-
-			symbol->next = identifier->symbols;
-			identifier->symbols = symbol;
-		}
-	}
-
-	/* define built-in special-character @epsilon */
-	{
-		const char * keyword_epsilon = "epsilon";
-
-		struct symbol * character = ___alloc_symbol();
-		character->type = SYMBOL_CHARACTER;
-		character->next = NULL;
-		character->content.code = -1;
-
-		identifier = identifier_insert(hash(keyword_epsilon), keyword_epsilon);
-
-		symbol = ___alloc_symbol();
-		symbol->type = SYMBOL_SPECIAL_CHARACTER_BUILTIN;
-		symbol->content.special_character.identifier = identifier;
-		symbol->content.special_character.value = character;
-
-		symbol->next = identifier->symbols;
-		identifier->symbols = symbol;
-	}
-}
-
-struct symbol * parse_state(void)
-{
-	struct token * token;
-	struct identifier * identifier;
-
-	token = read_token();
-	if (token->type != TOKEN_IDENTIFIER) {
-		fprintf(stderr, "error: expected identifier but given %s\n", token_to_string(token));
-		exit(1);
-	}
-	identifier = token->content.identifier;
-	if (is_keyword(token)) {
-		fprintf(stderr, "error: keyword '%s' can't be used for naming fsm state\n", identifier->name);
-		exit(1);
-	}
-	struct symbol * state = search_symbol(identifier, SYMBOL_STATE);
-	if (state != NULL)
-		return state;
-
-	state = ___alloc_symbol();
-	state->type = SYMBOL_STATE;
-	state->next = NULL;
-	state->content.state.identifier = identifier;
-	state->content.state.id = state_id++;
-
-	state->next = identifier->symbols;
-	identifier->symbols = state;
-
-	return state;
-}
-
-struct symbol * parse_transition(void)
-{
-	struct symbol * source = parse_state();
-	struct token * token = read_token();
-	if (!is_keyword_as(token, KEYWORD_TO) && !is_punctuator_as(token, PUNCTUATOR_HYPHEN_LESS)) {
-		fprintf(stdout, "error: expected keyword 'to' or '->' punctuator that must refer to other state but given %s!\n", token_to_string(token));
-		exit(1);
-	}
-	struct symbol * target = parse_state();
-
-	struct symbol * transition = ___alloc_symbol();
-	transition->type = SYMBOL_TRANSITION;
-	transition->next = NULL;
-	transition->content.transition.source = source;
-	transition->content.transition.target = target;
-
-	return transition;
-}
-
-struct symbol * parse_character(void)
-{
-	struct symbol * character;
-	struct token * token;
-
-	token = read_token();
-	if (token->type != TOKEN_CHARACTER && token->type != TOKEN_SPECIAL_CHARACTER) {
-		fprintf(stdout, "error: expected character constant or special-character but given %s!\n", token_to_string(token));
-		exit(1);
-	}
-
-	if (token->type == TOKEN_CHARACTER)
-	{
-		character = ___alloc_symbol();
-		character->next = NULL;
-		character->type = SYMBOL_CHARACTER;
-		character->content.code = token->content.code;
-		return character;
-	}
-
-	character = search_symbol(token->content.identifier, SYMBOL_SPECIAL_CHARACTER_BUILTIN);
-	if(character == NULL) {
-		character = search_symbol(token->content.identifier, SYMBOL_SPECIAL_CHARACTER_USER_DEFINED);
-		if (character == NULL)
-		{
-			fprintf(stderr, "error: undefined special-character @%s\n", token->content.identifier->name);
-			exit(1);
-		}
-	}
-
-	return character;
-}
-
-struct symbol * parse_character_list(void)
-{
-	struct symbol * character_list, * character, ** last_character;
-	struct token * token;
-
-	character = parse_character();
-	token = read_token();
-	if (!is_punctuator_as(token, PUNCTUATOR_COMMA)) {
-		unread_token(token);
-		return character;
-	}
-
-	character_list = ___alloc_symbol();
-	character_list->next = character;
-	character_list->type = SYMBOL_CHARACTER_LIST;
-
-	last_character = &character->next;
+	list = NULL;
+	last_element = &list;
 
 	do
 	{
-		character = parse_character();
-		(*last_character) = character;
-		last_character = &character->next;
-		token = read_token();
-	}
-	while(is_punctuator_as(token, PUNCTUATOR_COMMA));
-	unread_token(token);
+		token = parse_statement(token, &statement);
 
-	return character_list;
+		if(statement) {
+			new_element = alloc_ast_list();
+			new_element->next = NULL;
+			new_element->node = statement;
+
+			*last_element = new_element;
+			last_element = &new_element->next;
+		}
+	}
+	while(token != &eof_token);
+
+	if(!list) {
+		*tree = NULL;
+		return token;
+	}
+
+	struct ast * node = alloc_ast();
+	node->type = AST_RULE_LIST;
+	node->value.list = list;
+
+	*tree = node;
+
+	return token;
 }
 
-struct symbol * parse_rule(void)
+unsigned int parser_last_state_id(void)
 {
-	struct symbol * transition, * character_list, * rule;
-	struct token * token;
-
-	transition = parse_transition();
-	token = read_token();
-	if (!is_keyword_as(token, KEYWORD_BY)) {
-		fprintf(stderr, "error: expected keyword 'by' but given %s\n", token_to_string(token));
-		exit(1);
-	}
-	character_list = parse_character_list();
-	token = read_token();
-	if(!is_punctuator_as(token, PUNCTUATOR_SEMICOLON)) {
-		fprintf(stderr, "error: expected ';' but given %s\n", token_to_string(token));
-		exit(1);
-	}
-
-	rule = ___alloc_symbol();
-	rule->next = NULL;
-	rule->type = SYMBOL_RULE;
-	rule->content.rule.transition = transition;
-	rule->content.rule.character_list = character_list;
-
-	return rule;
-}
-
-struct symbol * parse_state_list(void)
-{
-	struct symbol * state, * state_list, ** last_state;
-	struct token * token;
-
-	state = parse_state();
-	token = read_token();
-	if(!is_punctuator_as(token, PUNCTUATOR_COMMA)) {
-		unread_token(token);
-		return state;
-	}
-
-	state_list = ___alloc_symbol();
-	state_list->type = SYMBOL_STATE_LIST;
-	state_list->next = state;
-
-	last_state = &state->next;
-
-	do
-	{
-		state = parse_state();
-		(*last_state) = state;
-		last_state = &state->next;
-		token = read_token();
-	}
-	while(is_punctuator_as(token, PUNCTUATOR_COMMA));
-
-	unread_token(token);
-
-	return state_list;
-}
-
-struct symbol * parse_directive_initial(void)
-{
-	struct symbol * directive;
-	struct token * token;
-
-	directive = ___alloc_symbol();
-	directive->type = SYMBOL_DIRECTIVE_INITIAL;
-	directive->next = NULL;
-	directive->content.symbol = parse_state_list();
-
-	token = read_token();
-	if(!is_punctuator_as(token, PUNCTUATOR_SEMICOLON)) {
-		fprintf(stdout, "error: expected ';' but given %s\n", token_to_string(token));
-		exit(1);
-	}
-
-	return directive;
-}
-
-struct symbol * parse_directive_final(void)
-{
-	struct symbol * directive;
-	struct token * token;
-
-	directive = ___alloc_symbol();
-	directive->type = SYMBOL_DIRECTIVE_FINAL;
-	directive->next = NULL;
-	directive->content.symbol = parse_state_list();
-
-	token = read_token();
-	if(!is_punctuator_as(token, PUNCTUATOR_SEMICOLON)) {
-		fprintf(stdout, "error: expected ';' but given %s\n", token_to_string(token));
-		exit(1);
-	}
-
-	return directive;
-}
-
-struct symbol * parse_statement(void)
-{
-	struct symbol * symbol, * statement;
-	struct token * token;
-
-	token = read_token();
-	if (token->type != TOKEN_IDENTIFIER) {
-		fprintf(stdout, "error: expected directive keyword or identifier but given %s\n", token_to_string(token));
-		exit(1);
-	}
-
-	statement = ___alloc_symbol();
-	statement->type = SYMBOL_STATEMENT;
-	statement->next = NULL;
-
-	symbol = search_symbol(token->content.identifier, SYMBOL_KEYWORD);
-	if (symbol == NULL) {
-		unread_token(token);
-		statement->content.symbol = parse_rule();
-		return statement;
-	}
-	if (symbol->content.code == KEYWORD_INITIAL) {
-		statement->content.symbol = parse_directive_initial();
-		return statement;
-	}
-	else if(symbol->content.code == KEYWORD_FINAL) {
-		statement->content.symbol = parse_directive_final();
-		return statement;
-	}
-	fprintf(stdout, "error: keyword '%s' cannot start any directive!\n", keyword_to_string(symbol->content.code));
-	exit(1);
-}
-
-struct symbol * parse(FILE * file)
-{
-	struct symbol * statement, * statement_list, ** last_statement;
-	struct token * token;
-
-	set_source(file);
-	state_id = 0;
-
-	statement = parse_statement();
-	token = read_token();
-	if (token == &eof_token)
-		return statement;
-
-	statement_list = ___alloc_symbol();
-	statement_list->type = SYMBOL_STATEMENT_LIST;
-	statement_list->next = statement;
-
-	last_statement = &statement->next;
-
-	unread_token(token);
-	while(1) {
-		statement = parse_statement();
-
-		(*last_statement) = statement;
-		last_statement = &statement->next;
-
-		token = read_token();
-		if (token == &eof_token)
-			break;
-		unread_token(token);
-	}
-
-	return statement_list;
-}
-
-uint32_t parser_last_state_id(void)
-{
-    return state_id;
+	return state_id;
 }

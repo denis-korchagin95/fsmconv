@@ -3,12 +3,15 @@
 
 #include <stdio.h>
 
-#include "fsm_types.h"
-#include "parser_types.h"
+struct token;
+struct symbol;
+struct fsm_state_list;
+struct ast;
 
-void debug_token(FILE * output, struct token * token);
-void debug_symbol(FILE * output, struct symbol * symbol, int depth);
+extern void debug_token(FILE * output, struct token * token);
+extern void debug_symbol(FILE * output, struct symbol * symbol);
 
-void debug_fsm_state_list(FILE * output, struct fsm_state_list * list);
+extern void debug_fsm_state_list(FILE * output, struct fsm_state_list * list);
+extern void debug_ast(FILE * output, struct ast * ast);
 
 #endif /* FSMCONV_DEBUG_H */

@@ -5,10 +5,10 @@
 
 #include "util.h"
 
-#define EMPTY_CHAR (-1)
+#define EPSILON_CHAR (-1)
 
 #define FSM_STATE_ATTR_INITIAL      bit(0)
-#define FSM_STATE_ATTR_FINISHED     bit(1)
+#define FSM_STATE_ATTR_FINAL     	bit(1)
 #define FSM_STATE_ATTR_VISITED      bit(2)
 
 #define FSM_TYPE_UNDEFINED          0
