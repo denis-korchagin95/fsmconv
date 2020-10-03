@@ -1,8 +1,6 @@
 #ifndef FSMCONV_TYPES_H
 #define FSMCONV_TYPES_H 1
 
-#include <stdint.h>
-
 #include "util.h"
 
 #define EPSILON_CHAR (-1)
@@ -20,7 +18,7 @@
 struct fsm_state_list
 {
     struct fsm_state_list * next;
-    uint32_t state_id;
+    unsigned int state_id;
 };
 
 struct fsm_transition {
@@ -35,15 +33,15 @@ struct fsm_state {
     struct fsm_transition * transitions;
     struct fsm_state_list * subset;
     const char * name;
-    uint32_t id;
-    uint32_t attrs;
+    unsigned int id;
+    unsigned int attrs;
 };
 
 struct fsm {
     struct fsm_state * states;
     struct fsm_state ** last_state;
-    uint32_t state_count;
-    uint32_t type;
+    unsigned int state_count;
+    unsigned int type;
 };
 
 #endif /* FSMCONV_TYPES_H */

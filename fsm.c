@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-struct fsm_state * fsm_search_state_by_id(struct fsm * fsm, uint32_t id)
+struct fsm_state * fsm_search_state_by_id(struct fsm * fsm, unsigned int id)
 {
     struct fsm_state * it = fsm->states;
     while(it != NULL) {
@@ -253,7 +253,7 @@ struct fsm_state * fsm_search_state_by_subset(struct fsm * fsm, struct fsm_state
     return NULL;
 }
 
-uint32_t fsm_determine_type(struct fsm * fsm)
+unsigned int fsm_determine_type(struct fsm * fsm)
 {
 	struct fsm_state * state;
 	struct fsm_transition * transition;

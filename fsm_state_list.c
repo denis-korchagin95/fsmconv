@@ -19,7 +19,7 @@ void fsm_state_list_ordered_insert(struct fsm_state_list ** list, struct fsm_sta
     }
 }
 
-struct fsm_state_list * fsm_state_list_create(uint32_t state_id)
+struct fsm_state_list * fsm_state_list_create(unsigned int state_id)
 {
     struct fsm_state_list * state_item = alloc_fsm_state_list();
     state_item->state_id = state_id;
@@ -27,7 +27,7 @@ struct fsm_state_list * fsm_state_list_create(uint32_t state_id)
     return state_item;
 }
 
-bool fsm_state_list_has_state(struct fsm_state_list * list, uint32_t state_id)
+bool fsm_state_list_has_state(struct fsm_state_list * list, unsigned int state_id)
 {
     while(list != NULL)
     {
@@ -49,9 +49,9 @@ bool fsm_state_list_contains(struct fsm_state_list * first, struct fsm_state_lis
     return true;
 }
 
-uint32_t fsm_state_list_length(struct fsm_state_list * list)
+unsigned int fsm_state_list_length(struct fsm_state_list * list)
 {
-    uint32_t len = 0;
+    unsigned int len = 0;
     while (list != NULL) {
         list = list->next;
         ++len;
