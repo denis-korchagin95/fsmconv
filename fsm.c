@@ -121,7 +121,7 @@ static struct fsm_state * fsm_find_not_visited_state(struct fsm * fsm)
     return NULL;
 }
 
-struct fsm * nfa_to_dfa(struct fsm * nfa)
+struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 {
     struct fsm * dfa;
     struct fsm_state * state, * new_state, * search_state;
@@ -138,20 +138,60 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
     characters = NULL;
     final_states = NULL;
 
+	if(conv_options & CONV_OPTION_UNITE_INITIALS) {
+		struct fsm_state_list ** last_state;
+		state_list = NULL;
+		last_state = &state_list;
+		list_foreach(state, nfa->states) {
+			if(state->attrs & FSM_STATE_ATTR_INITIAL) {
+				state_item = alloc_fsm_state_list();
+				state_item->state_id = state->id;
+				state_item->next = NULL;
+
+				*last_state = state_item;
+				last_state = &state_item->next;
+			}
+		}
+
+		new_state = alloc_fsm_state();
+		new_state->subset = fsm_epsilon_closure(nfa, state_list);
+		new_state->fsm = dfa;
+		new_state->id = dfa->state_count++;
+		new_state->next = NULL;
+		new_state->transitions = NULL;
+		new_state->attrs = FSM_STATE_ATTR_INITIAL;
+
+		*dfa->last_state = new_state;
+		dfa->last_state = &new_state->next;
+
+		{
+			struct fsm_state_list * hold;
+			while(state_list) {
+				hold = state_list->next;
+				free_fsm_state_list(state_list);
+				state_list = hold;
+			}
+		}
+	}
+	else
+	{
+		list_foreach(state, nfa->states) {
+			if(state->attrs & FSM_STATE_ATTR_INITIAL) {
+            	new_state = alloc_fsm_state();
+            	new_state->subset = fsm_state_epsilon_closure(state);
+            	new_state->fsm = dfa;
+            	new_state->id = dfa->state_count++;
+            	new_state->next = NULL;
+            	new_state->transitions = NULL;
+            	new_state->attrs = FSM_STATE_ATTR_INITIAL;
+
+            	*dfa->last_state = new_state;
+            	dfa->last_state = &new_state->next;
+			}
+		}
+	}
+
     list_foreach(state, nfa->states) {
-        if (state->attrs & FSM_STATE_ATTR_INITIAL) {
-            new_state = alloc_fsm_state();
-            new_state->subset = fsm_state_epsilon_closure(state);
-            new_state->fsm = dfa;
-            new_state->id = dfa->state_count++;
-            new_state->next = NULL;
-            new_state->transitions = NULL;
-            new_state->attrs = FSM_STATE_ATTR_INITIAL;
-
-            *dfa->last_state = new_state;
-            dfa->last_state = &new_state->next;
-        }
-
 	    if(state->attrs & FSM_STATE_ATTR_FINAL) {
 		    state_item = alloc_fsm_state_list();
 		    state_item->state_id = state->id;

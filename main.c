@@ -33,11 +33,13 @@ static void usage(const char * program, FILE * output)
     fprintf(output, "\n");
     fprintf(output, "OPTIONS\n");
     fprintf(output, "\t--print-only\n");
-    fprintf(output, "\t\tPrint only the given FSM and exit.\n");
+    fprintf(output, "\t\tPrint only the given FSM and exit.\n\n");
     fprintf(output, "\t--format=[native|dot] (native by default)\n");
-    fprintf(output, "\t\tPrint the FSM in a given format, where format can be one of 'native', or 'dot'.\n");
+    fprintf(output, "\t\tPrint the FSM in a given format, where format can be one of 'native', or 'dot'.\n\n");
     fprintf(output, "\t--output=<file>\n");
-    fprintf(output, "\t\tPlace the output into <file>.\n");
+    fprintf(output, "\t\tPlace the output into <file>.\n\n");
+	fprintf(output, "\t--unite-initials\n");
+	fprintf(output, "\t\tUnite multiple initial states of the given FSM to the single state in output FSM.\n\n");
     fflush(output);
 }
 
@@ -61,6 +63,7 @@ static void print_fsm(FILE * output, struct fsm * fsm, int format, bool is_dfa)
 }
 
 static bool print_input_fsm_only = false;
+static bool unite_initials = false;
 static int fsm_output_format = FSM_OUTPUT_FORMAT_NATIVE;
 
 int main(int argc, char * argv[])
@@ -96,6 +99,11 @@ int main(int argc, char * argv[])
             print_input_fsm_only = true;
             continue;
         }
+
+		if(! strcmp(arg, "--unite-initials")) {
+			unite_initials = true;
+			continue;
+		}
 
         fprintf(stderr, "error: unknown option '%s'!\n", arg);
         exit(EXIT_FAILURE);
@@ -141,7 +149,12 @@ int main(int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	struct fsm * dfa = nfa_to_dfa(nfa);
+	unsigned int options = 0;
+
+	if(unite_initials)
+		options |= CONV_OPTION_UNITE_INITIALS;
+
+	struct fsm * dfa = nfa_to_dfa(nfa, options);
 
 	print_fsm(output, dfa, fsm_output_format, true);
 
