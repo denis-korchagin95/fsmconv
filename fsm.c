@@ -63,7 +63,7 @@ struct fsm_state_list * fsm_epsilon_closure(struct fsm * fsm, struct fsm_state_l
             }
         }
 
-        /* TODO: free(current) */
+		free_fsm_state_list(current);
     }
 
     return epsilon_closure;
@@ -105,7 +105,7 @@ struct fsm_state_list * fsm_state_epsilon_closure(struct fsm_state * state)
             }
         }
 
-        /* TODO: free(current) */
+		free_fsm_state_list(current);
     }
 
     return epsilon_closure;
@@ -202,8 +202,15 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
                 continue;
 
             epsilon_closure = fsm_epsilon_closure(nfa, state_list);
-            /* TODO: free(state_list) */
-            state_list = NULL;
+
+			{
+				struct fsm_state_list * hold;
+				while(state_list) {
+					hold = state_list->next;
+					free_fsm_state_list(state_list);
+					state_list = hold;
+				}
+			}
 
             search_state = fsm_search_state_by_subset(dfa, epsilon_closure);
 
@@ -233,14 +240,37 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
                 state->transitions = transition;
             }
             else {
-                /* TODO: free(transition->states); */
+				{
+					struct fsm_state_list * hold, ** it;
+					it = &transition->states;
+					while(*it) {
+						hold = (*it)->next;
+						free_fsm_state_list(*it);
+						*it = hold;
+					}
+				}
                 transition->states = fsm_state_list_create(search_state->id);
             }
         }
     }
 
-    /* TODO: free(final_states); */
-    /* TODO: free(characters); */
+	{
+		struct fsm_state_list * hold;
+		while(final_states) {
+			hold = final_states->next;
+			free_fsm_state_list(final_states);
+			final_states = hold;
+		}
+	}
+
+	{
+		struct character_list * hold;
+		while(characters) {
+			hold = characters->next;
+			free_character_list(characters);
+			characters = hold;
+		}
+	}
 
     return dfa;
 }
@@ -306,7 +336,14 @@ unsigned int fsm_determine_type(struct fsm * fsm)
 	}
 
 out_loop:
-	/* TODO: free(characters); */
+	{
+		struct character_list * hold;
+		while(characters) {
+			hold = characters->next;
+			free_character_list(characters);
+			characters = hold;
+		}
+	}
 
 	if(has_missed_transitions)
 		return FSM_TYPE_FAKE_DFA;
