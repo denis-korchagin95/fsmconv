@@ -96,8 +96,6 @@ static const char * token_stringify(struct token * token)
 	return "<unknown token>";
 }
 
-void init_parser(void) { }
-
 struct token * parse_state(struct token * token, struct ast ** state)
 {
 	if(token->type != TOKEN_IDENTIFIER) {
