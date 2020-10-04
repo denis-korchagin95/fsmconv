@@ -192,9 +192,11 @@ struct fsm * nfa_to_dfa(struct fsm * nfa)
                 if (! transition)
                     continue;
                 list_foreach(state_item2, transition->states) {
-                    new_state_item = fsm_state_list_create(state_item2->state_id);
-                    new_state_item->next = state_list;
-                    state_list = new_state_item;
+                    if(! fsm_state_list_has_state(state_list, state_item2->state_id)) {
+                        new_state_item = fsm_state_list_create(state_item2->state_id);
+                        new_state_item->next = state_list;
+                        state_list = new_state_item;
+                    }
                 }
             }
 
