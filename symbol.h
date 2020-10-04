@@ -8,14 +8,14 @@ enum {
 	SYMBOL_DIRECTIVE,
 };
 
-#define SYMBOL_ATTRIBUTE_INITIAL_STATE	(1<<0)
-#define SYMBOL_ATTRIBUTE_FINAL_STATE	(1<<1)
-#define SYMBOL_ATTRIBUTE_USED			(1<<2)
+#define SYMBOL_ATTRIBUTE_INITIAL_STATE  (1<<0)
+#define SYMBOL_ATTRIBUTE_FINAL_STATE    (1<<1)
+#define SYMBOL_ATTRIBUTE_USED           (1<<2)
 
-#define attach_symbol(identifier, symbol)		\
-	{											\
-		(symbol)->next = (identifier)->symbols;	\
-		(identifier)->symbols = (symbol);		\
+#define attach_symbol(identifier, symbol)       \
+	{                                           \
+		(symbol)->next = (identifier)->symbols; \
+		(identifier)->symbols = (symbol);       \
 	}
 
 struct ast;

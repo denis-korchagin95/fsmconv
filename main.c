@@ -14,52 +14,52 @@
 #include "util.h"
 
 enum {
-    FSM_OUTPUT_FORMAT_NATIVE = 0,
-    FSM_OUTPUT_FORMAT_DOT = 1,
+	FSM_OUTPUT_FORMAT_NATIVE = 0,
+	FSM_OUTPUT_FORMAT_DOT = 1,
 };
 
 static void usage(const char * program, FILE * output)
 {
-    const char * basename = program;
-    const char * search;
+	const char * basename = program;
+	const char * search;
 
-    if ((search = strrchr(program, DIRECTORY_SEPARATOR)))
-        basename = search + 1;
+	if ((search = strrchr(program, DIRECTORY_SEPARATOR)))
+		basename = search + 1;
 
-    fprintf(output, "Usage: %s file [options]\n", basename);
-    fprintf(output, "\n");
-    fprintf(output, "DESCRIPTION\n");
-    fprintf(output, "\tA command-line tool for converting FSA from one to another representation.\n");
-    fprintf(output, "\n");
-    fprintf(output, "OPTIONS\n");
-    fprintf(output, "\t--print-only\n");
-    fprintf(output, "\t\tPrint only the given FSM and exit.\n\n");
-    fprintf(output, "\t--format=[native|dot] (native by default)\n");
-    fprintf(output, "\t\tPrint the FSM in a given format, where format can be one of 'native', or 'dot'.\n\n");
-    fprintf(output, "\t--output=<file>\n");
-    fprintf(output, "\t\tPlace the output into <file>.\n\n");
+	fprintf(output, "Usage: %s file [options]\n", basename);
+	fprintf(output, "\n");
+	fprintf(output, "DESCRIPTION\n");
+	fprintf(output, "\tA command-line tool for converting FSA from one to another representation.\n");
+	fprintf(output, "\n");
+	fprintf(output, "OPTIONS\n");
+	fprintf(output, "\t--print-only\n");
+	fprintf(output, "\t\tPrint only the given FSM and exit.\n\n");
+	fprintf(output, "\t--format=[native|dot] (native by default)\n");
+	fprintf(output, "\t\tPrint the FSM in a given format, where format can be one of 'native', or 'dot'.\n\n");
+	fprintf(output, "\t--output=<file>\n");
+	fprintf(output, "\t\tPlace the output into <file>.\n\n");
 	fprintf(output, "\t--unite-initials\n");
 	fprintf(output, "\t\tUnite multiple initial states of the given FSM to the single state in output FSM.\n\n");
-    fflush(output);
+	fflush(output);
 }
 
 static void print_fsm(FILE * output, struct fsm * fsm, int format, bool is_dfa)
 {
-    switch (format)
-    {
-        case FSM_OUTPUT_FORMAT_NATIVE:
-            if (is_dfa)
-                generate_dfa_language(output, fsm);
-            else
-                generate_nfa_language(output, fsm);
-            break;
-        case FSM_OUTPUT_FORMAT_DOT:
-            if (is_dfa)
-                visualize_dfa(output, fsm);
-            else
-                visualize_nfa(output, fsm);
-            break;
-    }
+	switch (format)
+	{
+		case FSM_OUTPUT_FORMAT_NATIVE:
+			if (is_dfa)
+				generate_dfa_language(output, fsm);
+			else
+				generate_nfa_language(output, fsm);
+			break;
+		case FSM_OUTPUT_FORMAT_DOT:
+			if (is_dfa)
+				visualize_dfa(output, fsm);
+			else
+				visualize_nfa(output, fsm);
+			break;
+	}
 }
 
 static bool print_input_fsm_only = false;
@@ -68,48 +68,48 @@ static int fsm_output_format = FSM_OUTPUT_FORMAT_NATIVE;
 
 int main(int argc, char * argv[])
 {
-    if (argc < 2) {
-        usage(argv[0], stdout);
-        exit(EXIT_SUCCESS);
-    }
-    const char * input_file = argv[1];
-    const char * output_file = NULL;
+	if (argc < 2) {
+		usage(argv[0], stdout);
+		exit(EXIT_SUCCESS);
+	}
+	const char * input_file = argv[1];
+	const char * output_file = NULL;
 
 	atexit(drop_internal_allocators);
 
-    int i;
-    for(i = 2; i < argc; ++i) {
-        const char * arg = argv[i];
+	int i;
+	for(i = 2; i < argc; ++i) {
+		const char * arg = argv[i];
 
-	    if (! memcmp(arg, "--output=", 9)) {
-		    output_file = arg + 9;
-		    continue;
-	    }
+		if (! memcmp(arg, "--output=", 9)) {
+			output_file = arg + 9;
+			continue;
+		}
 
-        if (! strcmp(arg, "--format=native")) {
-            continue;
-        }
+		if (! strcmp(arg, "--format=native")) {
+			continue;
+		}
 
-        if (! strcmp(arg, "--format=dot")) {
-            fsm_output_format = FSM_OUTPUT_FORMAT_DOT;
-            continue;
-        }
+		if (! strcmp(arg, "--format=dot")) {
+			fsm_output_format = FSM_OUTPUT_FORMAT_DOT;
+			continue;
+		}
 
-        if (! strcmp(arg, "--print-only")) {
-            print_input_fsm_only = true;
-            continue;
-        }
+		if (! strcmp(arg, "--print-only")) {
+			print_input_fsm_only = true;
+			continue;
+		}
 
 		if(! strcmp(arg, "--unite-initials")) {
 			unite_initials = true;
 			continue;
 		}
 
-        fprintf(stderr, "error: unknown option '%s'!\n", arg);
-        exit(EXIT_FAILURE);
-    }
+		fprintf(stderr, "error: unknown option '%s'!\n", arg);
+		exit(EXIT_FAILURE);
+	}
 
-    init_symbols();
+	init_symbols();
 
 	struct stream stream;
 
@@ -122,19 +122,19 @@ int main(int argc, char * argv[])
 
 	struct ast * tree = NULL;
 
-   	(void)parse(token_list, &tree);
+	(void)parse(token_list, &tree);
 
-    if (! tree) {
-        fprintf(stderr, "error: there is no any rules to construct the fsm!\n");
+	if (! tree) {
+		fprintf(stderr, "error: there is no any rules to construct the fsm!\n");
 		stream_destroy(&stream);
-        exit(EXIT_FAILURE);
-    }
+		exit(EXIT_FAILURE);
+	}
 
 	struct fsm * nfa = fsm_compile(tree);
 
-    FILE * output = NULL;
+	FILE * output = NULL;
 
-    if (output_file) {
+	if (output_file) {
 		output = fopen(output_file, "w");
 		if(! output)
 			fprintf(stderr, "warning: failed to open the output file '%s': %s!\n", output_file, strerror(errno));
@@ -159,7 +159,7 @@ int main(int argc, char * argv[])
 	print_fsm(output, dfa, fsm_output_format, true);
 
 	stream_destroy(&stream);
-    exit(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 
 	return 0;
 }

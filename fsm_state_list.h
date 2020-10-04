@@ -5,8 +5,8 @@
 
 struct fsm_state_list
 {
-    struct fsm_state_list * next;
-    unsigned int state_id;
+	struct fsm_state_list * next;
+	unsigned int state_id;
 };
 
 extern struct fsm_state_list * fsm_state_list_create(unsigned int state_id);

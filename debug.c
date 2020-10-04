@@ -11,8 +11,8 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#define MAX_TREE_DEPTH		(1)
-#define MAX_TREE_DEPTH_BITS	(sizeof(*is_tree_node_latest_in_depth) * MAX_TREE_DEPTH * CHAR_BIT)
+#define MAX_TREE_DEPTH      (1)
+#define MAX_TREE_DEPTH_BITS (sizeof(*is_tree_node_latest_in_depth) * MAX_TREE_DEPTH * CHAR_BIT)
 
 static unsigned char is_tree_node_latest_in_depth[MAX_TREE_DEPTH];
 
@@ -87,15 +87,15 @@ void debug_token(FILE * output, struct token * token)
 			fprintf(output, "<unknown token>");
 	}
 }
-	
+
 void debug_fsm_state_list(FILE * output, struct fsm_state_list * list)
 {
-    fprintf(output, "{");
-    while(list) {
-        fprintf(output, " %u%s", list->state_id, !list->next ? " " : ",");
-        list = list->next;
-    }
-    fprintf(output, "}");
+	fprintf(output, "{");
+	while(list) {
+		fprintf(output, " %u%s", list->state_id, !list->next ? " " : ",");
+		list = list->next;
+	}
+	fprintf(output, "}");
 }
 
 static void do_debug_ast(FILE * output, struct ast * ast, int depth)

@@ -1,13 +1,13 @@
-#include "fsm_compiler.h"
 #include "ast.h"
-#include "fsm_state.h"
-#include "internal_allocators.h"
-#include "fsm_transition.h"
 #include "fsm.h"
+#include "fsm_compiler.h"
+#include "fsm_state.h"
+#include "fsm_state_list.h"
+#include "fsm_transition.h"
+#include "internal_allocators.h"
+#include "parser.h"
 #include "symbol.h"
 #include "tokenizer.h"
-#include "parser.h"
-#include "fsm_state_list.h"
 
 static void fsm_compile_transition(struct fsm_state * source, struct fsm_state * target, struct ast * node)
 {

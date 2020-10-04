@@ -8,9 +8,9 @@
 struct fsm_state_list;
 
 struct fsm_transition {
-  struct fsm_state_list * states;
-  struct fsm_transition * next;
-  int ch;
+	struct fsm_state_list * states;
+	struct fsm_transition * next;
+	int ch;
 };
 
 extern bool fsm_transition_has_state(struct fsm_transition * transition, unsigned int state_id);

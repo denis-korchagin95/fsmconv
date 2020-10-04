@@ -5,9 +5,9 @@
 
 #define INTERNAL_ALLOCATOR_DEFAULT_CHUNK_SIZE (8192)
 
-#define internal_object_allocator_define(identifier, type)  \
-	extern type * alloc_ ## identifier(void);               \
-	extern void free_ ## identifier(type * object);         \
+#define internal_object_allocator_define(identifier, type) \
+	extern type * alloc_ ## identifier(void);              \
+	extern void free_ ## identifier(type * object);        \
 
 #define internal_object_allocator_declare(identifier, type, name, chunk_size) \
 	static struct allocator name ## _allocator = {                            \

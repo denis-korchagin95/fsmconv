@@ -69,149 +69,149 @@ void visualize_nfa(FILE * output, struct fsm * fsm)
 
 void generate_nfa_language(FILE * output, struct fsm * fsm)
 {
-    struct fsm_state * state;
+	struct fsm_state * state;
 
-    fprintf(output, "#initial ");
-    bool is_first = true;
-    list_foreach(state, fsm->states) {
-        if (state->attrs & FSM_STATE_ATTR_INITIAL) {
-            if (is_first) {
-                fprintf(output, "%s", state->name);
-                is_first = false;
-                continue;
-            }
-            fprintf(output, ", %s", state->name);
-        }
-    }
-    fprintf(output, ";\n");
+	fprintf(output, "#initial ");
+	bool is_first = true;
+	list_foreach(state, fsm->states) {
+		if (state->attrs & FSM_STATE_ATTR_INITIAL) {
+			if (is_first) {
+				fprintf(output, "%s", state->name);
+				is_first = false;
+				continue;
+			}
+			fprintf(output, ", %s", state->name);
+		}
+	}
+	fprintf(output, ";\n");
 
-    fprintf(output, "#final ");
-    is_first = true;
-    list_foreach(state, fsm->states) {
-        if (state->attrs & FSM_STATE_ATTR_FINAL) {
-            if (is_first) {
-                fprintf(output, "%s", state->name);
-                is_first = false;
-                continue;
-            }
-            fprintf(output, ", %s", state->name);
-        }
-    }
-    fprintf(output, ";\n");
+	fprintf(output, "#final ");
+	is_first = true;
+	list_foreach(state, fsm->states) {
+		if (state->attrs & FSM_STATE_ATTR_FINAL) {
+			if (is_first) {
+				fprintf(output, "%s", state->name);
+				is_first = false;
+				continue;
+			}
+			fprintf(output, ", %s", state->name);
+		}
+	}
+	fprintf(output, ";\n");
 
-    fprintf(output, "\n");
+	fprintf(output, "\n");
 
-    struct fsm_transition * transition;
-    struct fsm_state_list * state_item;
-    struct fsm_state * target_state;
+	struct fsm_transition * transition;
+	struct fsm_state_list * state_item;
+	struct fsm_state * target_state;
 
-    list_foreach(state, fsm->states) {
-        list_foreach(transition, state->transitions) {
-            list_foreach(state_item, transition->states) {
-                target_state = fsm_search_state_by_id(fsm, state_item->state_id);
-                if (! target_state)
-                    continue;
-                fprintf(output, "%s to %s by ", state->name, target_state->name);
-                if (transition->ch == EPSILON_CHAR) {
-                    fprintf(output, "@epsilon");
-                }
-                else {
-                    fprintf(output, "'%s'", transition_character_stringify(transition->ch));
-                }
-                fprintf(output, ";\n");
-            }
-        }
-    }
+	list_foreach(state, fsm->states) {
+		list_foreach(transition, state->transitions) {
+			list_foreach(state_item, transition->states) {
+				target_state = fsm_search_state_by_id(fsm, state_item->state_id);
+				if (! target_state)
+					continue;
+				fprintf(output, "%s to %s by ", state->name, target_state->name);
+				if (transition->ch == EPSILON_CHAR) {
+					fprintf(output, "@epsilon");
+				}
+				else {
+					fprintf(output, "'%s'", transition_character_stringify(transition->ch));
+				}
+				fprintf(output, ";\n");
+			}
+		}
+	}
 
-    fflush(output);
+	fflush(output);
 }
 
 void generate_dfa_language(FILE * output, struct fsm * fsm)
 {
-    struct fsm_state * state, * target_state;
-    struct fsm_transition * transition;
+	struct fsm_state * state, * target_state;
+	struct fsm_transition * transition;
 
-    fprintf(output, "#initial ");
-    bool is_first = true;
-    list_foreach(state, fsm->states) {
-        if (state->attrs & FSM_STATE_ATTR_INITIAL) {
-            if (is_first) {
-                fprintf(output, "s%u", state->id);
-                is_first = false;
-                continue;
-            }
-            fprintf(output, ", s%u", state->id);
-        }
-    }
-    fprintf(output, ";\n");
+	fprintf(output, "#initial ");
+	bool is_first = true;
+	list_foreach(state, fsm->states) {
+		if (state->attrs & FSM_STATE_ATTR_INITIAL) {
+			if (is_first) {
+				fprintf(output, "s%u", state->id);
+				is_first = false;
+				continue;
+			}
+			fprintf(output, ", s%u", state->id);
+		}
+	}
+	fprintf(output, ";\n");
 
-    fprintf(output, "#final ");
-    is_first = true;
-    list_foreach(state, fsm->states) {
-        if (state->attrs & FSM_STATE_ATTR_FINAL) {
-            if (is_first) {
-                fprintf(output, "s%u", state->id);
-                is_first = false;
-                continue;
-            }
-            fprintf(output, ", s%u", state->id);
-        }
-    }
-    fprintf(output, ";\n");
+	fprintf(output, "#final ");
+	is_first = true;
+	list_foreach(state, fsm->states) {
+		if (state->attrs & FSM_STATE_ATTR_FINAL) {
+			if (is_first) {
+				fprintf(output, "s%u", state->id);
+				is_first = false;
+				continue;
+			}
+			fprintf(output, ", s%u", state->id);
+		}
+	}
+	fprintf(output, ";\n");
 
-    fprintf(output, "\n");
+	fprintf(output, "\n");
 
-    list_foreach(state, fsm->states) {
-        list_foreach(transition, state->transitions) {
-            target_state = fsm_search_state_by_id(fsm, transition->states->state_id);
-            if (! target_state)
-                continue;
-            fprintf(output, "s%u to s%u by '%s';\n", state->id, target_state->id, transition_character_stringify(transition->ch));
-        }
-    }
+	list_foreach(state, fsm->states) {
+		list_foreach(transition, state->transitions) {
+			target_state = fsm_search_state_by_id(fsm, transition->states->state_id);
+			if (! target_state)
+				continue;
+			fprintf(output, "s%u to s%u by '%s';\n", state->id, target_state->id, transition_character_stringify(transition->ch));
+		}
+	}
 
-    fflush(output);
+	fflush(output);
 }
 
 void visualize_dfa(FILE * output, struct fsm * dfa)
 {
-    struct fsm_state * state;
-    struct fsm_transition * transition;
-    struct fsm_state_list * state_list;
-    bool is_initial, is_final;
+	struct fsm_state * state;
+	struct fsm_transition * transition;
+	struct fsm_state_list * state_list;
+	bool is_initial, is_final;
 
-    fprintf(output, "digraph dfa {\n");
+	fprintf(output, "digraph dfa {\n");
 
-    state = dfa->states;
+	state = dfa->states;
 
-    while(state) {
-        is_initial = state->attrs & FSM_STATE_ATTR_INITIAL;
-        is_final = state->attrs & FSM_STATE_ATTR_FINAL;
+	while(state) {
+		is_initial = state->attrs & FSM_STATE_ATTR_INITIAL;
+		is_final = state->attrs & FSM_STATE_ATTR_FINAL;
 
-        if (is_initial && is_final)
-            fprintf(output, "\ts%u [label=\"State %u\", shape=tripleoctagon];\n", state->id, state->id);
-        else if (is_initial && !is_final)
-            fprintf(output, "\ts%u [label=\"State %u\", shape=invhouse];\n", state->id, state->id);
-        else if (!is_initial && is_final)
-            fprintf(output, "\ts%u [label=\"State %u\", shape=doubleoctagon];\n", state->id, state->id);
-        else
-            fprintf(output, "\ts%u [label=\"State %u\"]; \n", state->id, state->id);
+		if (is_initial && is_final)
+			fprintf(output, "\ts%u [label=\"State %u\", shape=tripleoctagon];\n", state->id, state->id);
+		else if (is_initial && !is_final)
+			fprintf(output, "\ts%u [label=\"State %u\", shape=invhouse];\n", state->id, state->id);
+		else if (!is_initial && is_final)
+			fprintf(output, "\ts%u [label=\"State %u\", shape=doubleoctagon];\n", state->id, state->id);
+		else
+			fprintf(output, "\ts%u [label=\"State %u\"]; \n", state->id, state->id);
 
-        transition = state->transitions;
+		transition = state->transitions;
 
-        while(transition) {
-            state_list = transition->states;
-            while(state_list) {
-                fprintf(output, "\ts%d -> s%d [label=\"%s\"];\n", state->id, state_list->state_id, char_to_string(transition->ch));
-                state_list = state_list->next;
-            }
-            transition = transition->next;
-        }
+		while(transition) {
+			state_list = transition->states;
+			while(state_list) {
+				fprintf(output, "\ts%d -> s%d [label=\"%s\"];\n", state->id, state_list->state_id, char_to_string(transition->ch));
+				state_list = state_list->next;
+			}
+			transition = transition->next;
+		}
 
-        state = state->next;
-    }
+		state = state->next;
+	}
 
-    fprintf(output, "}\n");
+	fprintf(output, "}\n");
 
-    fflush(output);
+	fflush(output);
 }

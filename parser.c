@@ -85,20 +85,18 @@ static const char * token_stringify(struct token * token)
 {
 	switch(token->type)
 	{
-		case TOKEN_EOF:		   	return "eof";
-		case TOKEN_INVALID:    	return "invalid";
-		case TOKEN_KEYWORD:	   	return "keyword";
-		case TOKEN_DIRECTIVE:	return "directive";
-		case TOKEN_IDENTIFIER: 	return "identifier";
-		case TOKEN_PUNCTUATOR: 	return "punctuator";
-		case TOKEN_CHARACTER:  	return "character";
+		case TOKEN_EOF:         return "eof";
+		case TOKEN_INVALID:     return "invalid";
+		case TOKEN_KEYWORD:     return "keyword";
+		case TOKEN_DIRECTIVE:   return "directive";
+		case TOKEN_IDENTIFIER:  return "identifier";
+		case TOKEN_PUNCTUATOR:  return "punctuator";
+		case TOKEN_CHARACTER:   return "character";
 	}
 	return "<unknown token>";
 }
 
-
-void init_parser(void) { } 
-
+void init_parser(void) { }
 
 struct token * parse_state(struct token * token, struct ast ** state)
 {
@@ -338,7 +336,7 @@ struct token * parse_directive_initial(struct token * token, struct symbol * sym
 		while(it) {
 			it->node->value.symbol->attributes |= SYMBOL_ATTRIBUTE_INITIAL_STATE;
 			it = it->next;
-		} 
+		}
 	}
 	else {
 		node = (struct ast *) object;
@@ -399,7 +397,7 @@ struct token * parse_directive_final(struct token * token, struct symbol * symbo
 		while(it) {
 			it->node->value.symbol->attributes |= SYMBOL_ATTRIBUTE_FINAL_STATE;
 			it = it->next;
-		} 
+		}
 	}
 	else {
 		node = (struct ast *) object;

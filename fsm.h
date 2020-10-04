@@ -3,11 +3,11 @@
 
 #include "util.h"
 
-#define FSM_TYPE_UNDEFINED          (0)
-#define FSM_TYPE_EPSILON_NFA        (1)
-#define FSM_TYPE_NFA                (2)
-#define FSM_TYPE_FAKE_DFA           (3)
-#define FSM_TYPE_DFA                (4)
+#define FSM_TYPE_UNDEFINED   (0)
+#define FSM_TYPE_EPSILON_NFA (1)
+#define FSM_TYPE_NFA         (2)
+#define FSM_TYPE_FAKE_DFA    (3)
+#define FSM_TYPE_DFA         (4)
 
 #define CONV_OPTION_UNITE_INITIALS bit(0)
 

@@ -4,9 +4,9 @@
 #include <stdbool.h>
 
 #if _WIN32
-    #define DIRECTORY_SEPARATOR '\\'
+	#define DIRECTORY_SEPARATOR '\\'
 #else
-    #define DIRECTORY_SEPARATOR '/'
+	#define DIRECTORY_SEPARATOR '/'
 #endif
 
 #define TAB_SIZE (8)

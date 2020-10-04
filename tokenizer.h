@@ -43,12 +43,12 @@ struct identifier
 struct token
 {
 	struct source_location location;
-    union {
-        int code;
-        struct identifier * identifier;
-    } value;
+	union {
+		int code;
+		struct identifier * identifier;
+	} value;
 	struct token * next;
-    int type;
+	int type;
 };
 
 extern struct token eof_token;

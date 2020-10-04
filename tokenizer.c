@@ -6,8 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define IDENTIFIER_TABLE_SIZE		(101)
-#define IDENTIFIER_MAX_SIZE			(256)
+#define IDENTIFIER_TABLE_SIZE   (101)
+#define IDENTIFIER_MAX_SIZE     (256)
 
 struct token eof_token = { {0}, {0}, &eof_token, TOKEN_EOF };
 
