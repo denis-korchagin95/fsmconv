@@ -162,7 +162,7 @@ int main(int argc, char * argv[])
 	if(print_input_fsm_only) {
 		print_fsm(output, nfa, fsm_output_format, false);
 		stream_destroy(&stream);
-		exit(EXIT_FAILURE);
+		exit(EXIT_SUCCESS);
 	}
 
 	if(convert_to_nfa) {
