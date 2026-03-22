@@ -1,0 +1,140 @@
+@test("tokenize simple DFA")
+@given("file")
+#initial q0;
+#final q3;
+
+q0 -> q1 by 'a';
+q1 -> q2 by 'b';
+q2 -> q3 by 'c';
+
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+[DIRECTIVE initial]
+[IDENTIFIER q0]
+[PUNCTUATOR ;]
+[DIRECTIVE final]
+[IDENTIFIER q3]
+[PUNCTUATOR ;]
+[IDENTIFIER q0]
+[PUNCTUATOR ->]
+[IDENTIFIER q1]
+[KEYWORD by]
+[CHARACTER a]
+[PUNCTUATOR ;]
+[IDENTIFIER q1]
+[PUNCTUATOR ->]
+[IDENTIFIER q2]
+[KEYWORD by]
+[CHARACTER b]
+[PUNCTUATOR ;]
+[IDENTIFIER q2]
+[PUNCTUATOR ->]
+[IDENTIFIER q3]
+[KEYWORD by]
+[CHARACTER c]
+[PUNCTUATOR ;]
+
+@endtest
+
+@test("tokenize NFA with epsilon and character list")
+@given("file")
+#initial A;
+#final C;
+
+A -> B by '0', @@epsilon;
+A -> A by '0', '1';
+B -> C by '1', @@epsilon;
+
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+[DIRECTIVE initial]
+[IDENTIFIER A]
+[PUNCTUATOR ;]
+[DIRECTIVE final]
+[IDENTIFIER C]
+[PUNCTUATOR ;]
+[IDENTIFIER A]
+[PUNCTUATOR ->]
+[IDENTIFIER B]
+[KEYWORD by]
+[CHARACTER 0]
+[PUNCTUATOR ,]
+[SPECIAL_CHARACTER epsilon]
+[PUNCTUATOR ;]
+[IDENTIFIER A]
+[PUNCTUATOR ->]
+[IDENTIFIER A]
+[KEYWORD by]
+[CHARACTER 0]
+[PUNCTUATOR ,]
+[CHARACTER 1]
+[PUNCTUATOR ;]
+[IDENTIFIER B]
+[PUNCTUATOR ->]
+[IDENTIFIER C]
+[KEYWORD by]
+[CHARACTER 1]
+[PUNCTUATOR ,]
+[SPECIAL_CHARACTER epsilon]
+[PUNCTUATOR ;]
+
+@endtest
+
+@test("tokenize multiple initial states")
+@given("file")
+#initial q0, q2, q3;
+#final q4;
+
+q0 -> q1 by 'c';
+q2 -> q1 by @@epsilon;
+
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+[DIRECTIVE initial]
+[IDENTIFIER q0]
+[PUNCTUATOR ,]
+[IDENTIFIER q2]
+[PUNCTUATOR ,]
+[IDENTIFIER q3]
+[PUNCTUATOR ;]
+[DIRECTIVE final]
+[IDENTIFIER q4]
+[PUNCTUATOR ;]
+[IDENTIFIER q0]
+[PUNCTUATOR ->]
+[IDENTIFIER q1]
+[KEYWORD by]
+[CHARACTER c]
+[PUNCTUATOR ;]
+[IDENTIFIER q2]
+[PUNCTUATOR ->]
+[IDENTIFIER q1]
+[KEYWORD by]
+[SPECIAL_CHARACTER epsilon]
+[PUNCTUATOR ;]
+
+@endtest
+
+@test("tokenize 'to' keyword syntax")
+@given("file")
+#initial q0;
+#final q1;
+
+q0 to q1 by 'x';
+
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+[DIRECTIVE initial]
+[IDENTIFIER q0]
+[PUNCTUATOR ;]
+[DIRECTIVE final]
+[IDENTIFIER q1]
+[PUNCTUATOR ;]
+[IDENTIFIER q0]
+[KEYWORD to]
+[IDENTIFIER q1]
+[KEYWORD by]
+[CHARACTER x]
+[PUNCTUATOR ;]
+
+@endtest

@@ -1,0 +1,141 @@
+@test("parse simple DFA rules")
+@given("file")
+#initial q0;
+#final q3;
+
+q0 -> q1 by 'a';
+q1 -> q2 by 'b';
+q2 -> q3 by 'c';
+
+@whenRun("./bin/testers/parsing-tester")
+@expectOutput("stdout")
+RuleList<3>
+|
++-> Rule<>
+|	|
+|	+-> State<0> { name: "q0", attributes: ( initial ) }
+|	|
+|	+-> State<2> { name: "q1", attributes: ( ) }
+|	|
+|	+-> Character<a>
+|
++-> Rule<>
+|	|
+|	+-> State<2> { name: "q1", attributes: ( ) }
+|	|
+|	+-> State<3> { name: "q2", attributes: ( ) }
+|	|
+|	+-> Character<b>
+|
++-> Rule<>
+ 	|
+ 	+-> State<3> { name: "q2", attributes: ( ) }
+ 	|
+ 	+-> State<1> { name: "q3", attributes: ( final ) }
+ 	|
+ 	+-> Character<c>
+
+@endtest
+
+@test("parse NFA with character lists and epsilon")
+@given("file")
+#initial A;
+#final C;
+
+A -> B by '0', @@epsilon;
+A -> A by '0', '1';
+B -> C by '1', @@epsilon;
+
+@whenRun("./bin/testers/parsing-tester")
+@expectOutput("stdout")
+RuleList<3>
+|
++-> Rule<>
+|	|
+|	+-> State<0> { name: "A", attributes: ( initial ) }
+|	|
+|	+-> State<2> { name: "B", attributes: ( ) }
+|	|
+|	+-> CharacterList<2>
+|	 	|
+|	 	+-> Character<0>
+|	 	|
+|	 	+-> SpecialCharacter<epsilon>
+|
++-> Rule<>
+|	|
+|	+-> State<0> { name: "A", attributes: ( initial ) }
+|	|
+|	+-> State<0> { name: "A", attributes: ( initial ) }
+|	|
+|	+-> CharacterList<2>
+|	 	|
+|	 	+-> Character<0>
+|	 	|
+|	 	+-> Character<1>
+|
++-> Rule<>
+ 	|
+ 	+-> State<2> { name: "B", attributes: ( ) }
+ 	|
+ 	+-> State<1> { name: "C", attributes: ( final ) }
+ 	|
+ 	+-> CharacterList<2>
+ 	 	|
+ 	 	+-> Character<1>
+ 	 	|
+ 	 	+-> SpecialCharacter<epsilon>
+
+@endtest
+
+@test("parse NFA with multiple transition targets")
+@given("file")
+#initial q0;
+#final q2, q4;
+
+q0 -> q1 by 'a';
+q1 -> q2 by 'b', 'c';
+q1 -> q3 by 'c';
+q3 -> q4 by 'd';
+
+@whenRun("./bin/testers/parsing-tester")
+@expectOutput("stdout")
+RuleList<4>
+|
++-> Rule<>
+|	|
+|	+-> State<0> { name: "q0", attributes: ( initial ) }
+|	|
+|	+-> State<3> { name: "q1", attributes: ( ) }
+|	|
+|	+-> Character<a>
+|
++-> Rule<>
+|	|
+|	+-> State<3> { name: "q1", attributes: ( ) }
+|	|
+|	+-> State<1> { name: "q2", attributes: ( final ) }
+|	|
+|	+-> CharacterList<2>
+|	 	|
+|	 	+-> Character<b>
+|	 	|
+|	 	+-> Character<c>
+|
++-> Rule<>
+|	|
+|	+-> State<3> { name: "q1", attributes: ( ) }
+|	|
+|	+-> State<4> { name: "q3", attributes: ( ) }
+|	|
+|	+-> Character<c>
+|
++-> Rule<>
+ 	|
+ 	+-> State<4> { name: "q3", attributes: ( ) }
+ 	|
+ 	+-> State<2> { name: "q4", attributes: ( final ) }
+ 	|
+ 	+-> Character<d>
+
+@endtest

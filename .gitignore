@@ -7,3 +7,4 @@
 /*.png
 *.o
 *.out
+.jcunit_cache

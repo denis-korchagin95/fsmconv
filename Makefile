@@ -4,6 +4,7 @@ LFLAGS=
 SRC=./
 BIN=./bin/
 OBJ=./obj/
+TESTERS=./testers/
 PROGRAM=fsmconv
 INSTALL_PATH=/usr/local/bin/
 DEPENDENCIES_FILE=dependencies.mk
@@ -18,8 +19,8 @@ all: build run
 OBJECTS=allocator.o internal_allocators.o parser.o tokenizer.o fsm_compiler.o symbol.o stream.o main.o \
 	util.o fsm.o fsm_state.o fsm_state_list.o fsm_transition.o character_list.o visualize.o
 
-TEST_PARSING_OBJECTS=test-parsing.o tokenizer.o parser.o stream.o allocator.o internal_allocators.o symbol.o debug.o util.o
-TEST_TOKENIZER_OBJECTS=test-tokenizer.o debug.o tokenizer.o stream.o allocator.o internal_allocators.o symbol.o parser.o util.o
+PARSING_TESTER_OBJECTS=parsing-tester.o tokenizer.o parser.o stream.o allocator.o internal_allocators.o symbol.o debug.o util.o
+TOKENIZER_TESTER_OBJECTS=tokenizer-tester.o debug.o tokenizer.o stream.o allocator.o internal_allocators.o symbol.o parser.o util.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	@$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
@@ -39,24 +40,26 @@ uninstall:
 
 clean:
 	@rm -rfv $(BIN)$(PROGRAM)
-	@rm -rfv $(BIN)test-tokenizer
-	@rm -rfv $(BIN)test-parsing
+	@rm -rfv $(BIN)testers/
 	@rm -rfv $(OBJ)*
 	@rm -rfv nfa.dot
 	@rm -rfv dfa.dot
 	@rm -rfv nfa.svg
 	@rm -rfv dfa.svg
 
-test: build
+test: build tokenizer-tester parsing-tester
 	@jcunit --colors tests/
 
 test-clean: clean test
 
-test-tokenizer: $(addprefix $(OBJ), $(TEST_TOKENIZER_OBJECTS))
-	$(CC) $(LFLAGS) $^ -o $(BIN)test-tokenizer
+tokenizer-tester: $(addprefix $(OBJ), $(TOKENIZER_TESTER_OBJECTS)) | $(BIN)testers
+	@$(CC) $(LFLAGS) $^ -o $(BIN)testers/tokenizer-tester
 
-test-parsing: $(addprefix $(OBJ), $(TEST_PARSING_OBJECTS))
-	$(CC) $(LFLAGS) $^ -o $(BIN)test-parsing
+parsing-tester: $(addprefix $(OBJ), $(PARSING_TESTER_OBJECTS)) | $(BIN)testers
+	@$(CC) $(LFLAGS) $^ -o $(BIN)testers/parsing-tester
+
+$(BIN)testers:
+	@mkdir -p $@
 
 visualize:
 	dot -Tsvg $(SRC)nfa.dot -o nfa.svg
@@ -65,7 +68,10 @@ visualize:
 $(OBJ)%.o: %.c
 	$(CC) $(CFLAGS) -c $(SRC)$*.c -o $@
 
-$(OBJ)test-parsing.o: test-parsing.c internal_allocators.h allocator.h stream.h parser.h tokenizer.h debug.h
-$(OBJ)test-tokenizer.o: test-tokenizer.c tokenizer.h stream.h debug.h internal_allocators.h allocator.h symbol.h parser.h
+$(OBJ)parsing-tester.o: $(TESTERS)parsing-tester.c
+	$(CC) $(CFLAGS) -I$(SRC) -c $< -o $@
+
+$(OBJ)tokenizer-tester.o: $(TESTERS)tokenizer-tester.c
+	$(CC) $(CFLAGS) -I$(SRC) -c $< -o $@
 
 -include $(DEPENDENCIES_FILE)
