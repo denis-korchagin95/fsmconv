@@ -1,0 +1,22 @@
+@test("print-only outputs NFA without conversion")
+@given("file")
+#initial A;
+#final C;
+
+A -> B by '0', @@epsilon;
+A -> A by '0', '1';
+B -> C by '1', @@epsilon;
+
+@whenRun("./bin/fsmconv", args="--print-only")
+@expectOutput("stdout")
+#initial A;
+#final C;
+
+A to A by '1';
+A to B by @@epsilon;
+A to A by '0';
+A to B by '0';
+B to C by @@epsilon;
+B to C by '1';
+
+@endtest

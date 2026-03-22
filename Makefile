@@ -47,6 +47,11 @@ clean:
 	@rm -rfv nfa.svg
 	@rm -rfv dfa.svg
 
+test: build
+	@jcunit --colors tests/
+
+test-clean: clean test
+
 test-tokenizer: $(addprefix $(OBJ), $(TEST_TOKENIZER_OBJECTS))
 	$(CC) $(LFLAGS) $^ -o $(BIN)test-tokenizer
 

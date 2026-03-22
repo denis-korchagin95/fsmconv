@@ -1,0 +1,22 @@
+@test("DFA output in dot format")
+@given("file")
+#initial q0;
+#final q3;
+
+q0 -> q1 by 'a';
+q1 -> q2 by 'b';
+q2 -> q3 by 'c';
+
+@whenRun("./bin/fsmconv", args="--format=dot")
+@expectOutput("stdout")
+digraph dfa {
+	s0 [label="State 0", shape=invhouse];
+	s0 -> s1 [label="a"];
+	s1 [label="State 1"]; 
+	s1 -> s2 [label="b"];
+	s2 [label="State 2"]; 
+	s2 -> s3 [label="c"];
+	s3 [label="State 3", shape=doubleoctagon];
+}
+
+@endtest
