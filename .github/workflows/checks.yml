@@ -20,7 +20,7 @@ jobs:
       - name: Build
         run: |
           mkdir -p obj bin
-          make build
+          make build tokenizer-tester parsing-tester
 
       - name: Test
-        run: jcunit --no-cache tests/
+        run: jcunit --colors --no-cache tests/
