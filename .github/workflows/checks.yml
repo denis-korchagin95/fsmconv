@@ -1,4 +1,4 @@
-name: Tests
+name: Checks
 
 on:
   push:
@@ -14,9 +14,8 @@ jobs:
 
       - name: Install jcunit
         run: |
-          curl -L https://github.com/denis-korchagin95/jcunit/releases/download/v1.0.0/jcunit-linux-amd64 -o jcunit
-          chmod +x jcunit
-          sudo mv jcunit /usr/local/bin/
+          git clone --branch v1.0.0 --depth 1 https://github.com/denis-korchagin95/jcunit.git /tmp/jcunit
+          sudo make -C /tmp/jcunit install
 
       - name: Build
         run: |
