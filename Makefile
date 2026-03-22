@@ -48,7 +48,7 @@ clean:
 	@rm -rfv dfa.svg
 
 test: build tokenizer-tester parsing-tester
-	@jcunit --colors tests/
+	@jcunit --colors $(JCUNIT_FLAGS) tests/
 
 test-clean: clean test
 
