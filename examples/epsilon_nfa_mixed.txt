@@ -1,0 +1,10 @@
+// larger automaton with mixed epsilon and symbol transitions
+#initial q0;
+#final q4;
+
+q0 -> q1 by 'a';
+q1 -> q2 by @epsilon;
+q2 -> q3 by 'b';
+q3 -> q4 by @epsilon;
+q4 -> q2 by @epsilon;
+q0 -> q3 by @epsilon;
