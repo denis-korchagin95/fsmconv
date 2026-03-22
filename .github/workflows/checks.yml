@@ -14,7 +14,7 @@ jobs:
 
       - name: Install jcunit
         run: |
-          git clone --branch v1.0.0 --depth 1 https://github.com/denis-korchagin95/jcunit.git /tmp/jcunit
+          git clone --branch v1.1.0 --depth 1 https://github.com/denis-korchagin95/jcunit.git /tmp/jcunit
           sudo make -C /tmp/jcunit install
 
       - name: Build
