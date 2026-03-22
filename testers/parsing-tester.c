@@ -7,7 +7,7 @@
 #include "stream.h"
 #include "parser.h"
 #include "tokenizer.h"
-#include "debug.h"
+#include "print.h"
 #include "parser.h"
 
 int main(int argc, char * argv[])
@@ -42,7 +42,7 @@ int main(int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	debug_ast(stdout, node);
+	print_ast(stdout, node);
 
 	stream_destroy(&stream);
 

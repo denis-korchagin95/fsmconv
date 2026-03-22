@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "tokenizer.h"
-#include "debug.h"
+#include "print.h"
 #include "internal_allocators.h"
 #include "symbol.h"
 #include "parser.h"
@@ -36,7 +36,7 @@ int main(int argc, char * argv[])
 	struct token * token = token_list;
 
 	while(token != &eof_token) {
-		debug_token(stdout, token);
+		print_token(stdout, token);
 		puts("");
 		token = token->next;
 	}

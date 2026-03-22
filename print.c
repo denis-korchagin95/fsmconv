@@ -1,4 +1,4 @@
-#include "debug.h"
+#include "print.h"
 #include "parser.h"
 #include "tokenizer.h"
 #include "symbol.h"
@@ -32,7 +32,7 @@ static void do_indent(FILE * output, int depth)
 	fprintf(output, "+-> ");
 }
 
-void debug_token(FILE * output, struct token * token)
+void print_token(FILE * output, struct token * token)
 {
 	if(! token || token == &eof_token)
 		return;
@@ -88,7 +88,7 @@ void debug_token(FILE * output, struct token * token)
 	}
 }
 
-void debug_fsm_state_list(FILE * output, struct fsm_state_list * list)
+void print_fsm_state_list(FILE * output, struct fsm_state_list * list)
 {
 	fprintf(output, "{");
 	while(list) {
@@ -98,7 +98,7 @@ void debug_fsm_state_list(FILE * output, struct fsm_state_list * list)
 	fprintf(output, "}");
 }
 
-static void do_debug_ast(FILE * output, struct ast * ast, int depth)
+static void do_print_ast(FILE * output, struct ast * ast, int depth)
 {
 	if(depth >= MAX_TREE_DEPTH_BITS) {
 		fprintf(stderr, "error: the tree is too many depths!\n");
@@ -126,7 +126,7 @@ static void do_debug_ast(FILE * output, struct ast * ast, int depth)
 						u8_bits_set(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
 					else
 						u8_bits_unset(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
-					do_debug_ast(output, it->node, depth + 1);
+					do_print_ast(output, it->node, depth + 1);
 					it = it->next;
 				}
 			}
@@ -134,14 +134,14 @@ static void do_debug_ast(FILE * output, struct ast * ast, int depth)
 		case AST_RULE:
 			fprintf(output, "Rule<>\n");
 			u8_bits_unset(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
-			do_debug_ast(output, ast->value.rule.source, depth + 1);
+			do_print_ast(output, ast->value.rule.source, depth + 1);
 			u8_bits_unset(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
-			do_debug_ast(output, ast->value.rule.target, depth + 1);
+			do_print_ast(output, ast->value.rule.target, depth + 1);
 			if(ast->value.rule.by->type == AST_CHARACTER_LIST)
 				u8_bits_set(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
 			else
 				u8_bits_unset(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
-			do_debug_ast(output, ast->value.rule.by, depth + 1);
+			do_print_ast(output, ast->value.rule.by, depth + 1);
 			break;
 		case AST_CHARACTER_LIST:
 			{
@@ -154,7 +154,7 @@ static void do_debug_ast(FILE * output, struct ast * ast, int depth)
 				fprintf(output, "CharacterList<%u>\n", count);
 				it = ast->value.list;
 				while(it) {
-					do_debug_ast(output, it->node, depth + 1);
+					do_print_ast(output, it->node, depth + 1);
 					it = it->next;
 				}
 			}
@@ -163,7 +163,7 @@ static void do_debug_ast(FILE * output, struct ast * ast, int depth)
 			{
 				struct ast_list * it = ast->value.list;
 				while(it) {
-					do_debug_ast(output, it->node, depth + 1);
+					do_print_ast(output, it->node, depth + 1);
 					it = it->next;
 				}
 			}
@@ -194,9 +194,9 @@ static void do_debug_ast(FILE * output, struct ast * ast, int depth)
 	}
 }
 
-void debug_ast(FILE * output, struct ast * ast)
+void print_ast(FILE * output, struct ast * ast)
 {
 	u8_bits_set(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, 0);
-	do_debug_ast(output, ast, 0);
+	do_print_ast(output, ast, 0);
 	fflush(output);
 }
