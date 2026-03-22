@@ -5,7 +5,7 @@ fsmconv is a command-line tool for converting FSA from one to another representa
 
   1. Transform a NFA or an epsilon-NFA to a DFA
   2. **(in development)** Minimization of DFA
-  3. **(in development)** Transform an epsilon-NFA to a NFA
+  3. Transform an epsilon-NFA to a NFA
   4. Unite multiple initial states of FSM to the single state in output FSM
 
 ## Installation
@@ -83,6 +83,12 @@ OPTIONS
 
         --unite-initials
                 Unite multiple initial states of the given FSM to the single state in output FSM.
+
+        --to-dfa
+                Convert NFA or epsilon-NFA to DFA (default).
+
+        --to-nfa
+                Convert epsilon-NFA to NFA (remove epsilon transitions) instead of converting to DFA.
 ```
 
 ## Example

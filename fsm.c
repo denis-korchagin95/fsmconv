@@ -280,6 +280,121 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 	return dfa;
 }
 
+struct fsm * epsilon_nfa_to_nfa(struct fsm * enfa)
+{
+	struct fsm * nfa;
+	struct fsm_state * state, * new_state, * search_state;
+	struct fsm_state_list * epsilon_closure, * state_item, * state_item2, * reachable, * new_state_item;
+	struct fsm_transition * transition, * new_transition;
+	int alphabet[MAX_ALPHABET_SIZE];
+	bool seen[MAX_ALPHABET_SIZE];
+	unsigned int alphabet_count, ci;
+	struct fsm_state_list * final_states;
+
+	nfa = alloc(struct fsm);
+	nfa->type = FSM_TYPE_NFA;
+	nfa->states = NULL;
+	nfa->last_state = &nfa->states;
+	nfa->state_count = 0;
+
+	/* Collect alphabet and final states from the input */
+	alphabet_count = 0;
+	memset(seen, 0, sizeof(seen));
+	final_states = NULL;
+
+	list_foreach(state, enfa->states) {
+		if (state->attrs & FSM_STATE_ATTR_FINAL) {
+			state_item = fsm_state_list_create(state->id);
+			state_item->next = final_states;
+			final_states = state_item;
+		}
+
+		list_foreach(transition, state->transitions) {
+			if (transition->ch != EPSILON_CHAR && !seen[(unsigned char)transition->ch]) {
+				seen[(unsigned char)transition->ch] = true;
+				alphabet[alphabet_count++] = transition->ch;
+			}
+		}
+	}
+
+	qsort(alphabet, alphabet_count, sizeof(int), compare_ints);
+
+	/* Create new states mirroring the input, with updated final attrs */
+	list_foreach(state, enfa->states) {
+		new_state = alloc(struct fsm_state);
+		new_state->id = state->id;
+		new_state->name = state->name;
+		new_state->fsm = nfa;
+		new_state->next = NULL;
+		new_state->transitions = NULL;
+		new_state->subset = NULL;
+		new_state->attrs = state->attrs & (FSM_STATE_ATTR_INITIAL);
+
+		/* Mark as final if epsilon closure contains a final state */
+		if (state->attrs & FSM_STATE_ATTR_FINAL) {
+			new_state->attrs |= FSM_STATE_ATTR_FINAL;
+		} else {
+			epsilon_closure = fsm_state_epsilon_closure(state);
+			list_foreach(state_item, epsilon_closure) {
+				if (fsm_state_list_has_state(final_states, state_item->state_id)) {
+					new_state->attrs |= FSM_STATE_ATTR_FINAL;
+					break;
+				}
+			}
+		}
+
+		*nfa->last_state = new_state;
+		nfa->last_state = &new_state->next;
+		nfa->state_count++;
+	}
+
+	/* Build transitions for each state */
+	state = enfa->states;
+	new_state = nfa->states;
+	while (state && new_state) {
+		epsilon_closure = fsm_state_epsilon_closure(state);
+
+		for (ci = 0; ci < alphabet_count; ++ci) {
+			/* Collect all states reachable via character from epsilon closure */
+			reachable = NULL;
+
+			list_foreach(state_item, epsilon_closure) {
+				search_state = fsm_search_state_by_id(enfa, state_item->state_id);
+				if (! search_state)
+					continue;
+				transition = fsm_state_search_transition_by_character(search_state, alphabet[ci]);
+				if (! transition)
+					continue;
+				list_foreach(state_item2, transition->states) {
+					if (! fsm_state_list_has_state(reachable, state_item2->state_id)) {
+						new_state_item = fsm_state_list_create(state_item2->state_id);
+						new_state_item->next = reachable;
+						reachable = new_state_item;
+					}
+				}
+			}
+
+			if (! reachable)
+				continue;
+
+			/* Compute epsilon closure of all reachable states */
+			reachable = fsm_epsilon_closure(enfa, reachable);
+
+			/* Add transition to new state */
+			new_transition = alloc(struct fsm_transition);
+			new_transition->ch = alphabet[ci];
+			new_transition->states = reachable;
+			new_transition->next = new_state->transitions;
+			new_state->transitions = new_transition;
+		}
+
+		state = state->next;
+		new_state = new_state->next;
+	}
+
+	return nfa;
+}
+
 struct fsm_state * fsm_search_state_by_subset(struct fsm * fsm, struct fsm_state_list * states)
 {
 	struct fsm_state * it;

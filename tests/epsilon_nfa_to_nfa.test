@@ -1,0 +1,131 @@
+@test("simple epsilon-NFA to NFA: epsilon on single edge")
+@given("file")
+#initial q0;
+#final q2, q3;
+
+q0 -> q1 by '1';
+q1 -> q2 by '2';
+q2 -> q3 by '7';
+q0 -> q2 by @@epsilon;
+
+@whenRun("./bin/fsmconv", args="--to-nfa")
+@expectOutput("stdout")
+#initial q0;
+#final q0, q2, q3;
+
+q0 to q3 by '7';
+q0 to q1 by '1';
+q1 to q2 by '2';
+q2 to q3 by '7';
+
+@endtest
+
+@test("epsilon-NFA to NFA: aa*|bb* pattern")
+@given("file")
+#initial q0;
+#final q2, q4;
+
+q0 -> q1 by @@epsilon;
+q0 -> q3 by @@epsilon;
+q1 -> q2 by 'a';
+q2 -> q2 by 'a';
+q3 -> q4 by 'b';
+q4 -> q4 by 'b';
+
+@whenRun("./bin/fsmconv", args="--to-nfa")
+@expectOutput("stdout")
+#initial q0;
+#final q2, q4;
+
+q0 to q4 by 'b';
+q0 to q2 by 'a';
+q1 to q2 by 'a';
+q3 to q4 by 'b';
+q2 to q2 by 'a';
+q4 to q4 by 'b';
+
+@endtest
+
+@test("epsilon-NFA to NFA: chained epsilons")
+@given("file")
+#initial q0;
+#final q3;
+
+q0 -> q1 by @@epsilon;
+q1 -> q2 by @@epsilon;
+q2 -> q3 by 'a';
+
+@whenRun("./bin/fsmconv", args="--to-nfa")
+@expectOutput("stdout")
+#initial q0;
+#final q3;
+
+q0 to q3 by 'a';
+q1 to q3 by 'a';
+q2 to q3 by 'a';
+
+@endtest
+
+@test("epsilon-NFA to NFA: no epsilon transitions is identity")
+@given("file")
+#initial q0;
+#final q2;
+
+q0 -> q1 by 'a';
+q1 -> q2 by 'b';
+
+@whenRun("./bin/fsmconv", args="--to-nfa")
+@expectOutput("stdout")
+#initial q0;
+#final q2;
+
+q0 to q1 by 'a';
+q1 to q2 by 'b';
+
+@endtest
+
+@test("epsilon-NFA to NFA: mixed epsilon and regular transitions")
+@given("file")
+#initial q0;
+#final C;
+
+q0 -> B by '0', @@epsilon;
+q0 -> q0 by '0', '1';
+B -> C by '1', @@epsilon;
+
+@whenRun("./bin/fsmconv", args="--to-nfa")
+@expectOutput("stdout")
+#initial q0;
+#final q0, B, C;
+
+q0 to q0 by '1';
+q0 to C by '1';
+q0 to B by '1';
+q0 to q0 by '0';
+q0 to C by '0';
+q0 to B by '0';
+B to C by '1';
+
+@endtest
+
+@test("epsilon-NFA to NFA: final state propagation through epsilon chain")
+@given("file")
+#initial q0;
+#final q4;
+
+q0 -> q1 by 'a';
+q1 -> q2 by @@epsilon;
+q2 -> q3 by @@epsilon;
+q3 -> q4 by @@epsilon;
+
+@whenRun("./bin/fsmconv", args="--to-nfa")
+@expectOutput("stdout")
+#initial q0;
+#final q1, q2, q3, q4;
+
+q0 to q4 by 'a';
+q0 to q1 by 'a';
+q0 to q2 by 'a';
+q0 to q3 by 'a';
+
+@endtest

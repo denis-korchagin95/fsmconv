@@ -28,6 +28,7 @@ extern struct fsm_state_list * fsm_state_epsilon_closure(struct fsm_state * stat
 extern struct fsm_state_list * fsm_epsilon_closure(struct fsm * fsm, struct fsm_state_list * states);
 
 extern struct fsm * nfa_to_dfa(struct fsm * fsm, unsigned int options);
+extern struct fsm * epsilon_nfa_to_nfa(struct fsm * fsm);
 
 extern unsigned int fsm_determine_type(struct fsm * fsm);
 

@@ -40,6 +40,10 @@ static void usage(const char * program, FILE * output)
 	fprintf(output, "\t\tPlace the output into <file>.\n\n");
 	fprintf(output, "\t--unite-initials\n");
 	fprintf(output, "\t\tUnite multiple initial states of the given FSM to the single state in output FSM.\n\n");
+	fprintf(output, "\t--to-dfa\n");
+	fprintf(output, "\t\tConvert NFA or epsilon-NFA to DFA (default).\n\n");
+	fprintf(output, "\t--to-nfa\n");
+	fprintf(output, "\t\tConvert epsilon-NFA to NFA (remove epsilon transitions) instead of converting to DFA.\n\n");
 	fflush(output);
 }
 
@@ -64,6 +68,8 @@ static void print_fsm(FILE * output, struct fsm * fsm, int format, bool is_dfa)
 
 static bool print_input_fsm_only = false;
 static bool unite_initials = false;
+static bool convert_to_nfa = false;
+static bool convert_to_dfa = false;
 static int fsm_output_format = FSM_OUTPUT_FORMAT_NATIVE;
 
 int main(int argc, char * argv[])
@@ -102,6 +108,16 @@ int main(int argc, char * argv[])
 
 		if(! strcmp(arg, "--unite-initials")) {
 			unite_initials = true;
+			continue;
+		}
+
+		if(! strcmp(arg, "--to-nfa")) {
+			convert_to_nfa = true;
+			continue;
+		}
+
+		if(! strcmp(arg, "--to-dfa")) {
+			convert_to_dfa = true;
 			continue;
 		}
 
@@ -149,14 +165,18 @@ int main(int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	unsigned int options = 0;
+	if(convert_to_nfa) {
+		struct fsm * result_nfa = epsilon_nfa_to_nfa(nfa);
+		print_fsm(output, result_nfa, fsm_output_format, false);
+	} else {
+		unsigned int options = 0;
 
-	if(unite_initials)
-		options |= CONV_OPTION_UNITE_INITIALS;
+		if(unite_initials)
+			options |= CONV_OPTION_UNITE_INITIALS;
 
-	struct fsm * dfa = nfa_to_dfa(nfa, options);
-
-	print_fsm(output, dfa, fsm_output_format, true);
+		struct fsm * dfa = nfa_to_dfa(nfa, options);
+		print_fsm(output, dfa, fsm_output_format, true);
+	}
 
 	stream_destroy(&stream);
 	exit(EXIT_SUCCESS);
