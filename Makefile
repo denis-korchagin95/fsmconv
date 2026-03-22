@@ -17,7 +17,7 @@ vpath %.h $(SRC)
 all: build run
 
 OBJECTS=allocator.o parser.o tokenizer.o fsm_compiler.o symbol.o stream.o main.o \
-	util.o fsm.o fsm_state.o fsm_state_list.o fsm_transition.o character_list.o visualize.o
+	util.o fsm.o fsm_state.o fsm_state_list.o fsm_transition.o visualize.o
 
 PARSING_TESTER_OBJECTS=parsing-tester.o tokenizer.o parser.o stream.o allocator.o symbol.o print.o util.o
 TOKENIZER_TESTER_OBJECTS=tokenizer-tester.o print.o tokenizer.o stream.o allocator.o symbol.o parser.o util.o

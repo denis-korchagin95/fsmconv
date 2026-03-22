@@ -6,39 +6,24 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define IDENTIFIER_TABLE_SIZE   (101)
 #define IDENTIFIER_MAX_SIZE     (256)
 
 struct token eof_token = { {0}, {0}, &eof_token, TOKEN_EOF };
 
-static struct identifier * identifiers[IDENTIFIER_TABLE_SIZE];
+static struct identifier * identifiers;
 
-static unsigned int get_string_hash(const char * name)
+static struct identifier * identifier_search(const char * name)
 {
-	unsigned int hash = 0;
-	while(*name) {
-		hash = hash * 31 + (unsigned int) *name;
-		++name;
-	}
-	return hash;
-}
-
-static struct identifier * identifier_search(unsigned int hash, const char * name)
-{
-	unsigned int index = hash % IDENTIFIER_TABLE_SIZE;
 	struct identifier * it;
-	for(it = identifiers[index]; it; it = it->next) {
-		if (strcmp(name, it->name) == 0) {
+	for(it = identifiers; it; it = it->next) {
+		if (strcmp(name, it->name) == 0)
 			return it;
-		}
 	}
 	return NULL;
 }
 
-static struct identifier * identifier_insert(unsigned int hash, const char * name, unsigned int len)
+static struct identifier * identifier_insert(const char * name, unsigned int len)
 {
-	unsigned int index = hash % IDENTIFIER_TABLE_SIZE;
-
 	struct identifier * identifier = alloc(struct identifier);
 
 	identifier->name = (char *) alloc_bytes(len + 1);
@@ -47,8 +32,8 @@ static struct identifier * identifier_insert(unsigned int hash, const char * nam
 
 	identifier->symbols = NULL;
 
-	identifier->next = identifiers[index];
-	identifiers[index] = identifier;
+	identifier->next = identifiers;
+	identifiers = identifier;
 	return identifier;
 }
 
@@ -94,11 +79,9 @@ static void read_identifier(struct stream * stream, struct token * token, int ch
 {
 	static char buffer[IDENTIFIER_MAX_SIZE];
 	int i = 0;
-	unsigned int hash = 0;
 
 	while(ch != EOF && (isalpha(ch) || isdigit(ch) || ch == '_') && i < IDENTIFIER_MAX_SIZE - 1) {
 		buffer[i++] = ch;
-		hash = ch + 31 * hash;
 		ch = stream_getchar(stream);
 	}
 	buffer[i] = '\0';
@@ -111,9 +94,9 @@ static void read_identifier(struct stream * stream, struct token * token, int ch
 		stream_ungetchar(stream, ch);
 	}
 
-	struct identifier * identifier = identifier_search(hash, buffer);
+	struct identifier * identifier = identifier_search(buffer);
 	if (! identifier)
-		identifier = identifier_insert(hash, buffer, i);
+		identifier = identifier_insert(buffer, i);
 
 	token->value.identifier = identifier;
 }
@@ -187,9 +170,7 @@ invalid:
 
 struct identifier * identifier_create(const char * name)
 {
-	unsigned int hash = get_string_hash(name);
-	unsigned int len = strlen(name);
-	return identifier_insert(hash, name, len);
+	return identifier_insert(name, strlen(name));
 }
 
 struct token * tokenize(struct stream * stream)

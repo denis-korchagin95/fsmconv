@@ -2,11 +2,19 @@
 #include "fsm_state_list.h"
 #include "fsm_state.h"
 #include "allocator.h"
-#include "character_list.h"
 #include "fsm_transition.h"
 #include "fsm_state_list.h"
 
 #include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_ALPHABET_SIZE 256
+
+static int compare_ints(const void * a, const void * b)
+{
+	return *(const int *)a - *(const int *)b;
+}
 
 struct fsm_state * fsm_search_state_by_id(struct fsm * fsm, unsigned int id)
 {
@@ -124,8 +132,10 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 	struct fsm * dfa;
 	struct fsm_state * state, * new_state, * search_state;
 	struct fsm_state_list * epsilon_closure, * state_list, * state_item, * state_item2, * new_state_item, * final_states;
-	struct character_list * characters, * character_item;
 	struct fsm_transition * transition;
+	int alphabet[MAX_ALPHABET_SIZE];
+	bool seen[MAX_ALPHABET_SIZE];
+	unsigned int alphabet_count, ci;
 
 	dfa = alloc(struct fsm);
 	dfa->type = FSM_TYPE_DFA;
@@ -133,7 +143,8 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 	dfa->last_state = &dfa->states;
 	dfa->state_count = 0;
 
-	characters = NULL;
+	alphabet_count = 0;
+	memset(seen, 0, sizeof(seen));
 	final_states = NULL;
 
 	if(conv_options & CONV_OPTION_UNITE_INITIALS) {
@@ -189,15 +200,14 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 		}
 
 		list_foreach(transition, state->transitions) {
-			if (transition->ch != EPSILON_CHAR && !character_list_has_character(characters, transition->ch)) {
-				character_item = alloc(struct character_list);
-				character_item->ch = transition->ch;
-
-				character_item->next = characters;
-				characters = character_item;
+			if (transition->ch != EPSILON_CHAR && !seen[(unsigned char)transition->ch]) {
+				seen[(unsigned char)transition->ch] = true;
+				alphabet[alphabet_count++] = transition->ch;
 			}
 		}
 	}
+
+	qsort(alphabet, alphabet_count, sizeof(int), compare_ints);
 
 	while((state = fsm_find_not_visited_state(dfa))) {
 		state->attrs |= FSM_STATE_ATTR_VISITED;
@@ -211,13 +221,13 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 			}
 		}
 
-		list_foreach(character_item, characters) {
+		for(ci = 0; ci < alphabet_count; ++ci) {
 			state_list = NULL;
 			list_foreach(state_item, state->subset) {
 				search_state = fsm_search_state_by_id(nfa, state_item->state_id);
 				if (! search_state)
 					continue;
-				transition = fsm_state_search_transition_by_character(search_state, character_item->ch);
+				transition = fsm_state_search_transition_by_character(search_state, alphabet[ci]);
 				if (! transition)
 					continue;
 				list_foreach(state_item2, transition->states) {
@@ -251,12 +261,12 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 				dfa->last_state = &new_state->next;
 			}
 
-			transition = fsm_state_search_transition_by_character(state, character_item->ch);
+			transition = fsm_state_search_transition_by_character(state, alphabet[ci]);
 
 			if (! transition) {
 				transition = alloc(struct fsm_transition);
 				transition->states = fsm_state_list_create(search_state->id);
-				transition->ch = character_item->ch;
+				transition->ch = alphabet[ci];
 
 				transition->next = state->transitions;
 				state->transitions = transition;
@@ -304,24 +314,24 @@ unsigned int fsm_determine_type(struct fsm * fsm)
 	else if (has_multiple_transitions_by_character)
 		return FSM_TYPE_NFA;
 
-	struct character_list * characters = NULL, * character_item;
+	int alphabet[MAX_ALPHABET_SIZE];
+	bool seen[MAX_ALPHABET_SIZE];
+	unsigned int alphabet_count = 0, ci;
+
+	memset(seen, 0, sizeof(seen));
 
 	list_foreach(state, fsm->states) {
 		list_foreach(transition, state->transitions) {
-			if(! character_list_has_character(characters, transition->ch))
-			{
-				character_item = alloc(struct character_list);
-				character_item->ch = transition->ch;
-				character_item->next = characters;
-
-				characters = character_item;
+			if(!seen[(unsigned char)transition->ch]) {
+				seen[(unsigned char)transition->ch] = true;
+				alphabet[alphabet_count++] = transition->ch;
 			}
 		}
 	}
 
-	list_foreach(character_item, characters) {
+	for(ci = 0; ci < alphabet_count; ++ci) {
 		list_foreach(state, fsm->states) {
-			if (! fsm_state_search_transition_by_character(state, character_item->ch))
+			if (! fsm_state_search_transition_by_character(state, alphabet[ci]))
 				return FSM_TYPE_FAKE_DFA;
 		}
 	}

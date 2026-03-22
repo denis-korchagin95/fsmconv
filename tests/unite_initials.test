@@ -14,10 +14,10 @@ q3 -> q4 by 'b';
 @whenRun("./bin/fsmconv", args="--unite-initials")
 @expectOutput("stdout")
 #initial s0;
-#final s3, s4;
+#final s2, s4;
 
-s0 to s3 by 'b';
-s0 to s2 by 'c';
+s0 to s3 by 'c';
+s0 to s2 by 'b';
 s0 to s1 by 'a';
 s1 to s4 by 'b';
 s1 to s1 by 'a';

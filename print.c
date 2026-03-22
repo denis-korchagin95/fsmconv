@@ -3,30 +3,26 @@
 #include "tokenizer.h"
 #include "symbol.h"
 #include "ast.h"
-#include "util.h"
 #include "fsm_state_list.h"
 
 #include <stdlib.h>
-#include <limits.h>
-#include <assert.h>
 #include <stdbool.h>
 
-#define MAX_TREE_DEPTH      (1)
-#define MAX_TREE_DEPTH_BITS (sizeof(*is_tree_node_latest_in_depth) * MAX_TREE_DEPTH * CHAR_BIT)
+#define MAX_TREE_DEPTH (8)
 
-static unsigned char is_tree_node_latest_in_depth[MAX_TREE_DEPTH];
+static unsigned char is_latest;
 
 static void do_indent(FILE * output, int depth)
 {
 	if(depth <= 0) return;
 	int i;
 	for(i = 0; i < depth - 1; ++i) {
-		bool is_node_latest = u8_bits_check(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, i);
+		bool is_node_latest = (is_latest & (1u << i));
 		fprintf(output, "%s%s", is_node_latest ? " " : "|", i + 1 == depth ? "" : "\t");
 	}
 	fprintf(output, "|\n");
 	for(i = 0; i < depth - 1; ++i) {
-		bool is_node_latest = u8_bits_check(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, i);
+		bool is_node_latest = (is_latest & (1u << i));
 		fprintf(output, "%s%s", i + 1 == depth ? "" : is_node_latest ? " " : "|", i + 1 == depth ? "" : "\t");
 	}
 	fprintf(output, "+-> ");
@@ -100,7 +96,7 @@ void print_fsm_state_list(FILE * output, struct fsm_state_list * list)
 
 static void do_print_ast(FILE * output, struct ast * ast, int depth)
 {
-	if(depth >= MAX_TREE_DEPTH_BITS) {
+	if(depth >= MAX_TREE_DEPTH) {
 		fprintf(stderr, "error: the tree is too many depths!\n");
 		exit(EXIT_FAILURE);
 	}
@@ -123,9 +119,9 @@ static void do_print_ast(FILE * output, struct ast * ast, int depth)
 				it = ast->value.list;
 				while(it) {
 					if(! it->next)
-						u8_bits_set(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
+						is_latest |= (1u << depth);
 					else
-						u8_bits_unset(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
+						is_latest &= ~(1u << depth);
 					do_print_ast(output, it->node, depth + 1);
 					it = it->next;
 				}
@@ -133,14 +129,14 @@ static void do_print_ast(FILE * output, struct ast * ast, int depth)
 			break;
 		case AST_RULE:
 			fprintf(output, "Rule<>\n");
-			u8_bits_unset(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
+			is_latest &= ~(1u << depth);
 			do_print_ast(output, ast->value.rule.source, depth + 1);
-			u8_bits_unset(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
+			is_latest &= ~(1u << depth);
 			do_print_ast(output, ast->value.rule.target, depth + 1);
 			if(ast->value.rule.by->type == AST_CHARACTER_LIST)
-				u8_bits_set(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
+				is_latest |= (1u << depth);
 			else
-				u8_bits_unset(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, depth);
+				is_latest &= ~(1u << depth);
 			do_print_ast(output, ast->value.rule.by, depth + 1);
 			break;
 		case AST_CHARACTER_LIST:
@@ -196,7 +192,7 @@ static void do_print_ast(FILE * output, struct ast * ast, int depth)
 
 void print_ast(FILE * output, struct ast * ast)
 {
-	u8_bits_set(is_tree_node_latest_in_depth, MAX_TREE_DEPTH_BITS, 0);
+	is_latest |= (1u << 0);
 	do_print_ast(output, ast, 0);
 	fflush(output);
 }

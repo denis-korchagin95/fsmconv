@@ -56,9 +56,9 @@ q4 -> q4 by 'b';
 #initial s0;
 #final s1, s2;
 
-s0 to s2 by 'a';
-s0 to s1 by 'b';
-s1 to s1 by 'b';
-s2 to s2 by 'a';
+s0 to s2 by 'b';
+s0 to s1 by 'a';
+s1 to s1 by 'a';
+s2 to s2 by 'b';
 
 @endtest
