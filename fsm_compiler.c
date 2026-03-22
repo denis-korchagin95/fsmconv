@@ -4,7 +4,7 @@
 #include "fsm_state.h"
 #include "fsm_state_list.h"
 #include "fsm_transition.h"
-#include "internal_allocators.h"
+#include "allocator.h"
 #include "parser.h"
 #include "symbol.h"
 #include "tokenizer.h"
@@ -22,7 +22,7 @@ static void fsm_compile_transition(struct fsm_state * source, struct fsm_state *
 
 	if(!transition)
 	{
-		transition = alloc_fsm_transition();
+		transition = alloc(struct fsm_transition);
 		transition->states = NULL;
 		transition->next = source->transitions;
 		transition->ch = ch;
@@ -31,7 +31,7 @@ static void fsm_compile_transition(struct fsm_state * source, struct fsm_state *
 	}
 
 	if(!transition->states || !fsm_transition_has_state(transition, target->id)) {
-		struct fsm_state_list * state_list = alloc_fsm_state_list();
+		struct fsm_state_list * state_list = alloc(struct fsm_state_list);
 		state_list->state_id = target->id;
 		state_list->next = transition->states;
 
@@ -55,7 +55,7 @@ static struct fsm_state * fsm_compile_state(struct fsm * fsm, struct ast * node)
 	if(symbol->attributes & SYMBOL_ATTRIBUTE_FINAL_STATE)
 		attrs |= FSM_STATE_ATTR_FINAL;
 
-	state = alloc_fsm_state();
+	state = alloc(struct fsm_state);
 	state->next = NULL;
 	state->fsm = fsm;
 	state->transitions = NULL;
@@ -92,7 +92,7 @@ static void fsm_compile_rule(struct fsm * fsm, struct ast * node)
 
 struct fsm * fsm_compile(struct ast * node)
 {
-	struct fsm * fsm = alloc_fsm();
+	struct fsm * fsm = alloc(struct fsm);
 	fsm->type = FSM_TYPE_UNDEFINED;
 	fsm->states = NULL;
 	fsm->last_state = &fsm->states;

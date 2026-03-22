@@ -1,7 +1,7 @@
 #include "fsm.h"
 #include "fsm_state_list.h"
 #include "fsm_state.h"
-#include "internal_allocators.h"
+#include "allocator.h"
 #include "character_list.h"
 #include "fsm_transition.h"
 #include "fsm_state_list.h"
@@ -63,7 +63,6 @@ struct fsm_state_list * fsm_epsilon_closure(struct fsm * fsm, struct fsm_state_l
 			}
 		}
 
-		free_fsm_state_list(current);
 	}
 
 	return epsilon_closure;
@@ -105,7 +104,6 @@ struct fsm_state_list * fsm_state_epsilon_closure(struct fsm_state * state)
 			}
 		}
 
-		free_fsm_state_list(current);
 	}
 
 	return epsilon_closure;
@@ -129,7 +127,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 	struct character_list * characters, * character_item;
 	struct fsm_transition * transition;
 
-	dfa = alloc_fsm();
+	dfa = alloc(struct fsm);
 	dfa->type = FSM_TYPE_DFA;
 	dfa->states = NULL;
 	dfa->last_state = &dfa->states;
@@ -144,7 +142,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 		last_state = &state_list;
 		list_foreach(state, nfa->states) {
 			if(state->attrs & FSM_STATE_ATTR_INITIAL) {
-				state_item = alloc_fsm_state_list();
+				state_item = alloc(struct fsm_state_list);
 				state_item->state_id = state->id;
 				state_item->next = NULL;
 
@@ -153,7 +151,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 			}
 		}
 
-		new_state = alloc_fsm_state();
+		new_state = alloc(struct fsm_state);
 		new_state->subset = fsm_epsilon_closure(nfa, state_list);
 		new_state->fsm = dfa;
 		new_state->id = dfa->state_count++;
@@ -163,21 +161,12 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 
 		*dfa->last_state = new_state;
 		dfa->last_state = &new_state->next;
-
-		{
-			struct fsm_state_list * hold;
-			while(state_list) {
-				hold = state_list->next;
-				free_fsm_state_list(state_list);
-				state_list = hold;
-			}
-		}
 	}
 	else
 	{
 		list_foreach(state, nfa->states) {
 			if(state->attrs & FSM_STATE_ATTR_INITIAL) {
-				new_state = alloc_fsm_state();
+				new_state = alloc(struct fsm_state);
 				new_state->subset = fsm_state_epsilon_closure(state);
 				new_state->fsm = dfa;
 				new_state->id = dfa->state_count++;
@@ -193,7 +182,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 
 	list_foreach(state, nfa->states) {
 		if(state->attrs & FSM_STATE_ATTR_FINAL) {
-			state_item = alloc_fsm_state_list();
+			state_item = alloc(struct fsm_state_list);
 			state_item->state_id = state->id;
 			state_item->next = final_states;
 			final_states = state_item;
@@ -201,7 +190,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 
 		list_foreach(transition, state->transitions) {
 			if (transition->ch != EPSILON_CHAR && !character_list_has_character(characters, transition->ch)) {
-				character_item = alloc_character_list();
+				character_item = alloc(struct character_list);
 				character_item->ch = transition->ch;
 
 				character_item->next = characters;
@@ -245,19 +234,10 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 
 			epsilon_closure = fsm_epsilon_closure(nfa, state_list);
 
-			{
-				struct fsm_state_list * hold;
-				while(state_list) {
-					hold = state_list->next;
-					free_fsm_state_list(state_list);
-					state_list = hold;
-				}
-			}
-
 			search_state = fsm_search_state_by_subset(dfa, epsilon_closure);
 
 			if (! search_state) {
-				new_state = alloc_fsm_state();
+				new_state = alloc(struct fsm_state);
 				new_state->subset = epsilon_closure;
 				new_state->fsm = dfa;
 				new_state->id = dfa->state_count++;
@@ -274,7 +254,7 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 			transition = fsm_state_search_transition_by_character(state, character_item->ch);
 
 			if (! transition) {
-				transition = alloc_fsm_transition();
+				transition = alloc(struct fsm_transition);
 				transition->states = fsm_state_list_create(search_state->id);
 				transition->ch = character_item->ch;
 
@@ -282,35 +262,8 @@ struct fsm * nfa_to_dfa(struct fsm * nfa, unsigned int conv_options)
 				state->transitions = transition;
 			}
 			else {
-				{
-					struct fsm_state_list * hold, ** it;
-					it = &transition->states;
-					while(*it) {
-						hold = (*it)->next;
-						free_fsm_state_list(*it);
-						*it = hold;
-					}
-				}
 				transition->states = fsm_state_list_create(search_state->id);
 			}
-		}
-	}
-
-	{
-		struct fsm_state_list * hold;
-		while(final_states) {
-			hold = final_states->next;
-			free_fsm_state_list(final_states);
-			final_states = hold;
-		}
-	}
-
-	{
-		struct character_list * hold;
-		while(characters) {
-			hold = characters->next;
-			free_character_list(characters);
-			characters = hold;
 		}
 	}
 
@@ -357,7 +310,7 @@ unsigned int fsm_determine_type(struct fsm * fsm)
 		list_foreach(transition, state->transitions) {
 			if(! character_list_has_character(characters, transition->ch))
 			{
-				character_item = alloc_character_list();
+				character_item = alloc(struct character_list);
 				character_item->ch = transition->ch;
 				character_item->next = characters;
 
@@ -366,29 +319,12 @@ unsigned int fsm_determine_type(struct fsm * fsm)
 		}
 	}
 
-	bool has_missed_transitions = false;
-
 	list_foreach(character_item, characters) {
 		list_foreach(state, fsm->states) {
-			if (! fsm_state_search_transition_by_character(state, character_item->ch)) {
-				has_missed_transitions = true;
-				goto out_loop;
-			}
+			if (! fsm_state_search_transition_by_character(state, character_item->ch))
+				return FSM_TYPE_FAKE_DFA;
 		}
 	}
-
-out_loop:
-	{
-		struct character_list * hold;
-		while(characters) {
-			hold = characters->next;
-			free_character_list(characters);
-			characters = hold;
-		}
-	}
-
-	if(has_missed_transitions)
-		return FSM_TYPE_FAKE_DFA;
 
 	return FSM_TYPE_DFA;
 }

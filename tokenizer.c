@@ -1,5 +1,5 @@
 #include "tokenizer.h"
-#include "internal_allocators.h"
+#include "allocator.h"
 #include "symbol.h"
 
 #include <ctype.h>
@@ -39,7 +39,7 @@ static struct identifier * identifier_insert(unsigned int hash, const char * nam
 {
 	unsigned int index = hash % IDENTIFIER_TABLE_SIZE;
 
-	struct identifier * identifier = alloc_identifier();
+	struct identifier * identifier = alloc(struct identifier);
 
 	identifier->name = (char *) alloc_bytes(len + 1);
 	strncpy(identifier->name, name, len);
@@ -218,7 +218,7 @@ struct token * tokenize(struct stream * stream)
 				stream_ungetchar(stream, next_ch);
 			}
 
-			token = alloc_token();
+			token = alloc(struct token);
 			token->location = location;
 
 			read_token(stream, token, ch);

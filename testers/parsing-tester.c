@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include "internal_allocators.h"
+#include "allocator.h"
 #include "stream.h"
 #include "parser.h"
 #include "tokenizer.h"
@@ -17,7 +17,7 @@ int main(int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if(atexit(drop_internal_allocators) != 0) {
+	if(atexit(area_cleanup) != 0) {
 		fprintf(stderr, "error: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}

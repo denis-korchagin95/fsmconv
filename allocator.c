@@ -2,73 +2,59 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 
-void * allocate(struct allocator * allocator, unsigned int nbytes)
+#define AREA_DEFAULT_BLOCK_SIZE (8192)
+
+struct area area = { NULL, AREA_DEFAULT_BLOCK_SIZE };
+
+void * area_alloc(struct area * area, unsigned int nbytes)
 {
-	struct allocator_chunk_entry * chunk;
-	unsigned int alignment;
+	struct area_block * block;
+	unsigned int capacity;
 
-	chunk = allocator->chunks;
-	alignment = allocator->alignment;
+	capacity = area->block_size - (unsigned int) offsetof(struct area_block, memory);
 
-	nbytes = (nbytes + alignment - 1) & ~(alignment - 1);
-
-	if(nbytes > allocator->chunk_size) {
-		fprintf(stderr, "error: tries to allocate too many bytes for '%s' allocator!\n", allocator->name);
+	if(nbytes > capacity) {
+		fprintf(stderr, "error: area allocation too large!\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if(!chunk || nbytes > chunk->remains) {
-		struct allocator_chunk_entry * new_chunk = (struct allocator_chunk_entry *) malloc(allocator->chunk_size);
-		if(!new_chunk) {
+	block = area->blocks;
+
+	if(!block || block->used + nbytes > capacity) {
+		block = (struct area_block *) malloc(area->block_size);
+		if(!block) {
 			fprintf(stderr, "error: out of memory!\n");
 			exit(EXIT_FAILURE);
 		}
-		size_t struct_member_offset = (size_t) &((struct allocator_chunk_entry *) 0)->memory;
-		unsigned int offset = ((unsigned int) struct_member_offset + alignment - 1) & ~(alignment - 1);
-		new_chunk->offset = offset - struct_member_offset;
-		new_chunk->remains = allocator->chunk_size - offset;
-		new_chunk->next = allocator->chunks;
-		allocator->chunks = new_chunk;
-
-		chunk = new_chunk;
+		block->used = 0;
+		block->next = area->blocks;
+		area->blocks = block;
 	}
 
-	void * memory = (void *)chunk->memory + chunk->offset;
-	chunk->offset += nbytes;
-	chunk->remains -= nbytes;
-	return memory;
-}
-
-void deallocate(struct allocator * allocator)
-{
-	struct allocator_chunk_entry * chunk, * next;
-
-	chunk = allocator->chunks;
-
-	allocator->chunks = NULL;
-	allocator->free_objects = NULL;
-
-	while(chunk) {
-		next = chunk->next;
-		free((void *) chunk);
-		chunk = next;
+	{
+		void * memory = block->memory + block->used;
+		block->used += nbytes;
+		return memory;
 	}
 }
 
-void * alloc_object(struct allocator * allocator, unsigned int size)
+void area_cleanup(void)
 {
-	if(allocator->free_objects) {
-		void ** entry = (void **) allocator->free_objects;
-		allocator->free_objects = *entry;
-		return (void *) entry;
-	}
-	return allocate(allocator, size);
+	area_free(&area);
 }
 
-void free_object(struct allocator * allocator, void * object)
+void area_free(struct area * area)
 {
-	void ** entry = (void **) object;
-	*entry = allocator->free_objects;
-	allocator->free_objects = (void *) entry;
+	struct area_block * block, * next;
+
+	block = area->blocks;
+	area->blocks = NULL;
+
+	while(block) {
+		next = block->next;
+		free(block);
+		block = next;
+	}
 }

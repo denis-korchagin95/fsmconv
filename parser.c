@@ -1,7 +1,7 @@
 #include "parser.h"
 #include "tokenizer.h"
 #include "symbol.h"
-#include "internal_allocators.h"
+#include "allocator.h"
 #include "ast.h"
 #include "fsm.h"
 #include "fsm_transition.h"
@@ -35,7 +35,7 @@ void init_symbols(void)
 
 		identifier = identifier_create(builtin_symbol->name);
 
-		symbol = alloc_symbol();
+		symbol = alloc(struct symbol);
 		symbol->identifier = identifier;
 		symbol->next = NULL;
 		symbol->attributes = SYMBOL_ATTRIBUTE_USED;
@@ -56,17 +56,17 @@ void init_symbols(void)
 
 
 	/* @epsilon - special character */
-	struct ast * value = alloc_ast();
+	struct ast * value = alloc(struct ast);
 	value->type = AST_CHARACTER;
 	value->value.ch = EPSILON_CHAR;
 
-	struct ast * node = alloc_ast();
+	struct ast * node = alloc(struct ast);
 	node->type = AST_SPECIAL_CHARACTER;
 	node->value.special_character.value = value;
 
 	identifier = identifier_create("epsilon");
 
-	symbol = alloc_symbol();
+	symbol = alloc(struct symbol);
 	symbol->identifier = identifier;
 	symbol->next = NULL;
 	symbol->attributes = SYMBOL_ATTRIBUTE_USED;
@@ -106,10 +106,10 @@ struct token * parse_state(struct token * token, struct ast ** state)
 
 	if(!symbol)
 	{
-		struct ast * node = alloc_ast();
+		struct ast * node = alloc(struct ast);
 		node->type = AST_STATE;
 
-		symbol = alloc_symbol();
+		symbol = alloc(struct symbol);
 		symbol->identifier = token->value.identifier;
 		symbol->next = NULL;
 		symbol->value.state.state_id = state_id++;
@@ -137,7 +137,7 @@ struct token * parse_character(struct token * token, struct ast ** node)
 
 	if(token->type == TOKEN_CHARACTER)
 	{
-		struct ast * character = alloc_ast();
+		struct ast * character = alloc(struct ast);
 		character->type = AST_CHARACTER;
 		character->value.ch = token->value.code;
 		*node = character;
@@ -173,7 +173,7 @@ struct token * parse_character_list(struct token * token, void ** node, bool * i
 	list = NULL;
 	last_element = &list;
 
-	new_element = alloc_ast_list();
+	new_element = alloc(struct ast_list);
 	new_element->node = character;
 	new_element->next = NULL;
 
@@ -184,7 +184,7 @@ struct token * parse_character_list(struct token * token, void ** node, bool * i
 	{
 		token = parse_character(token->next, &character);
 
-		new_element = alloc_ast_list();
+		new_element = alloc(struct ast_list);
 		new_element->node = character;
 		new_element->next = NULL;
 
@@ -225,14 +225,14 @@ struct token * parse_rule(struct token * token, struct ast ** rule)
 	token = parse_character_list(token->next, &object, &is_list);
 
 	if(is_list) {
-		by = alloc_ast();
+		by = alloc(struct ast);
 		by->type = AST_CHARACTER_LIST;
 		by->value.list = (struct ast_list *) object;
 	}
 	else
 		by = (struct ast *) object;
 
-	struct ast * node = alloc_ast();
+	struct ast * node = alloc(struct ast);
 	node->type = AST_RULE;
 	node->value.rule.source = source;
 	node->value.rule.target = target;
@@ -259,7 +259,7 @@ struct token * parse_state_list(struct token * token, void ** node, bool * is_li
 	list = NULL;
 	last_element = &list;
 
-	new_element = alloc_ast_list();
+	new_element = alloc(struct ast_list);
 	new_element->node = state;
 	new_element->next = NULL;
 
@@ -270,7 +270,7 @@ struct token * parse_state_list(struct token * token, void ** node, bool * is_li
 	{
 		token = parse_state(token->next, &state);
 
-		new_element = alloc_ast_list();
+		new_element = alloc(struct ast_list);
 		new_element->node = state;
 		new_element->next = NULL;
 
@@ -315,7 +315,6 @@ struct token * parse_directive_initial(struct token * token, struct symbol * sym
 			while(*current) {
 				(*current)->node->value.symbol->attributes &= ~SYMBOL_ATTRIBUTE_INITIAL_STATE;
 				next = &(*current)->next;
-				free_ast_list(*current);
 				*current = NULL;
 				current = next;
 			}
@@ -327,7 +326,7 @@ struct token * parse_directive_initial(struct token * token, struct symbol * sym
 	if(is_list) {
 		struct ast_list * it = (struct ast_list *) object;
 
-		node = alloc_ast();
+		node = alloc(struct ast);
 		node->type = AST_STATE_LIST;
 		node->value.list = it;
 
@@ -376,7 +375,6 @@ struct token * parse_directive_final(struct token * token, struct symbol * symbo
 			while(*current) {
 				(*current)->node->value.symbol->attributes &= ~SYMBOL_ATTRIBUTE_FINAL_STATE;
 				next = &(*current)->next;
-				free_ast_list(*current);
 				*current = NULL;
 				current = next;
 			}
@@ -388,7 +386,7 @@ struct token * parse_directive_final(struct token * token, struct symbol * symbo
 	if(is_list) {
 		struct ast_list * it = (struct ast_list *) object;
 
-		node = alloc_ast();
+		node = alloc(struct ast);
 		node->type = AST_STATE_LIST;
 		node->value.list = it;
 
@@ -467,7 +465,7 @@ struct token * parse(struct token * token, struct ast ** tree)
 		token = parse_statement(token, &statement);
 
 		if(statement) {
-			new_element = alloc_ast_list();
+			new_element = alloc(struct ast_list);
 			new_element->next = NULL;
 			new_element->node = statement;
 
@@ -482,7 +480,7 @@ struct token * parse(struct token * token, struct ast ** tree)
 		return token;
 	}
 
-	struct ast * node = alloc_ast();
+	struct ast * node = alloc(struct ast);
 	node->type = AST_RULE_LIST;
 	node->value.list = list;
 

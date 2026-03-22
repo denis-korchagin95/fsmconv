@@ -1,28 +1,26 @@
 #ifndef FSMCONV_ALLOCATOR_H
 #define FSMCONV_ALLOCATOR_H 1
 
-struct allocator_chunk_entry
+struct area_block
 {
-	struct allocator_chunk_entry * next;
-	unsigned int offset;
-	unsigned int remains;
+	struct area_block * next;
+	unsigned int used;
 	char memory[];
 };
 
-struct allocator
+struct area
 {
-	const char * name;
-	struct allocator_chunk_entry * chunks;
-	void * free_objects;
-	unsigned int alignment;
-	unsigned int chunk_size;
+	struct area_block * blocks;
+	unsigned int block_size;
 };
 
-extern void * allocate(struct allocator * allocator, unsigned int nbytes);
-extern void deallocate(struct allocator * allocator);
+extern struct area area;
 
-extern void * alloc_object(struct allocator * allocator, unsigned int size);
+extern void * area_alloc(struct area * area, unsigned int nbytes);
+extern void area_free(struct area * area);
+extern void area_cleanup(void);
 
-extern void free_object(struct allocator * allocator, void * object);
+#define alloc(type) ((type *) area_alloc(&area, sizeof(type)))
+#define alloc_bytes(nbytes) (area_alloc(&area, (nbytes)))
 
 #endif /* FSMCONV_ALLOCATOR_H */

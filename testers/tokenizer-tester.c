@@ -5,7 +5,7 @@
 
 #include "tokenizer.h"
 #include "print.h"
-#include "internal_allocators.h"
+#include "allocator.h"
 #include "symbol.h"
 #include "parser.h"
 
@@ -16,7 +16,7 @@ int main(int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (atexit(drop_internal_allocators) != 0) {
+	if (atexit(area_cleanup) != 0) {
 		fprintf(stderr, "error: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}

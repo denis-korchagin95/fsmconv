@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "internal_allocators.h"
+#include "allocator.h"
 #include "visualize.h"
 #include "parser.h"
 #include "stream.h"
@@ -75,7 +75,7 @@ int main(int argc, char * argv[])
 	const char * input_file = argv[1];
 	const char * output_file = NULL;
 
-	atexit(drop_internal_allocators);
+	atexit(area_cleanup);
 
 	int i;
 	for(i = 2; i < argc; ++i) {
